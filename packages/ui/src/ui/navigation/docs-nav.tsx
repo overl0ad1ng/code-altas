@@ -12,6 +12,7 @@ import type {
   BranchedMenuChild,
   BranchedMenuItem,
 } from "../../primitives/branched-menu"
+import { Logo } from "./logo"
 
 function collectDocuments(
   docs: ConfigDocsCategoryDocs,
@@ -100,12 +101,12 @@ function DocsNav({ categories = [] }: { categories?: ConfigDocsCategories }) {
         <DocsCategoryMenu categories={menus} />
       </ScrollArea>
       <a
-        href="https://code-altas.com/"
+        href="https://github.com/overl0ad1ng/code-altas"
         target="_blank"
         className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-border py-2"
       >
-        <img src="/logo-indev.png" className="size-6" />
-        <span className="text-sm text-neutral-700">Powered by CodeAltas</span>
+        <Logo />
+        <span className="text-sm text-neutral-700 dark:text-neutral-300">Powered by CodeAltas</span>
       </a>
     </div>
   )
