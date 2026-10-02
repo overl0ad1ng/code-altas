@@ -1,0 +1,80 @@
+---
+title: MD and MDX
+---
+
+CodeAltas supports writing documentation using Markdown (`.md`) and MDX (`.mdx`).
+
+Markdown offers a simple, readable way to create structured content, while MDX builds upon Markdown by adding component capabilities, allowing documents to include interactive elements. Essentially, MDX is a combination of Markdown and JSX.
+
+## What is Markdown?
+
+Markdown (often abbreviated as MD) is a lightweight markup language.
+
+It uses simple symbols to represent text structures—such as headings, lists, links, and code blocks—enabling authors to focus on the content itself rather than writing raw HTML.
+
+A simple Markdown file:
+
+```md
+# Hello Code Altas
+
+This is a paragraph.
+
+- Item A
+- Item B
+
+1. List A
+2. List B
+
+... other
+```
+
+Key features of Markdown:
+
+- Simple syntax
+- Plain-text file format
+- Easy version control
+- Suitable for writing documentation, READMEs, blog posts, and more
+
+## What is MDX?
+
+MDX stands for `Markdown + JSX`. It extends Markdown with JSX capabilities, allowing React components to be used directly within Markdown files.
+
+Standard Markdown can only describe content:
+
+```md
+# Installation
+
+Install CodeAltas with npm.
+```
+
+MDX, however, allows for embedded components:
+
+```mdx
+# Installation
+
+<InstallCommand package="codealtas" />
+```
+
+`InstallCommand` is a JSX component.
+
+## Differences between Markdown and MDX
+
+Although MDX incorporates Markdown, the two are not identical.
+
+| Feature | Markdown | MDX |
+|---|---|---|
+| Headings | ✅ Supported | ✅ Supported |
+| Lists | ✅ Supported | ✅ Supported |
+| Blockquotes | ✅ Supported | ✅ Supported |
+| Code blocks | ✅ Supported | ✅ Supported |
+| Images | ✅ Supported | ✅ Supported |
+| Links | ✅ Supported | ✅ Supported |
+| HTML tags | ✅ Partially supported | ❌ Not directly supported |
+| JSX components | ❌ Not supported | ✅ Supported |
+| React components | ❌ Not supported | ✅ Supported |
+| Import / Export | ❌ Not supported | ✅ Supported |
+| JavaScript expressions | ❌ Not supported | ✅ Supported |
+| Videos | ❌ Not supported | ✅ Supported |
+| Tabs | ❌ Not supported | ✅ Supported |
+| Steps | ❌ Not supported | ✅ Supported |
+| FileTree | ❌ Not supported | ✅ Supported |

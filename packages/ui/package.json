@@ -1,0 +1,112 @@
+{
+  "name": "@code-altas/ui",
+  "version": "0.1.0-beta",
+  "type": "module",
+  "author": {
+    "name": "IzayoiKyomu",
+    "url": "https://github.com/overl0ad1ng"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./config": "./src/lib/DefineConfig.ts",
+    "./server": "./src/server.ts",
+    "./styles.css": "./src/styles/globals.css"
+  },
+  "peerDependencies": {
+    "next": "^16.3.6",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "scripts": {
+    "test:content": "node --test tests/docs-content.test.mjs",
+    "test:render": "node --test tests/docs-render.test.mjs",
+    "lint": "eslint",
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.mjs",
+    "prepack": "pnpm run build",
+    "test:release": "pnpm pack --pack-destination ../../.release && node --test tests/package.test.mjs"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.8.0",
+    "@icons-pack/react-simple-icons": "^13.15.1",
+    "@shikijs/rehype": "^4.4.3",
+    "c12": "4.0.0-rc.2",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.4.0",
+    "github-slugger": "^2.0.0",
+    "jiti": "^2.7.0",
+    "lucide-react": "^1.49.0",
+    "motion": "^13.4.6",
+    "next-mdx-remote-client": "^2.1.12",
+    "next-themes": "^0.4.6",
+    "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "eslint": "^10",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "shadcn": "^4.21.0",
+    "tw-animate-css": "^1.4.0",
+    "postcss": "^8.5.6"
+  },
+  "description": "Composable MDX documentation and changelog components for Next.js App Router.",
+  "homepage": "https://github.com/overl0ad1ng/code-altas#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/overl0ad1ng/code-altas.git",
+    "directory": "packages/ui"
+  },
+  "bugs": {
+    "url": "https://github.com/overl0ad1ng/code-altas/issues"
+  },
+  "keywords": [
+    "nextjs",
+    "react",
+    "mdx",
+    "documentation",
+    "changelog",
+    "code-altas"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "beta",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      },
+      "./config": {
+        "types": "./dist/lib/DefineConfig.d.ts",
+        "import": "./dist/lib/DefineConfig.js"
+      },
+      "./server": {
+        "types": "./dist/server.d.ts",
+        "import": "./dist/server.js"
+      },
+      "./styles.css": "./dist/styles/globals.css"
+    }
+  },
+  "license": "MIT"
+}

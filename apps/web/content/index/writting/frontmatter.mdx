@@ -1,0 +1,49 @@
+---
+title: Frontmatter
+---
+
+You can include frontmatter in your MD or MDX files:
+
+```md
+---
+title: Frontmatter
+description: XXX
+---
+```
+
+However, not just any content placed in the frontmatter will be rendered. Code Altas supports only the following three data fields; all of them are optional:
+
+## Title
+
+The `title` is rendered at the very top of the page as the main heading. It is optional; if `title` is not specified, the `name` defined in `codealtas.config` will be used instead.
+
+## description
+
+The `description` provides a summary. It is rendered below the title in a smaller, lighter-colored font.
+
+## tags
+
+The `tags` field accepts an array of values. You must first define the tag data in `codealtas.config`:
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui";
+
+export default defineConfig({
+  docs: {
+    tags: {
+      "Beta": "#1447E6"
+    }
+  }
+});
+```
+
+```md
+---
+title: Frontmatter
+description: XXX
+tags:
+  - Beta
+---
+```
+
+The color `#1447E6` is applied to the text (`Beta`) at 100% opacity and to the border at 20% opacity. Tags are rendered below the description.

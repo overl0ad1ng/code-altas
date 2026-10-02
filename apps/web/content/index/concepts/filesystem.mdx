@@ -1,0 +1,213 @@
+---
+title: File System
+description: Learn how configuration slugs map to content files and URLs, how index files work, and where to store your changelog.
+---
+
+Code Atlas keeps documentation in your project. Next.js controls your application routes, while Code Atlas reads document files from a `content` directory using the slugs in `codealtas.config.ts`.
+
+These are separate responsibilities: placing a file in `content` does not create a Next.js route or automatically add it to your documentation navigation.
+
+## Project structure
+
+The following example uses the same layout as this documentation site:
+
+<FileTree
+  files={[
+    "app/layout.tsx",
+    "app/docs/layout.tsx",
+    "app/docs/[[...slug]]/page.tsx",
+    "app/changelog/page.tsx",
+    "content/index/index.mdx",
+    "content/index/quickstart.mdx",
+    "content/index/guides/index.mdx",
+    "content/index/guides/installation.md",
+    "content/components/index.mdx",
+    "content/components/tabs.mdx",
+    "content/changelog.mdx",
+    "public/logo.png",
+    "codealtas.config.ts",
+    "package.json",
+  ]}
+/>
+
+Paths are relative to the **Next.js app root**, where you run the application. In this monorepo, that directory is `apps/web`, so the content directory is `apps/web/content`.
+
+If your Next.js routes live in `src/app`, keep `content` and `codealtas.config.ts` at the app root. Moving routes into `src` does not change where the default content reader looks for files.
+
+## Configuration determines document paths
+
+Define your documentation categories and pages in `codealtas.config.ts`. The filename uses `codealtas`, matching the package name `@code-altas/ui`.
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config"
+
+export default defineConfig({
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.png",
+  docs: {
+    tags: {
+      "Version Released": "#8A0194",
+    },
+    categories: [
+      {
+        name: "Getting Started",
+        icon: "lucide:lamp",
+        slug: "index",
+        docs: [
+          {
+            name: "Overview",
+            docs: [
+              { name: "Introduction", slug: "index" },
+              { name: "Quick Start", slug: "quickstart" },
+            ],
+          },
+          {
+            name: "Guides",
+            slug: "guides",
+            docs: [
+              { name: "Overview", slug: "index" },
+              { name: "Installation", slug: "installation" },
+            ],
+          },
+        ],
+      },
+      {
+        name: "Components",
+        icon: "lucide:puzzle",
+        slug: "components",
+        docs: [
+          { name: "Introduction", slug: "index" },
+          { name: "Tabs", slug: "tabs" },
+        ],
+      },
+    ],
+  },
+})
+```
+
+A document's file path combines its category slug, any parent group slugs, and its own slug, then adds `.md` or `.mdx`:
+
+```text
+content/<category-slug>/<parent-slugs>/<document-slug>.mdx
+```
+
+Use forward slashes in slugs and omit the file extension. The `name` is a display label, not a filename. A group such as `Overview` without a `slug` organizes navigation without adding a directory to the path.
+
+In the example above, the `Guides` group has `slug: "guides"`, so its documents live in `content/index/guides/`.
+
+## How index files work
+
+`index` is a real segment in the stored file path, but Code Atlas removes segments named `index` from the public document URL.
+
+With documentation mounted at `/docs`, the example configuration maps to:
+
+| Configuration slug path         | Content file                           | Public URL                  |
+| ------------------------------- | -------------------------------------- | --------------------------- |
+| `index → index`                 | `content/index/index.mdx`              | `/docs`                     |
+| `index → quickstart`            | `content/index/quickstart.mdx`         | `/docs/quickstart`          |
+| `index → guides → index`        | `content/index/guides/index.mdx`       | `/docs/guides`              |
+| `index → guides → installation` | `content/index/guides/installation.md` | `/docs/guides/installation` |
+| `components → index`            | `content/components/index.mdx`         | `/docs/components`          |
+| `components → tabs`             | `content/components/tabs.mdx`          | `/docs/components/tabs`     |
+
+The first row deliberately contains two `index` segments: one for the category and one for its introduction page. Both remain on disk, and both disappear from the URL.
+
+An index document acts as the landing page for its configured path. It does not become your application's `/` homepage; that remains a Next.js page you define separately.
+
+Folders do not require an index file unless you configure an index document for them. Creating `index.mdx` alone also does not register a page: it must have a corresponding entry in the configuration.
+
+Trailing slashes identify the same document. For example, `/docs/components` and `/docs/components/` resolve to the same configured entry.
+
+## Markdown and MDX files
+
+Each configured document can use either `.md` or `.mdx`:
+
+- Use `.md` for Markdown content.
+- Use `.mdx` when you need JSX, expressions, or components such as `Tabs`, `Steps`, and `FileTree`.
+
+The reader checks both extensions. Keep exactly one file for a configured document: having both `quickstart.md` and `quickstart.mdx` at the same path produces an error rather than choosing one automatically.
+
+Files are read as UTF-8. You can add frontmatter to either format:
+
+```md title="content/index/quickstart.mdx"
+---
+title: Quick Start
+description: Set up your first documentation pages.
+---
+
+## Prepare your project
+
+Your documentation starts here.
+```
+
+Frontmatter controls presentation, not routing. Changing `title` does not rename the file or change its URL; those come from the configuration slugs. Without a frontmatter title, the document uses its configured `name`.
+
+See [MD and MDX](/docs/writting/md-and-mdx) and [Frontmatter](/docs/writting/frontmatter) for more details.
+
+## The changelog file
+
+The changelog has a separate, fixed file convention:
+
+```text
+content/changelog.mdx
+```
+
+`ChangelogPage` reads this file directly from the app root. You do not need to add it to `docs.categories`, place it inside `content/index`, or create a category named `changelog`.
+
+To expose it at `/changelog`, render the component in a Next.js route:
+
+```tsx title="app/changelog/page.tsx"
+import { ChangelogPage } from "@code-altas/ui"
+
+export const dynamic = "force-dynamic"
+export const metadata = { title: "Changelog" }
+
+export default function Page() {
+  return <ChangelogPage />
+}
+```
+
+Use `DefaultLayout` for the route's layout to supply the site configuration and theme, as this site does. Layout and routing details are covered in [Layout and Page](/docs/layout-and-page).
+
+The file supports frontmatter and the same MDX components as documentation pages. Use `Changelogs` to group releases and `Changelog` for individual entries:
+
+```mdx title="content/changelog.mdx"
+---
+title: Changelog
+---
+
+<Changelogs sortBy="date">
+  <Changelog date="2026/10/2" title="First release" tags={["Version Released"]}>
+    Our first release is available.
+  </Changelog>
+</Changelogs>
+```
+
+`sortBy="date"` puts the newest release first. Use `sortBy="index"` to preserve the order written in the file. Dates accept `YYYY/MM/DD` or `YYYY-MM-DD` and are displayed as formatted calendar dates.
+
+Release tags use the matching colors in `docs.tags`. A tag without a configured color is still displayed with a gray fallback.
+
+The changelog reader expects `.mdx` specifically; `content/changelog.md` is not used as an alternative. An empty `changelog.mdx` is valid, while a missing file returns a 404. The page title comes from frontmatter, falling back to `Changelog`.
+
+## Public assets
+
+Store images and other public assets in the app's `public` directory, separate from `content`:
+
+```text
+public/logo.png       → /logo.png
+public/images/ui.png  → /images/ui.png
+```
+
+For example, use `logo: "/logo.png"` in your configuration or `![Interface](/images/ui.png)` in a document. Do not include `public` in the URL.
+
+## Common mistakes
+
+- **A file exists but the page returns 404.** Check that it is registered in `docs.categories` and that its path matches every configured slug.
+- **A configured page returns 404.** Check that its `.md` or `.mdx` file exists under the app's `content` directory.
+- **An index page cannot be found.** Keep `index` in the stored path even though it is omitted from the URL.
+- **Two entries share a URL.** Removing `index` segments can make different configured paths resolve to the same URL. Code Atlas rejects duplicate document slugs.
+- **Both file extensions exist.** Keep either `.md` or `.mdx` for each document, not both.
+- **The changelog does not load.** Check for `content/changelog.mdx` and make sure the route renders `ChangelogPage` rather than `DocsPage`.
+
+You control the Next.js pages and layouts. These conventions define how the included document readers find your content, without taking over the rest of your application.

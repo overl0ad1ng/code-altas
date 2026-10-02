@@ -1,0 +1,105 @@
+---
+title: Layouts and Pages
+---
+
+Unlike other site generators, Code Altas places its primary focus on documentation-related content. While layouts are fully customizable, we provide a set of ready-to-use components—such as `Header` and `Footer`—that can be configured via the `codealtas.config.ts` file.
+
+## Docs
+
+Typically, you only need the following layout and page files:
+
+<FileTree
+  files={[
+    "src/app/(site)/[[...slug]]/page.tsx",
+    "src/app/(site)/layout.tsx",
+    "src/app/layout.tsx",
+    "codealtas.config.ts",
+  ]}
+/>
+
+### DocsLayout
+
+If you only need to maintain the Docs pages, simply do this:
+
+```tsx title="src/app/(site)/layout.tsx"
+import { DocsLayout } from "@code-altas/ui"
+
+export default function Layout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return <DocsLayout>{children}</DocsLayout>
+}
+```
+
+### DocsPage
+
+Next, configure `DocsPage` in `page.tsx`:
+
+```tsx title="src/app/(site)/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+
+export const dynamic = "force-dynamic"
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} />
+}
+```
+
+### codealtas.config
+
+Finally, configure the docs-related settings in `codealtas.config`:
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config"
+
+export default defineConfig({
+  // ... other configurations
+
+  docs: {
+    categories: [
+      {
+        name: "Getting Started",
+        icon: "lucide:lamp",
+        slug: "index",
+        docs: [
+          {
+            name: "Getting Started",
+            docs: [
+              {
+                name: "Introduction",
+                slug: "index"
+              }
+              {
+                name: "Quick Start",
+                slug: "quickstart"
+              }
+            ]
+          }
+        ]
+      },
+    ]
+  },
+})
+```
+
+### Contents
+
+Next, we need to define the specific files to make them accessible:
+
+<FileTree files={["content/index/index.mdx", "content/index/quickstart.mdx"]} />
+
+```mdx title="quickstart.mdx"
+---
+title: Quick Start
+description: ...
+---
+
+lorem ipsum...
+```
+
+## Important Notes
+
+1. Store `content/` at the app root, beside `package.json` and `codealtas.config.ts`.
+2. Parent group slugs contribute to the file path and URL. `index` segments remain in file paths and are omitted from URLs.
+3. An `index` page is optional; only configured leaf documents are readable.
+4. Use the Node.js runtime and include your content and configuration in your deployment.

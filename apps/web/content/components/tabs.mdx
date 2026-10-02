@@ -1,0 +1,40 @@
+---
+title: Tabs
+description: Tabs provide tabbed navigation, allowing you to display different content based on the user's selection.
+---
+
+<Tabs>
+    <Tab icon="simple:github" name="Star us">
+        Visit our GitHub page. 
+    </Tab>
+    <Tab icon="lucide:music" name="Music I like">
+        123
+    </Tab>
+</Tabs>
+
+---
+
+```mdx title="Usage"
+<Tabs>
+  <Tab icon="simple:github" name="Star us">
+    Visit our GitHub page. 
+  </Tab>
+  <Tab icon="lucide:music" name="Music I like">
+    123
+  </Tab>
+</Tabs>
+```
+
+<br />
+
+<Props name="Tabs">
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="Content. Must be Tab components." />
+</Props>
+
+<br />
+
+<Props name="Tab">
+  <Prop property="name" type="string" defaultValue="-" description="Tab label." />
+  <Prop property="icon" type="string" defaultValue="-" description="Tab icon." />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="Content." />
+</Props>
