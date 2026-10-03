@@ -120,7 +120,9 @@ function resolveImports(context) {
 // Compile styles using only package sources, independent of the consumer's scanner.
 const stylesheet = path.join(source, "styles/globals.css")
 const styles = await postcss([
-  tailwindcss({ base: source, optimize: true }),
+  // Font assets are copied beside the published CSS below. Preserve KaTeX's
+  // relative URLs instead of rebasing them into this workspace's node_modules.
+  tailwindcss({ base: source, optimize: true, transformAssetUrls: false }),
 ]).process(await readFile(stylesheet, "utf8"), {
   from: stylesheet,
   to: path.join(output, "styles/globals.css"),
