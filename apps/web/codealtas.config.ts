@@ -101,6 +101,10 @@ export default defineConfig({
                 slug: "code-groups",
               },
               {
+                name: "Code Diff",
+                slug: "code-diff",
+              },
+              {
                 name: "Hint",
                 slug: "hint",
               },

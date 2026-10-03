@@ -38,6 +38,7 @@ const { Steps, Step } = await jiti.import("../src/ui/mdx/components/steps.tsx")
 const { CodeGroup } = await jiti.import(
   "../src/ui/mdx/components/code-group.tsx"
 )
+const { CodeDiff } = await jiti.import("../src/ui/mdx/components/code-diff.tsx")
 const { Hint, HintTitle, HintContent } = await jiti.import(
   "../src/ui/mdx/components/hint.tsx"
 )
@@ -215,6 +216,186 @@ const doc = (content, extension = ".mdx") => ({
   disabled: false,
   content,
   extension,
+})
+
+function diffCells(html) {
+  return [
+    ...html.matchAll(
+      /data-side="(before|after)" data-change="([^"]+)"[^>]*>([\s\S]*?)<\/div>/g
+    ),
+  ].map(([, side, change, body]) => {
+    const spans = [
+      ...body
+        .replace(/<span class="sr-only">.*?<\/span>/g, "")
+        .matchAll(/<span\b[^>]*>([\s\S]*?)<\/span>/g),
+    ]
+    return {
+      side,
+      change,
+      number: spans[0]?.[1],
+      text: spans[2]?.[1]
+        .replace(/<span class="sr-only">.*?<\/span>/g, "")
+        .replace(/<[^>]*>/g, ""),
+    }
+  })
+}
+
+function plainDiff(before, after) {
+  const block = (text) =>
+    createElement("pre", null, createElement("code", null, text))
+  return renderToStaticMarkup(
+    createElement(CodeDiff, null, block(before), block(after))
+  )
+}
+
+test("CodeDiff renders the requested MDX with paired rows, highlights, and empty counterparts", async () => {
+  const rendered = await renderDoc(
+    doc(
+      "<CodeDiff>\n\n```tsx\n123231321\n```\n\n```tsx\n123\n231\n321\n```\n\n</CodeDiff>"
+    )
+  )
+  const html = renderToStaticMarkup(rendered.content)
+  assert.equal((html.match(/data-slot="code-diff-row"/g) || []).length, 3)
+  const cells = diffCells(html)
+  assert.deepEqual(
+    cells.map(({ side, change, number }) => ({ side, change, number })),
+    [
+      { side: "before", change: "delete", number: "1" },
+      { side: "after", change: "insert", number: "1" },
+      { side: "before", change: "empty", number: "" },
+      { side: "after", change: "insert", number: "2" },
+      { side: "before", change: "empty", number: "" },
+      { side: "after", change: "insert", number: "3" },
+    ]
+  )
+  assert.match(html, /--shiki-light/)
+  assert.match(html, /--shiki-dark/)
+  assert.match(html, /123231321/)
+  assert.match(html, /whitespace-pre-wrap/)
+  assert.doesNotMatch(html, /codeblock-lines|Copy code/)
+})
+
+test("CodeDiff preserves context, original numbering, real blank lines, and whitespace changes", () => {
+  const cells = diffCells(
+    plainDiff("start\nold\n\nend", "start\nnew\nextra\n\nend")
+  )
+  assert.deepEqual(
+    cells.map(({ change }) => change),
+    [
+      "equal",
+      "equal",
+      "delete",
+      "insert",
+      "empty",
+      "insert",
+      "equal",
+      "equal",
+      "equal",
+      "equal",
+    ]
+  )
+  assert.deepEqual(
+    cells.filter(({ side }) => side === "after").map(({ number }) => number),
+    ["1", "2", "3", "4", "5"]
+  )
+  assert.deepEqual(
+    diffCells(plainDiff("  x", " x")).map(({ change }) => change),
+    ["delete", "insert"]
+  )
+  assert.deepEqual(
+    diffCells(plainDiff("a\nb", "a\nb")).map(({ change }) => change),
+    ["equal", "equal", "equal", "equal"]
+  )
+  assert.deepEqual(
+    diffCells(plainDiff("", "a\nb")).map(({ change }) => change),
+    ["empty", "insert", "empty", "insert"]
+  )
+  assert.deepEqual(
+    diffCells(plainDiff("a\nb", "")).map(({ change }) => change),
+    ["delete", "empty", "delete", "empty"]
+  )
+  assert.equal(diffCells(plainDiff("", "")).length, 0)
+})
+
+test("CodeDiff produces a shortest edit script for repeated and reordered lines", () => {
+  const samples = [
+    [],
+    ["a"],
+    ["b"],
+    ["a", "a"],
+    ["a", "b"],
+    ["b", "a"],
+    ["a", "b", "a"],
+    ["b", "a", "b"],
+    ["c", "c", "b", "a"],
+  ]
+  for (const before of samples)
+    for (const after of samples) {
+      const cells = diffCells(plainDiff(before.join("\n"), after.join("\n")))
+      for (const [side, expected] of [
+        ["before", before],
+        ["after", after],
+      ]) {
+        assert.deepEqual(
+          cells
+            .filter((cell) => cell.side === side && cell.change !== "empty")
+            .map((cell) => cell.text.replace(/^(Deleted: |Added: )/, "")),
+          expected
+        )
+      }
+      const lengths = Array.from({ length: before.length + 1 }, () =>
+        Array(after.length + 1).fill(0)
+      )
+      for (let i = 1; i <= before.length; i++)
+        for (let j = 1; j <= after.length; j++)
+          lengths[i][j] =
+            before[i - 1] === after[j - 1]
+              ? lengths[i - 1][j - 1] + 1
+              : Math.max(lengths[i - 1][j], lengths[i][j - 1])
+      assert.equal(
+        cells.filter(({ change }) => change === "delete" || change === "insert")
+          .length,
+        before.length + after.length - 2 * lengths[before.length][after.length]
+      )
+    }
+})
+
+test("CodeDiff documents compile, titles render, fragments work, and invalid children fail clearly", async () => {
+  const source = await readFile(
+    new URL(
+      "../../../apps/web/content/components/code-diff.mdx",
+      import.meta.url
+    ),
+    "utf8"
+  )
+  const rendered = await renderDoc(doc(source))
+  const html = renderToStaticMarkup(rendered.content)
+  assert.equal((html.match(/data-slot="code-diff"/g) || []).length, 2)
+  assert.match(html, /Before: greeting.tsx/)
+  assert.match(html, /After: greeting.tsx/)
+  const block = createElement("pre", null, createElement("code", null, "text"))
+  assert.match(
+    renderToStaticMarkup(
+      createElement(
+        CodeDiff,
+        { className: "custom" },
+        createElement(Fragment, null, "\n", block, false, block)
+      )
+    ),
+    /custom/
+  )
+  for (const children of [[], [block], [block, block, block]])
+    assert.throws(
+      () => renderToStaticMarkup(createElement(CodeDiff, { children })),
+      /exactly two fenced code blocks/
+    )
+  assert.throws(
+    () =>
+      renderToStaticMarkup(
+        createElement(CodeDiff, null, createElement("p", null, "invalid"))
+      ),
+    /only accepts fenced code blocks/
+  )
 })
 
 test("CodeGroup renders the documented fences with language icons and intact code blocks", async () => {

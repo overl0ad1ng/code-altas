@@ -1,0 +1,75 @@
+---
+title: Code Diff
+description: Compare two code blocks side by side with aligned additions and deletions.
+---
+
+`CodeDiff` compares two fenced code blocks. The first block is the old version; the second is the new version.
+
+<CodeDiff>
+
+```tsx
+123231321
+```
+
+```tsx
+123
+231
+321
+```
+
+</CodeDiff>
+
+Deleted lines appear on the left in red, and added lines appear on the right in green. Missing counterparts reserve an empty space. Each side retains its original line numbers. Long lines wrap, and paired rows always share the same height.
+
+## Usage
+
+````mdx title="Usage"
+<CodeDiff>
+
+```tsx
+123231321
+```
+
+```tsx
+123
+231
+321
+```
+
+</CodeDiff>
+````
+
+## Unchanged lines and titles
+
+Unchanged lines appear on both sides. Use a code fence's `title` to label each version; otherwise, the headers display `Before` and `After`.
+
+<CodeDiff>
+  ```tsx title="Before: greeting.tsx"
+  export function Greeting() {
+    return <p>Hello</p>
+  }
+  ```
+  ```tsx title="After: greeting.tsx"
+  export function Greeting() {
+    const name = "Code Atlas"
+    return <p>Hello, {name}!</p>
+  }
+  ```
+</CodeDiff>
+
+Exactly two fenced code blocks are required. Syntax highlighting follows each fence's language and supports light and dark themes.
+
+<Props name="CodeDiff">
+  <Prop
+    property="children"
+    type="React.ReactNode"
+    defaultValue="-"
+    description="Exactly two fenced code blocks, ordered as old and new versions."
+  />
+  <Prop
+    property="className"
+    type="string"
+    defaultValue="-"
+    description="Additional classes for the diff container."
+  />
+</Props>
