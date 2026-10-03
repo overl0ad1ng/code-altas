@@ -17,6 +17,12 @@ including a CSS reset and light/dark theme variables. Tailwind is not required
 to style the package. For explicit stylesheet loading, use
 `import "@code-altas/ui/styles.css"` in your root layout.
 
+Documentation supports Mermaid fences (`mermaid`, with optional `title="..."`)
+and KaTeX mathematics (`$...$` inline or `$$` delimiters on separate lines for
+display formulas). Mermaid diagrams use the native default theme on a light
+canvas and include a source copy button; they also work in `CodeGroup`.
+KaTeX renders on the server, and the stylesheet includes its local font assets.
+
 ## Configure your app
 
 Create `codealtas.config.ts` beside your app's `package.json`:

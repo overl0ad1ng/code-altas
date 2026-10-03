@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs"
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises"
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises"
+import { createRequire } from "node:module"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import ts from "typescript"
@@ -135,4 +136,14 @@ if (result.emitSkipped || result.diagnostics.length)
   throw new Error("TypeScript emit failed")
 await mkdir(path.join(output, "styles"), { recursive: true })
 await writeFile(path.join(output, "styles/globals.css"), styles.css)
+// KaTeX's inlined stylesheet references fonts relative to the final CSS.
+const require = createRequire(import.meta.url)
+const katexRoot = path.dirname(require.resolve("katex/package.json"))
+await cp(
+  path.join(katexRoot, "dist/fonts"),
+  path.join(output, "styles/fonts"),
+  {
+    recursive: true,
+  }
+)
 console.log(`Built ${parsed.fileNames.length} modules, declarations and CSS.`)

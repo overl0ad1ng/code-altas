@@ -1,12 +1,15 @@
 import rehypeShiki, { type RehypeShikiOptions } from "@shikijs/rehype"
 import { evaluate, type MDXComponents } from "next-mdx-remote-client/rsc"
 import remarkGfm from "remark-gfm"
+import remarkMath from "remark-math"
+import rehypeKatex from "rehype-katex"
 
 import { getDocsComponents } from "../ui/mdx/components"
 import type { ReadDocResult } from "./docs-content"
 import type { ConfigExperimental } from "../interface/Config"
 import { remarkPreview } from "./remark-preview"
 import { rehypeHeadingIds } from "./rehype-heading-ids"
+import { rehypeMermaid } from "./rehype-mermaid"
 
 /** Compile project-owned content on the server with explicit component registration. */
 export async function renderDoc(
@@ -27,12 +30,15 @@ export async function renderDoc(
           format: doc.extension === ".md" ? "md" : "mdx",
           remarkPlugins: [
             remarkGfm,
+            remarkMath,
             ...(experimental?.experimentalComponentsInMDX
               ? [remarkPreview]
               : []),
           ],
           rehypePlugins: [
             rehypeHeadingIds,
+            rehypeMermaid,
+            [rehypeKatex, { trust: false }],
             [
               rehypeShiki,
               {

@@ -20,6 +20,10 @@ export {
 } from "./ui/mdx/components/tabs"
 export { FileTree, type FileTreeProps } from "./ui/mdx/components/file-tree"
 export { CodeGroup, type CodeGroupProps } from "./ui/mdx/components/code-group"
+export {
+  MermaidView,
+  type MermaidViewProps,
+} from "./ui/mdx/components/mermaid-view"
 export { CodeDiff, type CodeDiffProps } from "./ui/mdx/components/code-diff"
 export {
   PackageInstall,

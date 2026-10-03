@@ -1,0 +1,76 @@
+---
+title: KaTeX
+description: Write inline and display mathematics using LaTeX syntax in Markdown and MDX.
+---
+
+<Status since="0.1.7" />
+
+Code Atlas uses KaTeX to render mathematical expressions in `.md` and `.mdx` documents. Formulas render on the server, and the package includes their stylesheet and fonts. No component imports or experimental flags are required.
+
+## Inline mathematics
+
+Wrap a formula in single dollar signs to keep it within a paragraph:
+
+```md
+The relationship between mass and energy is $E = mc^2$.
+```
+
+The relationship between mass and energy is $E = mc^2$.
+
+## Display mathematics
+
+Place double dollar signs on separate lines to give a formula its own block:
+
+```md
+$$
+\int_0^1 x^2\,dx = \frac{1}{3}
+$$
+```
+
+$$
+\int_0^1 x^2\,dx = \frac{1}{3}
+$$
+
+Long display formulas can scroll horizontally on narrow screens.
+
+## Fractions, sums, and matrices
+
+Use standard LaTeX commands directly between the delimiters. You do not need to double the backslashes as you would in a JavaScript string.
+
+$$
+\sum_{k=1}^{n} k = \frac{n(n+1)}{2}
+$$
+
+```md
+$$
+\begin{pmatrix}
+1 & 2 \\
+3 & 4
+\end{pmatrix}
+$$
+```
+
+$$
+\begin{pmatrix}
+1 & 2 \\
+3 & 4
+\end{pmatrix}
+$$
+
+## Literal dollar signs and code
+
+Escape a dollar sign with a backslash when it represents currency rather than mathematics:
+
+```md
+The price is \$5 and the shipping cost is \$2.
+```
+
+The price is \$5 and the shipping cost is \$2.
+
+Inline code such as `$E = mc^2$` and ordinary code fences keep their contents as source. Formula braces inside math delimiters are handled as LaTeX, including in MDX.
+
+## Supported syntax and errors
+
+KaTeX supports a subset of LaTeX. Unsupported commands appear in red, and malformed formulas show their source in red with an error tooltip. The rest of the document continues to render. Commands that require trusted HTML or external resources are disabled.
+
+See the [KaTeX supported functions](https://katex.org/docs/supported) for available commands.

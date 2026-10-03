@@ -53,6 +53,14 @@ export default defineConfig({
                 name: "Frontmatter",
                 slug: "frontmatter",
               },
+              {
+                name: "Mermaid",
+                slug: "mermaid",
+              },
+              {
+                name: "KaTeX",
+                slug: "katex",
+              },
             ],
           },
           {

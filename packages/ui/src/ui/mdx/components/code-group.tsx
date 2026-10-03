@@ -8,6 +8,7 @@ import {
 } from "react"
 
 import { CodeBlock } from "./code-block"
+import { MermaidView, type MermaidViewProps } from "./mermaid-view"
 import { Tab, Tabs, type TabsProps } from "./tabs"
 
 export type CodeGroupProps = TabsProps
@@ -87,6 +88,21 @@ export function CodeGroup({
         child.type === Fragment
       ) {
         collect(child.props.children)
+        return
+      }
+      if (
+        isValidElement<MermaidViewProps>(child) &&
+        child.type === MermaidView
+      ) {
+        tabs.push(
+          <Tab
+            key={tabs.length}
+            name={child.props.title || "mermaid"}
+            icon="lucide:workflow"
+          >
+            {child}
+          </Tab>
+        )
         return
       }
       if (

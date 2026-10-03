@@ -6,6 +6,7 @@ import type { ComponentPropsWithoutRef } from "react"
 import { Tabs, Tab } from "./components/tabs"
 import { Steps, Step } from "./components/steps"
 import { CodeBlock } from "./components/code-block"
+import { MermaidView } from "./components/mermaid-view"
 import { CodeGroup } from "./components/code-group"
 import { CodeDiff } from "./components/code-diff"
 import { PackageInstall } from "./components/package-install"
@@ -44,6 +45,7 @@ function DocsLink({
 }
 
 export const defaultDocsComponents: MDXComponents = {
+  MermaidView,
   Changelogs,
   Changelog,
   Status,

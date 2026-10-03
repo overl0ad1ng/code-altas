@@ -8,6 +8,7 @@ import {
 } from "react"
 
 import { CodeBlock } from "./code-block"
+import { MermaidView } from "./mermaid-view"
 
 export interface CodeDiffProps {
   children: ReactNode
@@ -43,6 +44,10 @@ function readBlocks(children: ReactNode): Block[] {
         collect(child.props.children)
         return
       }
+      if (isValidElement(child) && child.type === MermaidView)
+        throw new Error(
+          "CodeDiff does not support Mermaid diagrams; use ordinary code fences for source comparisons"
+        )
       if (
         !isValidElement<
           ComponentPropsWithoutRef<"pre"> & { "data-title"?: string }

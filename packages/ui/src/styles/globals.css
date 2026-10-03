@@ -1,8 +1,22 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* Keep KaTeX's visual and screen-reader layers styled together. */
+@import "katex/dist/katex.min.css";
 
 @custom-variant dark (&:is(.dark *));
+
+.katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.25rem;
+}
+
+.mermaid-canvas svg {
+  display: block;
+  margin-inline: auto;
+}
 
 [data-doc-body] :is(h1, h2, h3, h4, h5, h6) {
   scroll-margin-top: 80px;
