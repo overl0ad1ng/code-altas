@@ -29,11 +29,94 @@ const { ChangelogTags } = await jiti.import(
   "../src/components/changelog-tags.tsx"
 )
 const { Tags } = await jiti.import("../src/ui/mdx/components/tags.tsx")
+const { DocsNav } = await jiti.import("../src/ui/navigation/docs-nav.tsx")
+const { default: BranchedMenu } = await jiti.import(
+  "../src/primitives/branched-menu.tsx"
+)
 const { Props, Prop } = await jiti.import("../src/ui/mdx/components/props.tsx")
 const { Steps, Step } = await jiti.import("../src/ui/mdx/components/steps.tsx")
 const { getSiteMetadata, getDocMetadata } = await jiti.import(
   "../src/server/metadata.ts"
 )
+
+test("docs menu preserves nested groups and opens all ancestors of the active page", () => {
+  const nav = DocsNav({
+    categories: [
+      {
+        name: "Getting Started",
+        slug: "index",
+        icon: "lucide:lamp",
+        docs: [
+          {
+            name: "Getting Started",
+            docs: [{ name: "Introduction", slug: "index" }],
+          },
+          {
+            name: "Writting",
+            slug: "writting",
+            docs: [
+              {
+                name: "Synatx",
+                slug: "synatx",
+                docs: [
+                  { name: "Math", slug: "math" },
+                  { name: "Draft", slug: "draft", draft: true },
+                ],
+              },
+              {
+                name: "Empty",
+                slug: "empty",
+                docs: [{ name: "Disabled", slug: "disabled", disabled: true }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  })
+  const { items } = nav.props.children[1].props.children.props.categories[0]
+  assert.deepEqual(
+    items[1].children.map((item) => item.label),
+    ["Synatx"]
+  )
+  assert.deepEqual(
+    items[1].children[0].children.map(({ label, value }) => ({ label, value })),
+    [{ label: "Math", value: "/docs/writting/synatx/math" }]
+  )
+  const html = renderToStaticMarkup(
+    createElement(BranchedMenu, {
+      items,
+      active: "/docs/writting/synatx/math",
+      defaultOpen: -1,
+    })
+  )
+  const buttons = [...html.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)].map(
+    ([button]) => button
+  )
+  for (const label of ["Writting", "Synatx"]) {
+    assert.match(
+      buttons.find((button) => button.includes(`>${label}</span>`)),
+      /aria-expanded="true"/
+    )
+  }
+  const math = buttons.find((button) => button.includes(">Math</span>"))
+  assert.match(math, /aria-current="true"/)
+  assert.match(math, /tabindex="0"/)
+  assert.match(html, /margin-left:28px/)
+  const collapsed = renderToStaticMarkup(
+    createElement(BranchedMenu, {
+      items,
+      active: "",
+      defaultOpen: -1,
+    })
+  )
+  assert.match(
+    [...collapsed.matchAll(/<button\b[^>]*>[\s\S]*?<\/button>/g)].find(
+      ([button]) => button.includes(">Math</span>")
+    )[0],
+    /tabindex="-1"/
+  )
+})
 
 test("Props renders MDX Prop rows in a Surface with four equal columns", async () => {
   const rendered = await renderDoc(

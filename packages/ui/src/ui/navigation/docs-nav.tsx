@@ -24,7 +24,21 @@ function collectDocuments(
     const path = [base, doc.slug?.split("/").filter(Boolean).join("/")]
       .filter(Boolean)
       .join("/")
-    if (doc.docs?.length) return collectDocuments(doc.docs, path, entries)
+    if (doc.docs?.length) {
+      const children = collectDocuments(doc.docs, path, entries)
+      return children.length
+        ? [
+            {
+              label: doc.name,
+              value: path,
+              children,
+              icon: doc.icon && (
+                <ConfigIcon name={doc.icon} className="size-4" />
+              ),
+            },
+          ]
+        : []
+    }
     if (!doc.slug) return []
     const entry = entries.get(path)
     if (!entry || entry.draft || entry.disabled) return []
@@ -106,7 +120,9 @@ function DocsNav({ categories = [] }: { categories?: ConfigDocsCategories }) {
         className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-border py-2"
       >
         <Logo />
-        <span className="text-sm text-neutral-700 dark:text-neutral-300">Powered by CodeAltas</span>
+        <span className="text-sm text-neutral-700 dark:text-neutral-300">
+          Powered by CodeAltas
+        </span>
       </a>
     </div>
   )

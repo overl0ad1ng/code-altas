@@ -17,17 +17,12 @@ function DocsCategoryMenu({ categories }: DocsCategoryMenuProps) {
   const activeSlug = getDocsCategorySlug(pathname, categories)
   const category = categories.find((item) => item.slug === activeSlug)
   const active = normalizeDocsPath(pathname ?? "")
-  const activeSection =
-    category?.items.findIndex((item) =>
-      item.children?.some((child) => child.value === active)
-    ) ?? -1
 
   return (
     <BranchedMenu
       key={category?.slug ?? "empty"}
       items={category?.items ?? []}
       active={active}
-      defaultOpen={activeSection >= 0 ? activeSection : 0}
       onSelect={(href) => router.push(href)}
       color="var(--foreground)"
       accentColor="var(--foreground)"
