@@ -1,0 +1,113 @@
+---
+title: Status
+description: Show an API or component's lifecycle and supported version range in a compact status bar.
+---
+
+<Status since="0.1.6" />
+
+> This is Status's status ;)
+
+## Stable
+
+Without an end version, support continues through **Latest** automatically.
+
+<Status since="1.2.0" />
+
+```mdx
+<Status since="1.2.0" />
+```
+
+## Experimental and Beta
+
+Use `status` to describe a feature's maturity explicitly.
+
+<Status status="experimental" since="2.0.0" />
+
+<Status status="beta" since="2.1.0" />
+
+```mdx
+<Status status="experimental" since="2.0.0" />
+<Status status="beta" since="2.1.0" />
+```
+
+## Deprecated
+
+Deprecation is a lifecycle milestone, **not the last supported version**. Without `removedIn`, a deprecated feature remains supported through Latest.
+
+<Status since="1.2.0" deprecatedIn="2.4.0" />
+
+```mdx
+<Status since="1.2.0" deprecatedIn="2.4.0" />
+```
+
+## Deprecated and Removed
+
+The bar keeps all three milestones distinct: introduced in v1.2.0, deprecated in v2.4.0, and removed in v3.0.0. The Removed version marks when availability ends; it is not an inclusive supported version.
+
+<Status since="1.2.0" deprecatedIn="2.4.0" removedIn="3.0.0" />
+
+```mdx
+<Status since="1.2.0" deprecatedIn="2.4.0" removedIn="3.0.0" />
+```
+
+## Current status and planned milestones
+
+Code Atlas does not currently have a global current version. This component treats supplied milestones as reached: `removedIn` infers Removed, otherwise `deprecatedIn` infers Deprecated, otherwise Stable. It does not compare versions or read the UI package version.
+
+An explicit `status` always overrides this inference without hiding the lifecycle. For planned deprecation or removal, set the current status explicitly. A future integration can compute this override from the documented product's current version.
+
+<Status
+  status="deprecated"
+  since="1.2.0"
+  deprecatedIn="2.4.0"
+  removedIn="3.0.0"
+/>
+
+```mdx
+<Status
+  status="deprecated"
+  since="1.2.0"
+  deprecatedIn="2.4.0"
+  removedIn="3.0.0"
+/>
+```
+
+## Props
+
+`Status` is registered for MDX automatically. In React, import `Status`, `StatusProps`, and `StatusType` from `@code-altas/ui`.
+
+<Props name="Status">
+  <Prop
+    property="since"
+    type="string"
+    defaultValue="Required"
+    description="Introduced version; an optional leading v is accepted."
+  />
+  <Prop
+    property="deprecatedIn"
+    type="string"
+    defaultValue="-"
+    description="Deprecation milestone. Support continues until removal."
+  />
+  <Prop
+    property="removedIn"
+    type="string"
+    defaultValue="-"
+    description="Removal milestone. When omitted, the range ends at Latest."
+  />
+  <Prop
+    property="status"
+    type="experimental | beta | stable | deprecated | removed"
+    defaultValue="Inferred"
+    description="Overrides the current state while retaining all milestones."
+  />
+  <Prop
+    property="className"
+    type="string"
+    defaultValue="-"
+    description="Additional styles for the full-width block."
+  />
+</Props>
+Standard `div` attributes are also supported. The bar wraps within narrow
+documentation columns and uses the existing border, radius, and theme tokens for
+light and dark mode.

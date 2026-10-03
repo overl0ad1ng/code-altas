@@ -34,6 +34,7 @@ const { default: BranchedMenu } = await jiti.import(
   "../src/primitives/branched-menu.tsx"
 )
 const { Props, Prop } = await jiti.import("../src/ui/mdx/components/props.tsx")
+const { Status } = await jiti.import("../src/ui/mdx/components/status.tsx")
 const { Steps, Step } = await jiti.import("../src/ui/mdx/components/steps.tsx")
 const { CodeGroup } = await jiti.import(
   "../src/ui/mdx/components/code-group.tsx"
@@ -48,6 +49,93 @@ const { PackageInstall } = await jiti.import(
 const { getSiteMetadata, getDocMetadata } = await jiti.import(
   "../src/server/metadata.ts"
 )
+
+test("Status keeps deprecation separate from the support endpoint", () => {
+  for (const [props, expectedStatus, latest] of [
+    [{ since: "1.2.0" }, "stable", true],
+    [{ since: "1.2.0", deprecatedIn: "2.4.0" }, "deprecated", true],
+    [
+      { since: "1.2.0", deprecatedIn: "2.4.0", removedIn: "3.0.0" },
+      "removed",
+      false,
+    ],
+    [{ since: "1.2.0", removedIn: "3.0.0" }, "removed", false],
+  ]) {
+    const html = renderToStaticMarkup(createElement(Status, props))
+    assert.match(html, new RegExp(`data-status="${expectedStatus}"`))
+    assert.match(html, />Introduced<\/dt>/)
+    assert.match(html, />v1\.2\.0<\/dd>/)
+    assert.equal(html.includes(">Latest</dd>"), latest)
+    if (props.deprecatedIn) {
+      assert.match(html, />Deprecated<\/dt>/)
+      assert.match(html, />v2\.4\.0<\/dd>/)
+      assert.ok(
+        html.indexOf(">Introduced</dt>") < html.indexOf(">Deprecated</dt>")
+      )
+    }
+    if (props.removedIn) {
+      assert.match(html, />Removed<\/dt>/)
+      assert.match(html, />v3\.0\.0<\/dd>/)
+      if (props.deprecatedIn) {
+        assert.ok(
+          html.indexOf(">Deprecated</dt>") < html.indexOf(">Removed</dt>")
+        )
+      }
+    }
+  }
+})
+
+test("Status overrides inference without losing milestones or DOM attributes", () => {
+  for (const status of [
+    "stable",
+    "experimental",
+    "beta",
+    "deprecated",
+    "removed",
+  ]) {
+    const html = renderToStaticMarkup(
+      createElement(Status, {
+        status,
+        since: "v1.2.0",
+        deprecatedIn: "2.4.0",
+        removedIn: "3.0.0",
+        id: "feature-lifecycle",
+        "aria-label": "Feature lifecycle",
+        className: "custom-status",
+      })
+    )
+    assert.match(html, new RegExp(`data-status="${status}"`))
+    assert.match(html, /id="feature-lifecycle"/)
+    assert.match(html, /aria-label="Feature lifecycle"/)
+    assert.match(html, /custom-status/)
+    assert.match(html, />v1\.2\.0<\/dd>/)
+    assert.doesNotMatch(html, /vv1|>Latest<\/dd>/)
+    assert.match(html, />Deprecated<\/dt>/)
+    assert.match(html, />Removed<\/dt>/)
+  }
+})
+
+test("Status documentation examples render through the default MDX registry", async () => {
+  const source = await readFile(
+    new URL("../../../apps/web/content/components/status.mdx", import.meta.url),
+    "utf8"
+  )
+  const rendered = await renderDoc(doc(source))
+  const html = renderToStaticMarkup(rendered.content)
+  assert.equal((html.match(/data-slot="status"/g) || []).length, 6)
+  for (const status of [
+    "stable",
+    "experimental",
+    "beta",
+    "deprecated",
+    "removed",
+  ]) {
+    assert.match(html, new RegExp(`data-status="${status}"`))
+  }
+  assert.equal((html.match(/>Latest<\/dd>/g) || []).length, 4)
+  assert.match(html, /Status Props/)
+  assert.match(html, /5 properties/)
+})
 
 test("docs menu preserves nested groups and opens all ancestors of the active page", () => {
   const nav = DocsNav({

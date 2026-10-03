@@ -14,6 +14,7 @@ import { FileTree } from "./components/file-tree"
 import { Surface } from "./components/surface"
 import { Props, Prop } from "./components/props"
 import { Changelogs, Changelog } from "./components/changelog"
+import { Status } from "./components/status"
 
 function DocsLink({
   href,
@@ -31,6 +32,7 @@ function DocsLink({
 export const defaultDocsComponents: MDXComponents = {
   Changelogs,
   Changelog,
+  Status,
   Steps,
   Step,
   Surface,

@@ -109,6 +109,10 @@ export default defineConfig({
                 slug: "hint",
               },
               {
+                name: "Status",
+                slug: "status",
+              },
+              {
                 name: "Package Install",
                 slug: "package-install",
               },

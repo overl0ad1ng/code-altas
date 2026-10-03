@@ -37,6 +37,11 @@ export {
 } from "./ui/mdx/components/hint"
 export { Tags, type TagsProps } from "./ui/mdx/components/tags"
 export {
+  Status,
+  type StatusProps,
+  type StatusType,
+} from "./ui/mdx/components/status"
+export {
   Changelogs,
   Changelog,
   type ChangelogsProps,
