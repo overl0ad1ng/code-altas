@@ -5,6 +5,10 @@ export default defineConfig({
   description: "A modern framework for documentation",
   logo: "/logo-indev.png",
 
+  experimental: {
+    experimentalComponentsInMDX: true,
+  },
+
   dark: {
     logo: "/logo-indev-dark.png",
   },
@@ -87,6 +91,10 @@ export default defineConfig({
               {
                 name: "Tabs",
                 slug: "tabs",
+              },
+              {
+                name: "Preview",
+                slug: "preview",
               },
               {
                 name: "FileTree",

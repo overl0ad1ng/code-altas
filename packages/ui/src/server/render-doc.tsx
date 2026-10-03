@@ -2,27 +2,35 @@ import rehypeShiki, { type RehypeShikiOptions } from "@shikijs/rehype"
 import { evaluate, type MDXComponents } from "next-mdx-remote-client/rsc"
 import remarkGfm from "remark-gfm"
 
-import { defaultDocsComponents } from "../ui/mdx/components"
+import { getDocsComponents } from "../ui/mdx/components"
 import type { ReadDocResult } from "./docs-content"
+import type { ConfigExperimental } from "../interface/Config"
+import { remarkPreview } from "./remark-preview"
 import { rehypeHeadingIds } from "./rehype-heading-ids"
 
 /** Compile project-owned content on the server with explicit component registration. */
 export async function renderDoc(
   doc: Pick<ReadDocResult, "content" | "extension" | "slug" | "title">,
-  components?: MDXComponents
+  components?: MDXComponents,
+  experimental?: ConfigExperimental
 ) {
   let result
   try {
     result = await evaluate<Record<string, unknown>>({
       source: doc.content,
-      components: { ...defaultDocsComponents, ...components },
+      components: { ...getDocsComponents(experimental), ...components },
       options: {
         parseFrontmatter: true,
         disableImports: true,
         disableExports: true,
         mdxOptions: {
           format: doc.extension === ".md" ? "md" : "mdx",
-          remarkPlugins: [remarkGfm],
+          remarkPlugins: [
+            remarkGfm,
+            ...(experimental?.experimentalComponentsInMDX
+              ? [remarkPreview]
+              : []),
+          ],
           rehypePlugins: [
             rehypeHeadingIds,
             [
@@ -41,6 +49,7 @@ export async function renderDoc(
                     .match(/(?:^|\s)title=(?:"([^"]*)"|'([^']*)')/)
                     ?.slice(1)
                     .find((value) => value !== undefined),
+                  highlight: meta.match(/\{([\d,\s-]+)\}/)?.[1],
                 }),
                 transformers: [
                   {
@@ -49,6 +58,25 @@ export async function renderDoc(
                       const title = this.options.meta?.title
                       if (typeof title === "string")
                         node.properties["data-title"] = title
+                    },
+                    line(node, line) {
+                      const ranges = this.options.meta?.highlight
+                      if (typeof ranges !== "string") return
+                      if (
+                        ranges.split(",").some((range) => {
+                          const [start, end = start] = range
+                            .trim()
+                            .split("-")
+                            .map(Number)
+                          return (
+                            start !== undefined &&
+                            end !== undefined &&
+                            line >= start &&
+                            line <= end
+                          )
+                        })
+                      )
+                        this.addClassToHast(node, "highlighted")
                     },
                   },
                 ],

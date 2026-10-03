@@ -7,6 +7,8 @@ description: Highlight a note with an icon, a rich title, and optional collapsib
 
 ## Usage
 
+<Preview>
+
 <Hint icon="lucide:info">
   <HintTitle>Keep in mind</HintTitle>
   <HintContent>
@@ -16,20 +18,15 @@ description: Highlight a note with an icon, a rich title, and optional collapsib
   </HintContent>
 </Hint>
 
-```mdx title="Usage"
-<Hint icon="lucide:info">
-  <HintTitle>Keep in mind</HintTitle>
-  <HintContent>
-    Content can include Markdown or components.
-  </HintContent>
-</Hint>
-```
+</Preview>
 
 ## Collapse
 
 Click anywhere on the title to expand or collapse the content. A focused title also responds to **Enter** and **Space**. Links and controls inside custom title components keep their own actions.
 
 The height transitions smoothly when toggled. Content stays mounted to preserve component state, and animations respect reduced motion preferences.
+
+<Preview>
 
 <Hint type="tip" icon="lucide:lightbulb" allowCollapse>
   <HintTitle>Starts collapsed</HintTitle>
@@ -40,6 +37,10 @@ The height transitions smoothly when toggled. Content stays mounted to preserve 
   </HintContent>
 </Hint>
 
+</Preview>
+
+<Preview>
+
 <Hint type="info" icon="lucide:info" collapsed={false}>
   <HintTitle>Starts expanded</HintTitle>
   <HintContent>
@@ -49,17 +50,7 @@ The height transitions smoothly when toggled. Content stays mounted to preserve 
   </HintContent>
 </Hint>
 
-```mdx title="Collapse"
-<Hint icon="lucide:lightbulb" allowCollapse>
-  <HintTitle>Starts collapsed</HintTitle>
-  <HintContent>Click the title to expand.</HintContent>
-</Hint>
-
-<Hint icon="lucide:info" collapsed={false}>
-  <HintTitle>Starts expanded</HintTitle>
-  <HintContent>Click the title to collapse.</HintContent>
-</Hint>
-```
+</Preview>
 
 | allowCollapse | collapsed | Behavior |
 | --- | --- | --- |
@@ -110,13 +101,6 @@ Use `type` to choose the hint's border, background, title, and icon colors. The 
   <HintTitle>Tip</HintTitle>
   <HintContent>A helpful suggestion in violet.</HintContent>
 </Hint>
-
-```mdx title="Type"
-<Hint type="success" icon="lucide:circle-check">
-  <HintTitle>Ready</HintTitle>
-  <HintContent>Your configuration is complete.</HintContent>
-</Hint>
-```
 
 ## Props
 

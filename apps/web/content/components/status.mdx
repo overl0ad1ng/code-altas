@@ -11,19 +11,25 @@ description: Show an API or component's lifecycle and supported version range in
 
 Without an end version, support continues through **Latest** automatically.
 
-<Status since="1.2.0" />
-
-```mdx
-<Status since="1.2.0" />
-```
+<Preview>
+  <Status since="1.2.0" />
+</Preview>
 
 ## Experimental and Beta
 
 Use `status` to describe a feature's maturity explicitly.
 
+<Preview>
+
 <Status status="experimental" since="2.0.0" />
 
+</Preview>
+
+<Preview>
+
 <Status status="beta" since="2.1.0" />
+
+</Preview>
 
 ```mdx
 <Status status="experimental" since="2.0.0" />
@@ -34,7 +40,11 @@ Use `status` to describe a feature's maturity explicitly.
 
 Deprecation is a lifecycle milestone, **not the last supported version**. Without `removedIn`, a deprecated feature remains supported through Latest.
 
+<Preview>
+
 <Status since="1.2.0" deprecatedIn="2.4.0" />
+
+</Preview>
 
 ```mdx
 <Status since="1.2.0" deprecatedIn="2.4.0" />
@@ -44,7 +54,11 @@ Deprecation is a lifecycle milestone, **not the last supported version**. Withou
 
 The bar keeps all three milestones distinct: introduced in v1.2.0, deprecated in v2.4.0, and removed in v3.0.0. The Removed version marks when availability ends; it is not an inclusive supported version.
 
+<Preview>
+
 <Status since="1.2.0" deprecatedIn="2.4.0" removedIn="3.0.0" />
+
+</Preview>
 
 ```mdx
 <Status since="1.2.0" deprecatedIn="2.4.0" removedIn="3.0.0" />
@@ -56,12 +70,16 @@ Code Atlas does not currently have a global current version. This component trea
 
 An explicit `status` always overrides this inference without hiding the lifecycle. For planned deprecation or removal, set the current status explicitly. A future integration can compute this override from the documented product's current version.
 
+<Preview>
+
 <Status
   status="deprecated"
   since="1.2.0"
   deprecatedIn="2.4.0"
   removedIn="3.0.0"
 />
+
+</Preview>
 
 ```mdx
 <Status

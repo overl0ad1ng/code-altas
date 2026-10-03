@@ -5,29 +5,20 @@ description: CodeGroup displays code blocks in tabs with language icons.
 
 <Status since="0.1.3" />
 
-<CodeGroup>
-    ```tsx title="src/main.tsx"
-    // code here
-    ```
-    ```html title="src/index/html"
-    <!-- Code here -->
-    ```
-</CodeGroup>
+<Preview>
 
-Tab labels use the code block's `title`, falling back to its language. Icons are selected automatically from the language, such as TypeScript for `tsx` and HTML5 for `html`.
-
----
-
-````mdx title="Usage"
 <CodeGroup>
   ```tsx title="src/main.tsx"
   // code here
   ```
-  ```html title="src/index.html"
+  ```html title="src/index/html"
   <!-- Code here -->
   ```
 </CodeGroup>
-````
+
+</Preview>
+
+Tab labels use the code block's `title`, falling back to its language. Icons are selected automatically from the language, such as TypeScript for `tsx` and HTML5 for `html`.
 
 <Props name="CodeGroup">
   <Prop property="children" type="React.ReactNode" defaultValue="-" description="Fenced code blocks to display as tabs." />

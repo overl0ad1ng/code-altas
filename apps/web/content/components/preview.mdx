@@ -1,0 +1,108 @@
+---
+title: Preview
+description: Show an example and its original MDX source in one compact viewport.
+---
+
+<Status status="experimental" since="0.1.7" />
+
+## Enable Preview
+
+Preview is experimental and is excluded from the default MDX component list. Enable it in `codealtas.config.ts`:
+
+```ts title="codealtas.config.ts"
+export default defineConfig({
+  // Your existing configuration...
+  experimental: {
+    experimentalComponentsInMDX: true,
+  },
+})
+```
+
+The option defaults to `false`. It enables Preview in documentation and changelog MDX pages.
+
+## Usage
+
+Preview displays its children first. Select Code to see the same children's source, captured during MDX compilation with syntax highlighting and line numbers. You do not need to supply a separate code string.
+
+<Preview>
+  <Button alertMessage="Hello from Preview!">Hello</Button>
+</Preview>
+
+```mdx title="Usage"
+<Preview>
+  <Button alertMessage="Hello from Preview!">Hello</Button>
+</Preview>
+```
+
+The Hello button opens an alert when clicked. These examples register a client `Button` component with hover, pressed, and keyboard focus states. Its `alertMessage` prop belongs to the example button; Preview only renders its children and preserves their authored JSX.
+
+## Playground
+
+Provide any playground URL to display an external action. The link opens in a new tab. Without a URL, the action is omitted.
+
+<Preview playgroundUrl="https://example.com/playground">
+  <Button variant="outline">Hello</Button>
+</Preview>
+
+```mdx title="Playground"
+<Preview playgroundUrl="https://example.com/playground">
+  <Button variant="outline">Hello</Button>
+</Preview>
+```
+
+## Multiline Examples
+
+Use the same line range syntax as code fences to highlight lines in Code view.
+
+<Preview highlight="{2-3}">
+  <div className="flex w-full flex-wrap justify-center gap-3">
+    <Button>Save</Button>
+    <Button variant="outline">Cancel</Button>
+  </div>
+</Preview>
+
+```mdx title="Multiline Example"
+<Preview highlight="{2-3}">
+  <div className="flex w-full flex-wrap justify-center gap-3">
+    <Button>Save</Button>
+    <Button variant="outline">Cancel</Button>
+  </div>
+</Preview>
+```
+
+## Props
+
+<Props name="Preview">
+  <Prop
+    property="children"
+    type="ReactNode"
+    defaultValue="-"
+    description="Example content. The MDX compiler captures its source automatically."
+  />
+  <Prop
+    property="playgroundUrl"
+    type="string"
+    defaultValue="-"
+    description="Optional URL opened by the Playground action in a new tab."
+  />
+  <Prop
+    property="highlight"
+    type="string"
+    defaultValue="-"
+    description="Highlighted source line ranges, for example {2,4-6}."
+  />
+  <Prop
+    property="sourceUrl"
+    type="string"
+    defaultValue="-"
+    description="Reserved external URL for future file-based sources. Does not display a Source action in this version."
+  />
+  <Prop
+    property="className"
+    type="string"
+    defaultValue="-"
+    description="Additional classes for the outer container."
+  />
+</Props>
+
+File-based `source`, live editing, and iframe isolation are not supported in this version. Automatic source capture applies to MDX compiled by CodeAltas; direct React usage does not recover source from children.

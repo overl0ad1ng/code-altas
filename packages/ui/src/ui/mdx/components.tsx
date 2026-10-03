@@ -16,6 +16,20 @@ import { Props, Prop } from "./components/props"
 import { Changelogs, Changelog } from "./components/changelog"
 import { Status } from "./components/status"
 
+import type { ConfigExperimental } from "../../interface/Config"
+import { Preview, PreviewCode } from "./components/preview"
+
+export function getDocsComponents(
+  experimental?: ConfigExperimental
+): MDXComponents {
+  return {
+    ...defaultDocsComponents,
+    ...(experimental?.experimentalComponentsInMDX
+      ? { Preview, __CodeAltasPreviewCode: PreviewCode }
+      : {}),
+  }
+}
+
 function DocsLink({
   href,
   className,

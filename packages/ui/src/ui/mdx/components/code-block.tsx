@@ -4,13 +4,14 @@ import { cn } from "cn"
 import { Check, Copy } from "lucide-react"
 import {
   Children,
-  cloneElement,
   isValidElement,
   useEffect,
   useRef,
   useState,
   type ComponentPropsWithoutRef,
 } from "react"
+
+import { formatCodeLines } from "./code-lines"
 
 export function CodeBlock({
   className,
@@ -28,49 +29,7 @@ export function CodeBlock({
   const language = isValidElement<ComponentPropsWithoutRef<"code">>(codeElement)
     ? codeElement.props.className?.match(/(?:^|\s)language-([^\s]+)/)?.[1]
     : undefined
-  const formattedChildren = Children.map(children, (child) => {
-    if (!isValidElement<ComponentPropsWithoutRef<"code">>(child)) return child
-    return cloneElement(child, {
-      style: {
-        ...child.props.style,
-        display: "block",
-        whiteSpace: "normal",
-        lineHeight: "inherit",
-      },
-      children: Children.map(child.props.children, (line) => {
-        if (
-          !isValidElement<ComponentPropsWithoutRef<"span">>(line) ||
-          !line.props.className?.split(/\s+/).includes("line")
-        )
-          return line
-        return cloneElement(line, {
-          style: {
-            ...line.props.style,
-            display: "grid",
-            width: "100%",
-            minHeight: "1lh",
-            lineHeight: "inherit",
-            gridTemplateColumns: "calc(3ch + 1.5rem) minmax(0, 1fr)",
-            alignItems: "start",
-          },
-          children: (
-            <span
-              style={{
-                display: "block",
-                minWidth: 0,
-                minHeight: "1lh",
-                lineHeight: "inherit",
-                whiteSpace: "pre-wrap",
-                overflowWrap: "anywhere",
-              }}
-            >
-              {line.props.children}
-            </span>
-          ),
-        })
-      }),
-    })
-  })
+  const formattedChildren = formatCodeLines(children)
 
   useEffect(
     () => () => {

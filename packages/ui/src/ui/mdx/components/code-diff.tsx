@@ -181,7 +181,7 @@ export function CodeDiff({ children, className }: CodeDiffProps) {
     <div
       data-slot="code-diff"
       className={cn(
-        "@container my-6 min-w-0 overflow-hidden rounded-lg border border-border text-sm",
+        "@container my-6 w-full min-w-0 overflow-hidden rounded-lg border border-border text-sm",
         className
       )}
     >

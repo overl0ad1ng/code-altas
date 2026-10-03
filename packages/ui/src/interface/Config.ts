@@ -12,6 +12,12 @@ export interface Config {
 
   header?: ConfigHeader
   footer?: ConfigFooter
+  experimental?: ConfigExperimental
+}
+
+export interface ConfigExperimental {
+  /** Register experimental MDX components. Defaults to false. */
+  experimentalComponentsInMDX?: boolean
 }
 
 export interface ConfigDark {
@@ -44,12 +50,12 @@ export interface ConfigFooter {
 }
 
 export interface ConfigFooterAuthor {
-  name: string,
+  name: string
   homepage?: string
 }
 
 export interface ConfigHeader {
-  nav?: ConfigHeaderNav,
+  nav?: ConfigHeaderNav
   github: string | ConfigHeaderGithub
 }
 
@@ -83,4 +89,4 @@ export type ConfigHeaderNav = {
     label: string
     disabled?: boolean
   }
-};
+}

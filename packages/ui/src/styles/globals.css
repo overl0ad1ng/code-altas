@@ -44,6 +44,11 @@
   user-select: none;
 }
 
+.codeblock-lines .line.highlighted {
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+  box-shadow: inset 2px 0 var(--primary);
+}
+
 @theme {
   --animate-docs-content-enter: docs-content-enter 150ms ease-out both;
 

@@ -9,11 +9,10 @@ description: Switch between npm, pnpm, yarn, and bun installation commands.
 
 Pass a package name to generate installation commands for all four package managers. Each tab shows the manager's icon and a command you can copy.
 
-<PackageInstall package="@code-altas/ui@beta" />
+<Preview>
+  <PackageInstall package="@code-altas/ui@beta" />
+</Preview>
 
-```mdx title="Usage"
-<PackageInstall package="@code-altas/ui@beta" />
-```
 
 | Package manager | Command |
 | --- | --- |
@@ -28,7 +27,11 @@ Package scopes, versions, and distribution tags are preserved. You can also supp
 
 The first selected tab is `npm`. Use `defaultManager` to start with a different package manager. Readers can still switch between all four tabs.
 
+<Preview>
+
 <PackageInstall package="@code-altas/ui@beta" defaultManager="pnpm" />
+
+</Preview>
 
 ```mdx title="Default Manager"
 <PackageInstall package="@code-altas/ui@beta" defaultManager="pnpm" />
@@ -36,7 +39,11 @@ The first selected tab is `npm`. Use `defaultManager` to start with a different 
 
 ## Multiple Packages
 
+<Preview>
+
 <PackageInstall package="react react-dom" />
+
+</Preview>
 
 ```mdx title="Multiple Packages"
 <PackageInstall package="react react-dom" />

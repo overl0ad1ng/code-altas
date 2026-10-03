@@ -3,6 +3,7 @@ import { join } from "node:path"
 import { notFound } from "next/navigation"
 import type { MDXComponents } from "next-mdx-remote-client/rsc"
 
+import { loadCodeAtlasConfig } from "../../server/config"
 import { renderDoc } from "../../server/render-doc"
 
 export interface ChangelogPageProps {
@@ -24,14 +25,13 @@ export async function ChangelogPage({ components }: ChangelogPageProps = {}) {
 
   const rendered = await renderDoc(
     { content, extension: ".mdx", slug: "/changelog", title: "Changelog" },
-    components
+    components,
+    (await loadCodeAtlasConfig(process.cwd(), false))?.experimental
   )
 
   return (
     <main className="mx-auto w-full max-w-5xl min-w-0 px-6 py-12 text-foreground sm:px-8">
-      <h1 className="text-4xl font-semibold">
-        {rendered.title}
-      </h1>
+      <h1 className="text-4xl font-semibold">{rendered.title}</h1>
       <article data-doc-body className="min-w-0 wrap-anywhere">
         {rendered.content}
       </article>

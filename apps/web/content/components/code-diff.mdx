@@ -7,43 +7,27 @@ description: Compare two code blocks side by side with aligned additions and del
 
 `CodeDiff` compares two fenced code blocks. The first block is the old version; the second is the new version.
 
-<CodeDiff>
+<Preview>
+  <CodeDiff>
+    ```tsx
+    123231321
+    ```
 
-```tsx
-123231321
-```
-
-```tsx
-123
-231
-321
-```
-
-</CodeDiff>
+    ```tsx
+    123
+    231
+    321
+    ```
+  </CodeDiff>
+</Preview>
 
 Deleted lines appear on the left in red, and added lines appear on the right in green. Missing counterparts reserve an empty space. Each side retains its original line numbers. Long lines wrap, and paired rows always share the same height.
-
-## Usage
-
-````mdx title="Usage"
-<CodeDiff>
-
-```tsx
-123231321
-```
-
-```tsx
-123
-231
-321
-```
-
-</CodeDiff>
-````
 
 ## Unchanged lines and titles
 
 Unchanged lines appear on both sides. Use a code fence's `title` to label each version; otherwise, the headers display `Before` and `After`.
+
+<Preview>
 
 <CodeDiff>
   ```tsx title="Before: greeting.tsx"
@@ -58,6 +42,8 @@ Unchanged lines appear on both sides. Use a code fence's `title` to label each v
   }
   ```
 </CodeDiff>
+
+</Preview>
 
 Exactly two fenced code blocks are required. Syntax highlighting follows each fence's language and supports light and dark themes.
 

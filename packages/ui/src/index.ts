@@ -74,7 +74,8 @@ export {
   type DocPagination,
   type DocPageLink,
 } from "./lib/docs-navigation"
-export { defaultDocsComponents } from "./ui/mdx/components"
+export { Preview, type PreviewProps } from "./ui/mdx/components/preview"
+export { defaultDocsComponents, getDocsComponents } from "./ui/mdx/components"
 export type { MDXComponents } from "next-mdx-remote-client/rsc"
 
 // -----------------------------------------------------------

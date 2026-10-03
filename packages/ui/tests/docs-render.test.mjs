@@ -120,9 +120,11 @@ test("Status documentation examples render through the default MDX registry", as
     new URL("../../../apps/web/content/components/status.mdx", import.meta.url),
     "utf8"
   )
-  const rendered = await renderDoc(doc(source))
+  const rendered = await renderDoc(doc(source), undefined, {
+    experimentalComponentsInMDX: true,
+  })
   const html = renderToStaticMarkup(rendered.content)
-  assert.equal((html.match(/data-slot="status"/g) || []).length, 6)
+  assert.equal((html.match(/data-slot="status"/g) || []).length, 7)
   for (const status of [
     "stable",
     "experimental",
@@ -132,7 +134,7 @@ test("Status documentation examples render through the default MDX registry", as
   ]) {
     assert.match(html, new RegExp(`data-status="${status}"`))
   }
-  assert.equal((html.match(/>Latest<\/dd>/g) || []).length, 4)
+  assert.equal((html.match(/>Latest<\/dd>/g) || []).length, 5)
   assert.match(html, /Status Props/)
   assert.match(html, /5 properties/)
 })
@@ -284,7 +286,9 @@ test("Props counts single and fragment children, supports empty lists, and rejec
 test("Tabs renders named tabs, server-resolved icons, Markdown panels, and unique relationships", async () => {
   const source =
     '<Tabs>\n<Tab name="New project" icon="lucide:square-terminal">\n\n## First panel\n\nFirst content.\n\n</Tab>\n<Tab name="Migrate" icon="simple:github">\n\n## Second panel\n\nSecond content.\n\n</Tab>\n</Tabs>'
-  const rendered = await renderDoc(doc(source))
+  const rendered = await renderDoc(doc(source), undefined, {
+    experimentalComponentsInMDX: true,
+  })
   const html = renderToStaticMarkup(rendered.content)
   assert.equal((html.match(/role="tab"/g) || []).length, 2)
   assert.equal((html.match(/role="tabpanel"/g) || []).length, 2)
@@ -456,7 +460,9 @@ test("CodeDiff documents compile, titles render, fragments work, and invalid chi
     ),
     "utf8"
   )
-  const rendered = await renderDoc(doc(source))
+  const rendered = await renderDoc(doc(source), undefined, {
+    experimentalComponentsInMDX: true,
+  })
   const html = renderToStaticMarkup(rendered.content)
   assert.equal((html.match(/data-slot="code-diff"/g) || []).length, 2)
   assert.match(html, /Before: greeting.tsx/)
@@ -494,18 +500,20 @@ test("CodeGroup renders the documented fences with language icons and intact cod
     ),
     "utf8"
   )
-  const rendered = await renderDoc(doc(source))
+  const rendered = await renderDoc(doc(source), undefined, {
+    experimentalComponentsInMDX: true,
+  })
   const html = renderToStaticMarkup(rendered.content)
   const tabs = [
     ...html.matchAll(/<button\b[^>]*role="tab"[^>]*>[\s\S]*?<\/button>/g),
   ]
-  assert.equal(tabs.length, 2)
+  assert.equal(tabs.length, 4)
   assert.match(tabs[0][0], /src\/main\.tsx/)
   assert.match(tabs[0][0], /<svg[^>]*>.*<title>TypeScript<\/title>/)
   assert.match(tabs[1][0], /src\/index\/html/)
   assert.match(tabs[1][0], /<svg[^>]*>.*<title>HTML5<\/title>/)
-  assert.equal((html.match(/role="tabpanel"/g) || []).length, 2)
-  assert.equal((html.match(/aria-label="Copy code"/g) || []).length, 3)
+  assert.equal((html.match(/role="tabpanel"/g) || []).length, 4)
+  assert.equal((html.match(/aria-label="Copy code"/g) || []).length, 2)
   assert.match(html, /codeblock-lines/)
   assert.match(html, /language-tsx/)
   assert.match(html, /language-html/)
@@ -685,7 +693,13 @@ test("Hint documentation renders sections, every color type, and collapsible tit
     new URL("../../../apps/web/content/components/hint.mdx", import.meta.url),
     "utf8"
   )
-  const html = renderToStaticMarkup((await renderDoc(doc(source))).content)
+  const html = renderToStaticMarkup(
+    (
+      await renderDoc(doc(source), undefined, {
+        experimentalComponentsInMDX: true,
+      })
+    ).content
+  )
   for (const section of ["Usage", "Collapse", "Type", "Props"]) {
     assert.match(html, new RegExp(`<h2[^>]*>${section}</h2>`))
   }
@@ -1176,4 +1190,129 @@ test("Changelogs preserves index and equal-date order, accepts fragments, and va
       /Invalid changelog date/
     )
   }
+})
+
+test("Preview is opt-in and config defaults experimental components to false", async () => {
+  const { getDocsComponents } = await jiti.import(
+    "../src/ui/mdx/components.tsx"
+  )
+  const { defineConfig } = await jiti.import("../src/lib/DefineConfig.ts")
+  const base = { title: "Site", description: "", logo: "/logo.png" }
+  assert.equal(
+    defineConfig(base).experimental.experimentalComponentsInMDX,
+    false
+  )
+  assert.equal(getDocsComponents().Preview, undefined)
+  assert.equal(
+    getDocsComponents({ experimentalComponentsInMDX: false }).Preview,
+    undefined
+  )
+  assert.equal(
+    typeof getDocsComponents({ experimentalComponentsInMDX: true }).Preview,
+    "function"
+  )
+  const disabled = await renderDoc(
+    doc("<Preview><button>Hello</button></Preview>")
+  )
+  assert.throws(() => renderToStaticMarkup(disabled.content), /Preview/)
+})
+
+test("Preview captures exact authored children with shared highlighting and no nested CodeBlock", async () => {
+  const examples = [
+    "<Button>Hello</Button>",
+    '<div>\n  <Button>Save</Button>\n  <Button variant="outline">Cancel</Button>\n</div>',
+    '<div data-value={JSON.stringify({ label: "??", count: 2 })}>\n  {/* preserve this comment */}\n  {1 + 2}\n</div>',
+    "<Preview><Button>Nested</Button></Preview>",
+  ]
+  for (const source of examples) {
+    const input =
+      '---\ntitle: Preview test\n---\n\n<Preview highlight="{2}" sourceUrl="https://example.com/source">\n  ' +
+      source.replaceAll("\n", "\n  ") +
+      "\n</Preview>"
+    const rendered = await renderDoc(
+      doc(input),
+      {
+        Button: ({ children, variant }) =>
+          createElement("button", { "data-variant": variant }, children),
+      },
+      { experimentalComponentsInMDX: true }
+    )
+    const html = renderToStaticMarkup(rendered.content)
+    assert.match(html, /data-slot="preview"/)
+    assert.match(html, /role="tab"[^>]*aria-selected="true"/)
+    assert.match(html, /aria-label="Example view"/)
+    assert.doesNotMatch(html, /Copy code|View source|Open in Playground/)
+    assert.match(html, /shiki-themes github-light github-dark/)
+    const codes = [
+      ...html.matchAll(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/g),
+    ]
+    const code = codes
+      .at(-1)[1]
+      .replace(/<[^>]*>/g, "")
+      .replaceAll("&quot;", '"')
+      .replaceAll("&lt;", "<")
+      .replaceAll("&gt;", ">")
+      .replaceAll("&amp;", "&")
+      .replaceAll("&#x27;", "'")
+    assert.equal(code, source)
+    if (source.includes("\n"))
+      assert.match(codes.at(-1)[1], /class="line highlighted"/)
+  }
+})
+
+test("Preview handles inline, CRLF, empty content and optional playground links", async () => {
+  for (const input of [
+    "<Preview><button>Hello</button></Preview>",
+    "<Preview>\r\n  <button>Hello</button>\r\n</Preview>",
+    "<Preview />",
+  ]) {
+    const rendered = await renderDoc(doc(input), undefined, {
+      experimentalComponentsInMDX: true,
+    })
+    const html = renderToStaticMarkup(rendered.content)
+    assert.match(html, /data-slot="preview"/)
+    assert.doesNotMatch(html, /Copy code|Open in Playground|\[object Object\]/)
+  }
+  const rendered = await renderDoc(
+    doc(
+      '<Preview playgroundUrl="https://example.com/custom"><button>Hello</button></Preview>'
+    ),
+    undefined,
+    { experimentalComponentsInMDX: true }
+  )
+  assert.match(
+    renderToStaticMarkup(rendered.content),
+    /href="https:\/\/example.com\/custom" target="_blank" rel="noreferrer" aria-label="Open in Playground"/
+  )
+})
+
+test("Preview documentation compiles and code fences share its line highlighting syntax", async () => {
+  const source = await readFile(
+    new URL(
+      "../../../apps/web/content/components/preview.mdx",
+      import.meta.url
+    ),
+    "utf8"
+  )
+  const rendered = await renderDoc(
+    doc(source),
+    {
+      Button: ({ children, variant }) =>
+        createElement("button", { "data-variant": variant }, children),
+    },
+    { experimentalComponentsInMDX: true }
+  )
+  const html = renderToStaticMarkup(rendered.content)
+  assert.equal((html.match(/data-slot="preview"/g) || []).length, 3)
+  assert.match(html, /data-status="experimental"/)
+  assert.match(html, />v0\.1\.7<\/dd>/)
+  assert.match(html, /Preview Props/)
+  const fence = await renderDoc(doc("~~~ts {2,4-6}\na\nb\nc\nd\ne\nf\n~~~"))
+  assert.equal(
+    (
+      renderToStaticMarkup(fence.content).match(/class="line highlighted"/g) ||
+      []
+    ).length,
+    4
+  )
 })
