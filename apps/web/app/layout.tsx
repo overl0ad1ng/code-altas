@@ -1,9 +1,10 @@
 import { Geist, Geist_Mono } from "next/font/google"
+import type { Metadata } from "next"
 import { getSiteMetadata } from "@code-altas/ui/server"
 import { headers } from "next/headers"
 import siteConfig from "../codealtas.config"
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   return getSiteMetadata()
 }
 

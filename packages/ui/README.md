@@ -57,6 +57,83 @@ export default {
 } satisfies NextConfig
 ```
 
+## Document search
+
+Enable server-side full-text search with `docs.search: {}` in your config.
+The button and Ctrl/Cmd+K shortcut appear only in the documentation area.
+An optional `docs.search.api` changes the default `/api/search` endpoint.
+
+Create `app/api/search/route.ts`:
+
+```ts
+import { createDocsSearchHandler } from "@code-altas/ui/server"
+
+export const runtime = "nodejs"
+export const GET = createDocsSearchHandler()
+```
+
+Generate private indexes before `next build`, from your app directory:
+
+```js
+// scripts/build-search.mjs (use jiti for a workspace source TypeScript package)
+import { createJiti } from "jiti"
+
+const { buildDocsSearchIndex } = await createJiti(import.meta.url).import(
+  "@code-altas/ui/search"
+)
+console.table(await buildDocsSearchIndex())
+```
+
+Install `jiti` as a development dependency and set your build command to
+`node scripts/build-search.mjs && next build`. Published compiled packages
+also support a direct import from `@code-altas/ui/search`. This entry has no
+React or `server-only` dependency. `buildDocsSearchIndex({ cwd, outDir })`
+returns per-language page counts and byte sizes; the default output directory
+is `.codealtas/search/`. The handler reads indexes from this default directory,
+so a custom output directory must be copied there before deployment.
+
+Add `.codealtas/` to Git ignores, and include its search files in build-cache
+outputs. Extend your Next.js config so deployment contains the private indexes
+and runtime configuration:
+
+```ts
+outputFileTracingIncludes: {
+  "/api/search": ["./.codealtas/search/**/*.json", "./codealtas.config.ts"],
+},
+```
+
+Adapt the route and config filename if you customize them. Include any local
+files your config imports as well. Keep indexes outside `public`: clients
+receive only up to 20 matching pages and their snippets. Production processes
+load each language once; rebuilding and redeploying updates search content.
+Development uses in-memory indexes, checks source metadata at most once per
+second, and rebuilds after content/config changes. Missing or incompatible
+production indexes return 503 and log a rebuild instruction.
+
+Search includes titles, headings, frontmatter descriptions, prose, JSX child text and code blocks, but
+never evaluates MDX expressions/components. Draft and disabled branches are
+excluded. Language fallback documents are excluded from the selected language;
+unsuffixed files belong to the default language. A single character searches
+titles/headings only; longer queries search full text. Multiple words must all
+match a page. Prefix matching applies to titles/headings, with no fuzzy or
+arbitrary substring search. Code identifiers are indexed both whole and split
+at camel case, underscores, hyphens and dots. Snippets link to the matching
+heading and render safe text highlights.
+
+`DocsSearchResponse` and `DocsSearchResult` are exported as types from the UI
+entry. `GET /api/search?q=...&locale=...` defaults to the configured language,
+rejects unknown locales and queries over 100 Unicode characters with 400,
+and returns `{ results: [] }` for empty/punctuation-only queries. Responses
+are not cached by HTTP. Search messages can be overridden in the existing
+locale message configuration.
+
+Indexes must fit in each Node.js service process's memory. Run
+`pnpm --filter @code-altas/ui bench:search` to measure actual documents and
+1,000/10,000-page synthetic corpora; the report includes index/gzip sizes,
+extraction/build/load times, retained database heap deltas and warm-query P95.
+The engine stays behind the handler/result contract so it can be replaced
+when measured memory or latency exceeds your deployment budget.
+
 Add the site layout in `app/layout.tsx`:
 
 ```tsx

@@ -25,6 +25,8 @@ export interface ConfigDark {
 }
 
 export interface ConfigDocs {
+  /** Enable document search after installing its API route and build step. */
+  search?: false | { api?: string }
   categories?: ConfigDocsCategories
   /** Tag names mapped to CSS colors, referenced by document frontmatter. */
   tags?: Record<string, string>
@@ -37,6 +39,15 @@ export interface ConfigDocsI18N {
 }
 
 export interface DocsMessages {
+  search?: string
+  searchPlaceholder?: string
+  searchEmpty?: string
+  searchLoading?: string
+  searchNoResults?: string
+  searchError?: string
+  searchRetry?: string
+  searchClose?: string
+  searchShortQuery?: string
   language: string
   previous: string
   next: string

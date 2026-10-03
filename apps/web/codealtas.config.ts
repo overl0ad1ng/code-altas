@@ -14,6 +14,7 @@ export default defineConfig({
   },
 
   docs: {
+    search: {},
     i18n: {
       defaultLocale: "en",
       locales: {

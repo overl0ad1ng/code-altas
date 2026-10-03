@@ -56,13 +56,21 @@ function resolveImports(context) {
         const specifier = node.argument.literal.text
         if (specifier.startsWith(".")) {
           const target = path.resolve(path.dirname(file.fileName), specifier)
-          if (
-            [".ts", ".tsx"].some((extension) => existsSync(target + extension))
-          ) {
+          const suffix = [".ts", ".tsx"].some((extension) =>
+            existsSync(target + extension)
+          )
+          const index =
+            !suffix &&
+            [".ts", ".tsx"].some((extension) =>
+              existsSync(path.join(target, "index" + extension))
+            )
+          if (suffix || index) {
             return context.factory.updateImportTypeNode(
               node,
               context.factory.createLiteralTypeNode(
-                context.factory.createStringLiteral(specifier + ".js")
+                context.factory.createStringLiteral(
+                  specifier.replace(/\/+$/, "") + (suffix ? ".js" : "/index.js")
+                )
               ),
               node.attributes,
               node.qualifier,

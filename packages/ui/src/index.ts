@@ -91,3 +91,8 @@ export { defineConfig } from "./lib/DefineConfig"
 export { ConfigProvider, useConfig } from "./lib/config-provider"
 export { parseDocsRoute, localizedDocHref, docsMessages } from "./lib/docs-i18n"
 export type { ConfigDocsI18N, DocsMessages } from "./interface/Config"
+export type {
+  DocsSearchResult,
+  DocsSearchResponse,
+  SearchHighlight,
+} from "./lib/docs-search"

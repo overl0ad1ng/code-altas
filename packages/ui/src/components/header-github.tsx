@@ -69,7 +69,7 @@ function HeaderGithub({ github }: HeaderGithubProps) {
       href={repository.url}
       aria-label={`GitHub: ${repository.name}${count !== null ? `, ${count.toLocaleString("en-US")} stars` : ""}`}
       target="_blank"
-      className="active:scale-98 origin-b border border-border inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-all hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+      className="active:scale-98 origin-b border border-border inline-flex items-center gap-2 rounded-lg max-h-8 px-2.5 py-1.5 text-sm transition-all hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
     >
       <SiGithub aria-hidden="true" className="size-4 text-neutral-700" />
 

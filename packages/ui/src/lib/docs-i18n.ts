@@ -1,6 +1,16 @@
 import type { ConfigDocsI18N, DocsMessages } from "../interface/Config"
 
 const english: DocsMessages = {
+  search: "Search docs",
+  searchPlaceholder: "Search documentation…",
+  searchEmpty: "Search titles, headings, text and code.",
+  searchLoading: "Searching…",
+  searchNoResults: "No results found.",
+  searchError: "Search is unavailable. Please try again.",
+  searchRetry: "Retry",
+  searchClose: "Close search",
+  searchShortQuery:
+    "Searching titles and headings. Type more to search full text.",
   language: "Language",
   previous: "Previous",
   next: "Next",
@@ -10,6 +20,15 @@ const english: DocsMessages = {
 }
 
 const chinese: DocsMessages = {
+  search: "搜索文档",
+  searchPlaceholder: "搜索文档…",
+  searchEmpty: "搜索标题、小标题、正文和代码。",
+  searchLoading: "正在搜索…",
+  searchNoResults: "没有找到相关结果。",
+  searchError: "搜索暂时不可用，请重试。",
+  searchRetry: "重试",
+  searchClose: "关闭搜索",
+  searchShortQuery: "当前只搜索标题和小标题，继续输入可搜索全文。",
   language: "语言",
   previous: "上一页",
   next: "下一页",

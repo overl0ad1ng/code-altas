@@ -8,6 +8,7 @@ import {
 } from "../lib/docs-content"
 import { loadCodeAtlasConfig } from "./config"
 import { parseDocsRoute } from "../lib/docs-i18n"
+import type { Config } from "../interface/Config"
 
 export type DocExtension = ".md" | ".mdx"
 export type DocContentErrorCode =
@@ -74,6 +75,25 @@ export async function readDoc(
       `Document slug is not configured: ${slug}`
     )
 
+  const doc = await readDocEntry(entry, cwd, config, route.locale)
+  if (doc.contentLocale !== route.locale) {
+    doc.title = flattenDocs(
+      config.docs?.categories ?? [],
+      doc.contentLocale
+    ).find((item) => item.contentPath === entry.contentPath)!.title
+  }
+  return doc
+}
+
+/** Internal batch reader: callers already have a configured entry and config. */
+export async function readDocEntry(
+  entry: DocEntry,
+  cwd: string,
+  config: Config,
+  locale?: string
+): Promise<ReadDocResult> {
+  const i18n = config.docs?.i18n
+
   const contentPath = entry.contentPath
   const documentSlug = entry.slug
   const root = resolve(cwd, "content")
@@ -117,9 +137,9 @@ export async function readDoc(
     const file = files[0]
     return file
   }
-  let contentLocale = route.locale
-  let file = i18n ? await findFile(`.${route.locale}`) : await findFile("")
-  if (!file && i18n && route.locale !== i18n.defaultLocale) {
+  let contentLocale = locale
+  let file = i18n ? await findFile(`.${locale}`) : await findFile("")
+  if (!file && i18n && locale !== i18n.defaultLocale) {
     contentLocale = i18n.defaultLocale
     file = await findFile(`.${i18n.defaultLocale}`)
   }
@@ -135,15 +155,9 @@ export async function readDoc(
   }
   return {
     ...entry,
-    title:
-      contentLocale !== route.locale
-        ? flattenDocs(config.docs?.categories ?? [], contentLocale).find(
-            (item) => item.contentPath === entry.contentPath
-          )!.title
-        : entry.title,
     extension: file.extension,
     content: await readFile(file.path, "utf8"),
-    locale: route.locale,
+    locale,
     contentLocale,
   }
 }
