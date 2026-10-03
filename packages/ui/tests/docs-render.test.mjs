@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createElement, Fragment } from "react"
@@ -35,6 +35,9 @@ const { default: BranchedMenu } = await jiti.import(
 )
 const { Props, Prop } = await jiti.import("../src/ui/mdx/components/props.tsx")
 const { Steps, Step } = await jiti.import("../src/ui/mdx/components/steps.tsx")
+const { CodeGroup } = await jiti.import(
+  "../src/ui/mdx/components/code-group.tsx"
+)
 const { getSiteMetadata, getDocMetadata } = await jiti.import(
   "../src/server/metadata.ts"
 )
@@ -206,6 +209,65 @@ const doc = (content, extension = ".mdx") => ({
   disabled: false,
   content,
   extension,
+})
+
+test("CodeGroup renders the documented fences with language icons and intact code blocks", async () => {
+  const source = await readFile(
+    new URL(
+      "../../../apps/web/content/components/code-groups.mdx",
+      import.meta.url
+    ),
+    "utf8"
+  )
+  const rendered = await renderDoc(doc(source))
+  const html = renderToStaticMarkup(rendered.content)
+  const tabs = [
+    ...html.matchAll(/<button\b[^>]*role="tab"[^>]*>[\s\S]*?<\/button>/g),
+  ]
+  assert.equal(tabs.length, 2)
+  assert.match(tabs[0][0], /src\/main\.tsx/)
+  assert.match(tabs[0][0], /<svg[^>]*>.*<title>TypeScript<\/title>/)
+  assert.match(tabs[1][0], /src\/index\/html/)
+  assert.match(tabs[1][0], /<svg[^>]*>.*<title>HTML5<\/title>/)
+  assert.equal((html.match(/role="tabpanel"/g) || []).length, 2)
+  assert.equal((html.match(/aria-label="Copy code"/g) || []).length, 3)
+  assert.match(html, /codeblock-lines/)
+  assert.match(html, /language-tsx/)
+  assert.match(html, /language-html/)
+  assert.match(html, /--shiki-light/)
+})
+
+test("CodeGroup supports language labels, text fallback, and default selection", async () => {
+  const rendered = await renderDoc(
+    doc(
+      "<CodeGroup defaultIndex={1}>\n\n```js\nconst value = 1\n```\n\n```\nplain text\n```\n\n</CodeGroup>"
+    )
+  )
+  const html = renderToStaticMarkup(rendered.content)
+  const tabs = [
+    ...html.matchAll(/<button\b[^>]*role="tab"[^>]*>[\s\S]*?<\/button>/g),
+  ]
+  assert.match(tabs[0][0], /JavaScript/)
+  assert.match(tabs[0][0], />js<\/button>/)
+  assert.match(tabs[0][0], /aria-selected="false"/)
+  assert.match(tabs[1][0], />text<\/button>/)
+  assert.match(tabs[1][0], /aria-selected="true"/)
+  assert.match(html, /plain text/)
+  assert.equal(
+    renderToStaticMarkup(createElement(CodeGroup, { children: [] })),
+    ""
+  )
+  assert.throws(
+    () =>
+      renderToStaticMarkup(
+        createElement(
+          CodeGroup,
+          null,
+          createElement("p", null, "Other content")
+        )
+      ),
+    /CodeGroup only accepts fenced code blocks/
+  )
 })
 
 test("Steps renders the selected label, icon, Markdown content, and exact page count", async () => {

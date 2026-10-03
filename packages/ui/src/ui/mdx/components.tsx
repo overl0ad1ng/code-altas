@@ -6,6 +6,7 @@ import type { ComponentPropsWithoutRef } from "react"
 import { Tabs, Tab } from "./components/tabs"
 import { Steps, Step } from "./components/steps"
 import { CodeBlock } from "./components/code-block"
+import { CodeGroup } from "./components/code-group"
 import { FileTree } from "./components/file-tree"
 import { Surface } from "./components/surface"
 import { Props, Prop } from "./components/props"
@@ -34,6 +35,7 @@ export const defaultDocsComponents: MDXComponents = {
   Prop,
   Tabs,
   Tab,
+  CodeGroup,
   FileTree,
   h1: ({ className, ...props }) => (
     <h1

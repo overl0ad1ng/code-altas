@@ -92,6 +92,10 @@ export default defineConfig({
                 name: "Steps",
                 slug: "steps",
               },
+              {
+                name: "Code Groups",
+                slug: "code-groups",
+              },
             ],
           },
         ],

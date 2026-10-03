@@ -19,6 +19,7 @@ export {
   type TabProps,
 } from "./ui/mdx/components/tabs"
 export { FileTree, type FileTreeProps } from "./ui/mdx/components/file-tree"
+export { CodeGroup, type CodeGroupProps } from "./ui/mdx/components/code-group"
 export { Tags, type TagsProps } from "./ui/mdx/components/tags"
 export {
   Changelogs,
