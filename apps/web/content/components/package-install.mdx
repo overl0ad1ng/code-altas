@@ -1,0 +1,49 @@
+---
+title: Package Install
+description: Switch between npm, pnpm, yarn, and bun installation commands.
+---
+
+## Usage
+
+Pass a package name to generate installation commands for all four package managers. Each tab shows the manager's icon and a command you can copy.
+
+<PackageInstall package="@code-altas/ui@beta" />
+
+```mdx title="Usage"
+<PackageInstall package="@code-altas/ui@beta" />
+```
+
+| Package manager | Command |
+| --- | --- |
+| npm | `npm install @code-altas/ui@beta` |
+| pnpm | `pnpm install @code-altas/ui@beta` |
+| yarn | `yarn add @code-altas/ui@beta` |
+| bun | `bun add @code-altas/ui@beta` |
+
+Package scopes, versions, and distribution tags are preserved. You can also supply multiple package names separated by spaces.
+
+## Default Manager
+
+The first selected tab is `npm`. Use `defaultManager` to start with a different package manager. Readers can still switch between all four tabs.
+
+<PackageInstall package="@code-altas/ui@beta" defaultManager="pnpm" />
+
+```mdx title="Default Manager"
+<PackageInstall package="@code-altas/ui@beta" defaultManager="pnpm" />
+```
+
+## Multiple Packages
+
+<PackageInstall package="react react-dom" />
+
+```mdx title="Multiple Packages"
+<PackageInstall package="react react-dom" />
+```
+
+## Props
+
+<Props name="PackageInstall">
+  <Prop property="package" type="string" defaultValue="-" description="Required package name, optionally including a version or tag. Separate multiple packages with spaces." />
+  <Prop property="defaultManager" type="npm | pnpm | yarn | bun" defaultValue="npm" description="Initially selected package manager." />
+  <Prop property="className" type="string" defaultValue="-" description="Additional classes for the component." />
+</Props>

@@ -41,6 +41,9 @@ const { CodeGroup } = await jiti.import(
 const { Hint, HintTitle, HintContent } = await jiti.import(
   "../src/ui/mdx/components/hint.tsx"
 )
+const { PackageInstall } = await jiti.import(
+  "../src/ui/mdx/components/package-install.tsx"
+)
 const { getSiteMetadata, getDocMetadata } = await jiti.import(
   "../src/server/metadata.ts"
 )
@@ -270,6 +273,60 @@ test("CodeGroup supports language labels, text fallback, and default selection",
         )
       ),
     /CodeGroup only accepts fenced code blocks/
+  )
+})
+
+test("PackageInstall registers in MDX with four manager icons and copyable commands", async () => {
+  const rendered = await renderDoc(
+    doc('<PackageInstall package="@code-altas/ui@beta" />')
+  )
+  const html = renderToStaticMarkup(rendered.content)
+  const tabs = [
+    ...html.matchAll(/<button\b[^>]*role="tab"[^>]*>[\s\S]*?<\/button>/g),
+  ]
+  assert.equal(tabs.length, 4)
+  for (const [index, manager] of ["npm", "pnpm", "yarn", "bun"].entries()) {
+    assert.match(tabs[index][0], new RegExp(`>${manager}</button>`))
+    assert.match(tabs[index][0], /<svg[^>]*>.*<title>/)
+    assert.match(tabs[index][0], new RegExp(`aria-selected="${index === 0}"`))
+  }
+  assert.equal((html.match(/role="tabpanel"/g) || []).length, 4)
+  assert.equal((html.match(/aria-label="Copy code"/g) || []).length, 4)
+  const commands = [...html.matchAll(/<pre\b[^>]*>([\s\S]*?)<\/pre>/g)].map(
+    (match) => match[1].replace(/<[^>]*>/g, "")
+  )
+  assert.deepEqual(commands, [
+    "npm install @code-altas/ui@beta",
+    "pnpm install @code-altas/ui@beta",
+    "yarn add @code-altas/ui@beta",
+    "bun add @code-altas/ui@beta",
+  ])
+})
+
+test("PackageInstall supports each default manager, multiple packages, and rejects blank names", () => {
+  for (const [index, defaultManager] of [
+    "npm",
+    "pnpm",
+    "yarn",
+    "bun",
+  ].entries()) {
+    const html = renderToStaticMarkup(
+      createElement(PackageInstall, {
+        package: "  react@19 react-dom@19  ",
+        defaultManager,
+      })
+    )
+    const tabs = [
+      ...html.matchAll(/<button\b[^>]*role="tab"[^>]*>[\s\S]*?<\/button>/g),
+    ]
+    for (const [tabIndex, tab] of tabs.entries())
+      assert.match(tab[0], new RegExp(`aria-selected="${tabIndex === index}"`))
+    assert.match(html, /npm install react@19 react-dom@19/)
+    assert.match(html, /pnpm install react@19 react-dom@19/)
+  }
+  assert.throws(
+    () => renderToStaticMarkup(createElement(PackageInstall, { package: " " })),
+    /non-empty package/
   )
 })
 

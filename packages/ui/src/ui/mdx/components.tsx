@@ -7,6 +7,7 @@ import { Tabs, Tab } from "./components/tabs"
 import { Steps, Step } from "./components/steps"
 import { CodeBlock } from "./components/code-block"
 import { CodeGroup } from "./components/code-group"
+import { PackageInstall } from "./components/package-install"
 import { Hint, HintTitle, HintContent } from "./components/hint"
 import { FileTree } from "./components/file-tree"
 import { Surface } from "./components/surface"
@@ -37,6 +38,7 @@ export const defaultDocsComponents: MDXComponents = {
   Tabs,
   Tab,
   CodeGroup,
+  PackageInstall,
   Hint,
   HintTitle,
   HintContent,

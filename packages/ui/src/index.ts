@@ -21,6 +21,11 @@ export {
 export { FileTree, type FileTreeProps } from "./ui/mdx/components/file-tree"
 export { CodeGroup, type CodeGroupProps } from "./ui/mdx/components/code-group"
 export {
+  PackageInstall,
+  type PackageInstallProps,
+  type PackageManager,
+} from "./ui/mdx/components/package-install"
+export {
   Hint,
   HintTitle,
   HintContent,

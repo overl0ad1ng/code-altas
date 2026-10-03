@@ -75,6 +75,10 @@ export default defineConfig({
                 name: "Introduction",
                 slug: "index",
               },
+              {
+                name: "Customization",
+                slug: "customization",
+              },
             ],
           },
           {
@@ -99,6 +103,10 @@ export default defineConfig({
               {
                 name: "Hint",
                 slug: "hint",
+              },
+              {
+                name: "Package Install",
+                slug: "package-install",
               },
             ],
           },

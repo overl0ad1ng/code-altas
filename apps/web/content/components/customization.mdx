@@ -1,0 +1,244 @@
+---
+title: Customization
+description: Create your own React components, register them with Code Atlas, and use them in MDX.
+---
+
+Code Atlas lets you use your own React components alongside built-in components such as `Hint`, `Tabs`, and `CodeGroup`. Create the component in your app, register it through the page's `components` prop, and reference it by name in an `.mdx` file.
+
+## Create a Component
+
+This example creates a `Notice` with a title, a color, and rich content. Place it in your app's `components` directory. The paths below use `apps/web` as the app root; if your app uses `src/`, place the component and route files there instead.
+
+```tsx title="components/notice.tsx"
+import type { ReactNode } from "react"
+
+interface NoticeProps {
+  title: ReactNode
+  tone?: "info" | "success" | "warning"
+  children: ReactNode
+  className?: string
+}
+
+const colors = {
+  info: "border-blue-500/30 bg-blue-500/10",
+  success: "border-emerald-500/30 bg-emerald-500/10",
+  warning: "border-amber-500/30 bg-amber-500/10",
+}
+
+export function Notice({
+  title,
+  tone = "info",
+  children,
+  className,
+}: NoticeProps) {
+  return (
+    <aside
+      className={`my-6 min-w-0 rounded-lg border p-4 ${colors[tone]} ${className ?? ""}`}
+    >
+      <div className="text-sm font-semibold">{title}</div>
+      <div className="mt-2 text-sm leading-6 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0">
+        {children}
+      </div>
+    </aside>
+  )
+}
+```
+
+`children` accepts a `ReactNode`, so authors can supply Markdown, JSX, or other registered components. Keep title and content containers as `div` elements when they may contain block elements such as paragraphs, lists, or code blocks.
+
+This component uses Tailwind classes, but you can also use CSS modules or your existing styling system.
+
+## Register the Component
+
+Create a shared component map. The key is the name authors will use in MDX; it does not have to match the component's export name.
+
+```tsx title="components/mdx-components.tsx"
+import type { MDXComponents } from "@code-altas/ui"
+import { Notice } from "./notice"
+
+export const mdxComponents = {
+  Notice,
+} satisfies MDXComponents
+```
+
+Pass this map to `DocsPage` in your docs route. Keep your existing metadata, layout, and sidebar setup; the addition is the `components` prop.
+
+```tsx title="app/docs/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+import { mdxComponents } from "@/components/mdx-components"
+
+export const dynamic = "force-dynamic"
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} components={mdxComponents} />
+}
+```
+
+The example assumes `@/` resolves to your app root. Use a relative import or your project's alias if it differs.
+
+Code Atlas merges your map with its default components. Registering `Notice` keeps `Hint`, `Tabs`, and the other built-in components available. Reusing an existing key replaces that component for pages rendered with this map.
+
+<Hint type="info" icon="lucide:info">
+  <HintTitle>Register components in application code</HintTitle>
+  <HintContent>
+
+    Code Atlas disables `import` and `export` statements inside content files. Import your React component in the application and pass it through `components` rather than importing it from the `.mdx` file. A conventional `mdx-components.tsx` file alone does not register components with `DocsPage`; you must pass the map explicitly.
+
+  </HintContent>
+</Hint>
+
+## Use It in MDX
+
+Use the registered name directly in a document. No import statement is needed.
+
+```mdx title="content/index/quickstart.mdx"
+---
+title: Quick Start
+---
+
+<Notice title="Before you start" tone="warning">
+
+Make sure you have installed the project dependencies.
+
+- Use your project's package manager.
+- Keep **configuration files** at the app root.
+
+</Notice>
+
+<Notice title={<span>Setup <strong>complete</strong></span>} tone="success">
+
+Your documentation is ready. Continue with [components](/docs/components).
+
+</Notice>
+```
+
+Leave a blank line around Markdown inside a component so headings, lists, and paragraphs are parsed as Markdown. Strings use quotes, while booleans, numbers, arrays, and JSX use braces, such as `enabled={true}` or `title={<strong>Ready</strong>}`.
+
+Use `.mdx` for component tags. Standard `.md` documents do not support this JSX component syntax. If you create a new document, also add it to `docs.categories` in `codealtas.config.ts` so the docs route can find it.
+
+## Reuse Built-in Components
+
+You can build a component on top of an existing Code Atlas component to give authors a simpler API. For example, an `Important` note can reuse `Hint` colors, icons, and folding behavior.
+
+```tsx title="components/important.tsx"
+import { Hint, HintContent, HintTitle } from "@code-altas/ui"
+import type { ReactNode } from "react"
+
+interface ImportantProps {
+  title?: ReactNode
+  children: ReactNode
+  collapsed?: boolean
+}
+
+export function Important({
+  title = "Important",
+  children,
+  collapsed,
+}: ImportantProps) {
+  return (
+    <Hint type="warning" icon="lucide:triangle-alert" collapsed={collapsed}>
+      <HintTitle>{title}</HintTitle>
+      <HintContent>{children}</HintContent>
+    </Hint>
+  )
+}
+```
+
+Add `Important` to your shared component map, then use it in content:
+
+```tsx title="components/mdx-components.tsx"
+import type { MDXComponents } from "@code-altas/ui"
+import { Important } from "./important"
+import { Notice } from "./notice"
+
+export const mdxComponents = {
+  Notice,
+  Important,
+} satisfies MDXComponents
+```
+
+```mdx title="Usage"
+<Important title="Check your configuration" collapsed={false}>
+
+Review `codealtas.config.ts` before deploying.
+
+</Important>
+```
+
+Omitting `collapsed` keeps this note expanded without a toggle. Passing `true` or `false` enables folding and sets its starting state.
+
+## Add Interactivity
+
+Components that use state, event handlers, or browser APIs need a client boundary. Add `"use client"` to the component file while keeping the docs route and shared registration map on the server.
+
+```tsx title="components/counter.tsx"
+"use client"
+
+import { useState } from "react"
+
+export function Counter({ initialCount = 0 }: { initialCount?: number }) {
+  const [count, setCount] = useState(initialCount)
+
+  return (
+    <button
+      type="button"
+      onClick={() => setCount((value) => value + 1)}
+      className="rounded-md border border-border px-3 py-2 text-sm"
+    >
+      Count: {count}
+    </button>
+  )
+}
+```
+
+Import `Counter` into the shared map and add a `Counter` key. Authors can then write:
+
+```mdx title="Usage"
+<Counter initialCount={5} />
+```
+
+Pass serializable props across the server/client boundary, such as strings, numbers, booleans, and plain arrays or objects. Define event handlers inside the client component rather than passing a function from the MDX document.
+
+## Override Markdown Elements
+
+The same map can customize standard Markdown elements. For example, an `h2` entry changes how `##` headings render.
+
+```tsx title="components/mdx-components.tsx"
+import type { MDXComponents } from "@code-altas/ui"
+import { Notice } from "./notice"
+
+export const mdxComponents = {
+  Notice,
+  h2: ({ className, ...props }) => (
+    <h2
+      {...props}
+      className={`mt-10 mb-4 border-b border-border pb-2 text-2xl font-semibold ${className ?? ""}`}
+    />
+  ),
+} satisfies MDXComponents
+```
+
+Forward the supplied props, including `children` and `id`, to preserve heading anchors and the table of contents. An override replaces the default renderer and its styling, so include the styles you want to retain.
+
+## Use Components in the Changelog
+
+Registration applies to the page receiving the map. To use the same components in `content/changelog.mdx`, pass the map to `ChangelogPage` as well.
+
+```tsx title="app/changelog/page.tsx"
+import { ChangelogPage } from "@code-altas/ui"
+import { mdxComponents } from "@/components/mdx-components"
+
+export default function Page() {
+  return <ChangelogPage components={mdxComponents} />
+}
+```
+
+## Troubleshooting
+
+| Problem | What to check |
+| --- | --- |
+| A component is reported as missing | Import it into the map, pass that map to the page, and match the registered name's capitalization in MDX. |
+| Markdown inside a component renders incorrectly | Add blank lines around the Markdown and use a block container in the component. |
+| A component works in docs but not in the changelog | Pass the map to `ChangelogPage` too. |
+| State or event handlers fail | Add `"use client"` to the interactive component, and define handlers inside that file. |
+| Custom heading links or the table of contents stop working | Forward `id` and the remaining heading props to the rendered element. |
