@@ -1,0 +1,105 @@
+---
+title: 布局与页面
+---
+
+与其他站点生成器不同，Code Altas 将主要关注点放在文档相关内容上。虽然布局可以完全自定义，但我们仍提供了一组开箱即用的组件，例如 `Header` 和 `Footer`，你可以通过 `codealtas.config.ts` 文件对它们进行配置。
+
+## Docs
+
+通常，你只需要以下几个布局与页面文件：
+
+<FileTree
+  files={[
+    "src/app/(site)/[[...slug]]/page.tsx",
+    "src/app/(site)/layout.tsx",
+    "src/app/layout.tsx",
+    "codealtas.config.ts",
+  ]}
+/>
+
+### DocsLayout
+
+如果你只需要维护 Docs 页面，可以直接这样配置：
+
+```tsx title="src/app/(site)/layout.tsx"
+import { DocsLayout } from "@code-altas/ui"
+
+export default function Layout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return <DocsLayout>{children}</DocsLayout>
+}
+```
+
+### DocsPage
+
+接下来，在 `page.tsx` 中配置 `DocsPage`：
+
+```tsx title="src/app/(site)/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+
+export const dynamic = "force-dynamic"
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} />
+}
+```
+
+### codealtas.config
+
+最后，在 `codealtas.config` 中配置与文档相关的设置：
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config"
+
+export default defineConfig({
+  // ... 其他配置
+
+  docs: {
+    categories: [
+      {
+        name: "Getting Started",
+        icon: "lucide:lamp",
+        slug: "index",
+        docs: [
+          {
+            name: "Getting Started",
+            docs: [
+              {
+                name: "Introduction",
+                slug: "index"
+              }
+              {
+                name: "Quick Start",
+                slug: "quickstart"
+              }
+            ]
+          }
+        ]
+      },
+    ]
+  },
+})
+```
+
+### 内容文件
+
+接下来，我们需要创建对应的文档文件，使这些页面可以被访问：
+
+<FileTree files={["content/index/index.mdx", "content/index/quickstart.mdx"]} />
+
+```mdx title="quickstart.mdx"
+---
+title: Quick Start
+description: ...
+---
+
+lorem ipsum...
+```
+
+## 注意事项
+
+1. 将 `content/` 目录放置在应用根目录下，与 `package.json` 和 `codealtas.config.ts` 保持同级。
+2. 父级分组的 `slug` 会参与文件路径和 URL 的生成。`index` 仍会保留在文件路径中，但不会出现在 URL 中。
+3. `index` 页面是可选的；只有在配置中声明的叶子文档才可以被访问和读取。
+4. 请使用 Node.js Runtime，并确保部署时包含你的文档内容以及配置文件。

@@ -5,6 +5,7 @@ import { Header } from "../navigation/header"
 import { DocsNav } from "../navigation/docs-nav"
 import { ScrollArea } from "../../primitives/scroll-area"
 import { Footer } from "../navigation/footer"
+import { LocalizedDocsNav } from "../../components/localized-docs-nav"
 
 interface DocsLayoutProps {
   children: React.ReactNode
@@ -22,7 +23,22 @@ async function DocsLayout({ children }: DocsLayoutProps) {
           className="fixed inset-y-0 left-0 z-10 w-[var(--docs-nav-width)] pt-14"
         >
           <div className="h-full p-2">
-            <DocsNav categories={config.docs?.categories} />
+            <LocalizedDocsNav
+              variants={Object.fromEntries(
+                (config.docs?.i18n
+                  ? Object.keys(config.docs.i18n.locales)
+                  : ["default"]
+                ).map((locale) => [
+                  locale,
+                  <DocsNav
+                    key={locale}
+                    categories={config.docs?.categories}
+                    locale={locale === "default" ? undefined : locale}
+                    i18n={config.docs?.i18n}
+                  />,
+                ])
+              )}
+            />
           </div>
         </aside>
         <div className="absolute inset-y-0 right-0 left-[var(--docs-nav-width)] min-w-0">

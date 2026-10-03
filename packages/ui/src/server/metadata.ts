@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import { loadCodeAtlasConfig } from "./config"
 import { DocContentError } from "./docs-content"
 import { readRenderedDoc } from "./doc-page"
+import { localizedDocHref } from "../lib/docs-i18n"
 
 export async function getSiteMetadata(cwd = process.cwd()): Promise<Metadata> {
   const config = await loadCodeAtlasConfig(cwd)
@@ -30,5 +31,16 @@ export async function getDocMetadata(
   return {
     title: page.rendered.title,
     description: page.rendered.description ?? config.description,
+    ...(config.docs?.i18n
+      ? {
+          alternates: {
+            canonical: localizedDocHref(
+              page.doc.slug,
+              page.doc.contentLocale,
+              config.docs.i18n
+            ),
+          },
+        }
+      : {}),
   }
 }

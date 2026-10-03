@@ -5,12 +5,15 @@ import { useRef, useState } from "react"
 
 import type { ConfigHeaderNav } from "../interface/Config"
 import { SharedIndicator } from "./shared-indicator"
+import { useDocsLocale } from "../lib/use-docs-locale"
+import { localizedDocHref } from "../lib/docs-i18n"
 
 function routePath(href: string) {
   return href.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/"
 }
 
 function HeaderNav({ nav }: { nav: ConfigHeaderNav }) {
+  const { locale, i18n } = useDocsLocale()
   const pathname = usePathname()
   const containerRef = useRef<HTMLElement>(null)
 
@@ -61,7 +64,13 @@ function HeaderNav({ nav }: { nav: ConfigHeaderNav }) {
           key={path}
           data-nav-path={path}
           data-indicator-value={path}
-          href={item.disabled ? undefined : path}
+          href={
+            item.disabled
+              ? undefined
+              : path === "/docs"
+                ? localizedDocHref("/", locale, i18n)
+                : path
+          }
           aria-current={path === activePath ? "page" : undefined}
           aria-disabled={item.disabled || undefined}
           tabIndex={item.disabled ? -1 : undefined}

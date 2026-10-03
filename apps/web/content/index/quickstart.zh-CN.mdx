@@ -1,0 +1,102 @@
+---
+title: 快速开始
+description: 只需几分钟，即可基于 Code Altas 构建一个文档站点
+---
+
+该包已包含编译后的 JavaScript、类型定义以及 CSS。导入 `@code-altas/ui` 时会自动加载其全局样式；如果你还需要编写自己的 UI，Tailwind 是可选的。页面和布局应保持为 Server Components。
+
+在 `next.config.ts` 中添加配置加载器所需的依赖：
+
+```ts
+import type { NextConfig } from "next"
+
+export default {
+  serverExternalPackages: ["c12", "jiti"],
+} satisfies NextConfig
+```
+
+部署时请使用 Node.js Runtime，并确保包含 `content/` 目录以及 `codealtas.config.ts` 文件。项目应使用 App Router，并满足以下版本要求：Next.js 16.3.6+（16.x）以及 React / React DOM 19.2.8+（19.x）。
+
+<Tabs>
+<Tab icon="lucide:square-terminal" name="创建新项目">
+    ## 前置要求
+
+    首先，请确保已经安装以下工具：
+    
+    - Node.js：`^22.12.0, ^24.0.0, or >= 26.0.0`
+    - pnpm：`11.18.0`
+    
+    ### 1. 创建 Next.js 项目
+    
+    ```bash
+    npx create-next-app@latest
+    ```
+    
+    按照 CLI 提示完成项目创建。
+    
+    ### 2. 安装 @code-altas/ui
+    
+    在项目根目录中安装 `@code-altas/ui`：
+    
+    ```bash
+    pnpm add @code-altas/ui@latest
+    ```
+    
+    ### 3. 配置 codealtas.config.ts
+    
+    ```ts title="codealtas.config.ts"
+    import { defineConfig } from "@code-altas/ui/config";
+    
+    export default defineConfig({
+    title: "Code Altas",
+    description: "This is a demo documentation site powered by Code Altas.",
+    logo: "/logo.png",
+    
+    // other configurations
+    });
+    ```
+    
+    ### 4. 配置布局与页面
+    
+    这一步与许多类似的站点生成器有较大区别。Code Altas 不会强制规定你的布局和页面必须采用某种固定的内容结构，因此你可以自由编写自己需要的组件。
+    
+    当然，你也可以直接使用 Code Altas 提供的现成组件，例如 `DefaultLayout`、`DocsLayout`、`DocsPage` 等。更多信息请参阅：[Components](/docs/components)
+  </Tab>
+<Tab icon="lucide:package-open" name="从现有项目迁移">
+## 前置要求
+
+首先，请确保你的项目基于 Next.js 和 React 构建，并满足以下版本要求：
+
+- Next.js：`>= 16.3.6`
+- React：`>= 19.2.8`
+
+### 1. 安装 @code-altas/ui
+
+在项目根目录中安装 `@code-altas/ui`：
+
+```bash
+pnpm add @code-altas/ui@beta
+```
+
+### 2. 配置 codealtas.config.ts
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config";
+
+export default defineConfig({
+  title: "Code Altas",
+  description: "This is a demo documentation site powered by Code Altas.",
+  logo: "/logo.png",
+  
+  // other configurations
+});
+```
+
+### 3. 配置布局与页面
+
+这一步与许多类似的站点生成器有较大区别。Code Altas 不会强制规定你的布局和页面必须采用某种固定的内容结构，因此你可以自由编写自己需要的组件。
+
+当然，你也可以直接使用 Code Altas 提供的现成组件，例如 `DefaultLayout`、`DocsLayout`、`DocsPage` 等。更多信息请参阅：[Components](/docs/components)
+</Tab>
+
+</Tabs>

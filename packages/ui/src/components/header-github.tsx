@@ -73,13 +73,21 @@ function HeaderGithub({ github }: HeaderGithubProps) {
     >
       <SiGithub aria-hidden="true" className="size-4 text-neutral-700" />
 
-      {count !== null && (
+      {count !== null ? (
         <span
           className="inline-flex items-center gap-1 tabular-nums font-medium"
           aria-label={`${count.toLocaleString("en-US")} stars`}
           title={`${count.toLocaleString("en-US")} stars`}
         >
           {starFormatter.format(count)}
+        </span>
+      ) : (
+        <span
+          className="inline-flex items-center gap-1 tabular-nums font-medium"
+          aria-label="no stars"
+          title="no stars"
+        >
+          0
         </span>
       )}
     </a>

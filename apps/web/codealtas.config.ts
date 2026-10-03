@@ -14,6 +14,13 @@ export default defineConfig({
   },
 
   docs: {
+    i18n: {
+      defaultLocale: "en",
+      locales: {
+        en: { label: "English" },
+        "zh-CN": { label: "简体中文" },
+      },
+    },
     tags: {
       Beta: "#1447E6",
       "Version Released": "#8A0194",
@@ -21,36 +28,44 @@ export default defineConfig({
     categories: [
       {
         name: "Getting Started",
+        i18n: { "zh-CN": "开始使用" },
         icon: "lucide:lamp",
         slug: "index",
         docs: [
           {
             name: "Getting Started",
+            i18n: { "zh-CN": "开始使用" },
             docs: [
               {
                 name: "Introduction",
+                i18n: { "zh-CN": "介绍" },
                 slug: "index",
               },
               {
                 name: "Quick Start",
+                i18n: { "zh-CN": "快速开始" },
                 slug: "quickstart",
               },
               {
                 name: "Layout And Page",
+                i18n: { "zh-CN": "布局与页面" },
                 slug: "layout-and-page",
               },
             ],
           },
           {
             name: "Writting",
+            i18n: { "zh-CN": "编写文档" },
             slug: "writting",
             docs: [
               {
                 name: "MD and MDX",
+                i18n: { "zh-CN": "MD 和 MDX" },
                 slug: "md-and-mdx",
               },
               {
                 name: "Frontmatter",
+                i18n: { "zh-CN": "前言" },
                 slug: "frontmatter",
               },
               {
@@ -65,11 +80,18 @@ export default defineConfig({
           },
           {
             name: "Concepts",
+            i18n: { "zh-CN": "核心概念" },
             slug: "concepts",
             docs: [
               {
                 name: "File System",
+                i18n: { "zh-CN": "文件系统" },
                 slug: "filesystem",
+              },
+              {
+                name: "Internationalization",
+                i18n: { "zh-CN": "国际化（i18n）" },
+                slug: "i18n",
               },
             ],
           },
@@ -77,24 +99,29 @@ export default defineConfig({
       },
       {
         name: "Components",
+        i18n: { "zh-CN": "组件" },
         icon: "lucide:puzzle",
         slug: "components",
         docs: [
           {
             name: "Introduction",
+            i18n: { "zh-CN": "开始" },
             docs: [
               {
                 name: "Introduction",
+                i18n: { "zh-CN": "介绍" },
                 slug: "index",
               },
               {
                 name: "Customization",
+                i18n: { "zh-CN": "自定义组件" },
                 slug: "customization",
               },
             ],
           },
           {
             name: "Components",
+            i18n: { "zh-CN": "组件" },
             docs: [
               {
                 name: "Tabs",

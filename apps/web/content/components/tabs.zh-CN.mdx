@@ -1,0 +1,46 @@
+---
+title: 标签页
+description: Tabs 提供标签页式导航，允许你根据用户的选择展示不同的内容。
+---
+
+<Status since="0.1.0" />
+
+<Preview>
+
+<Tabs>
+    <Tab icon="simple:github" name="给我们点个 Star">
+        访问我们的 GitHub 页面。
+    </Tab>
+    <Tab icon="lucide:music" name="我喜欢的音乐">
+        123
+    </Tab>
+</Tabs>
+
+</Preview>
+
+---
+
+```mdx title="Usage"
+<Tabs>
+  <Tab icon="simple:github" name="Star us">
+    Visit our GitHub page. 
+  </Tab>
+  <Tab icon="lucide:music" name="Music I like">
+    123
+  </Tab>
+</Tabs>
+```
+
+<br />
+
+<Props name="Tabs">
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="内容。必须是 Tab 组件。" />
+</Props>
+
+<br />
+
+<Props name="Tab">
+  <Prop property="name" type="string" defaultValue="-" description="标签页的标题。" />
+  <Prop property="icon" type="string" defaultValue="-" description="标签页的图标。" />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="内容。" />
+</Props>

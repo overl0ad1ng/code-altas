@@ -1,0 +1,76 @@
+---
+title: KaTeX
+description: 在 Markdown 和 MDX 中使用 LaTeX 语法编写行内与块级数学公式。
+---
+
+<Status since="0.1.8" />
+
+Code Atlas 使用 KaTeX 在 `.md` 和 `.mdx` 文档中渲染数学表达式。公式在服务端渲染，包中已包含其样式表和字体。无需导入任何组件，也无需启用实验性标志。
+
+## 行内数学公式
+
+将公式包裹在单个美元符号中，即可让它在段落内显示：
+
+```md
+The relationship between mass and energy is $E = mc^2$.
+```
+
+质量与能量的关系是 $E = mc^2$。
+
+## 块级数学公式
+
+将双美元符号放在单独的行上，让公式独占一个块：
+
+```md
+$$
+\int_0^1 x^2\,dx = \frac{1}{3}
+$$
+```
+
+$$
+\int_0^1 x^2\,dx = \frac{1}{3}
+$$
+
+较长的块级公式在窄屏幕上可以横向滚动。
+
+## 分数、求和与矩阵
+
+可直接在分隔符之间使用标准 LaTeX 命令。你无需像在 JavaScript 字符串中那样对反斜杠进行双重转义。
+
+$$
+\sum_{k=1}^{n} k = \frac{n(n+1)}{2}
+$$
+
+```md
+$$
+\begin{pmatrix}
+1 & 2 \\
+3 & 4
+\end{pmatrix}
+$$
+```
+
+$$
+\begin{pmatrix}
+1 & 2 \\
+3 & 4
+\end{pmatrix}
+$$
+
+## 字面美元符号与代码
+
+当美元符号表示货币而非数学公式时，请使用反斜杠对其进行转义：
+
+```md
+The price is \$5 and the shipping cost is \$2.
+```
+
+价格是 \$5，运费是 \$2。
+
+像 `$E = mc^2$` 这样的行内代码以及普通代码围栏会原样保留其内容。数学分隔符内的公式花括号会按 LaTeX 处理，在 MDX 中也是如此。
+
+## 支持的语法与错误
+
+KaTeX 支持 LaTeX 的一个子集。不支持的命令会以红色显示，格式错误的公式会以红色显示其源码，并附带错误提示。文档的其余部分仍会继续渲染。需要可信 HTML 或外部资源的命令已被禁用。
+
+可用命令请参阅 [KaTeX supported functions](https://katex.org/docs/supported)。

@@ -28,19 +28,20 @@ export interface ConfigDocs {
   categories?: ConfigDocsCategories
   /** Tag names mapped to CSS colors, referenced by document frontmatter. */
   tags?: Record<string, string>
-  // i18n?: ConfigDocsI18N
+  i18n?: ConfigDocsI18N
 }
 
 export interface ConfigDocsI18N {
-  label: string
-  /**
-   * 例如 zh、en，我们会将 `XXX.zh.mdx` / `XXX.en.mdx` 设置成对应的 i18n 翻译
-   */
-  extension: string
-  /**
-   * 和 extension 一样
-   */
-  defaultLang: string
+  defaultLocale: string
+  locales: Record<string, { label: string; messages?: Partial<DocsMessages> }>
+}
+
+export interface DocsMessages {
+  language: string
+  previous: string
+  next: string
+  onThisPage: string
+  fallback: string
 }
 
 export interface ConfigFooter {
@@ -80,6 +81,7 @@ export type ConfigDocsCategories = {
   /** Lucide name (lamp-icon, LampIcon, lucide:lamp) or Simple Icons name (simple:github, SiGithub). */
   icon: string
   name: string
+  i18n?: Record<string, string>
   slug: string
   docs: ConfigDocsCategoryDocs
 }[]

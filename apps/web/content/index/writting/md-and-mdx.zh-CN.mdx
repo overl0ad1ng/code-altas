@@ -1,0 +1,80 @@
+---
+title: MD 与 MDX
+---
+
+CodeAltas 支持使用 Markdown（`.md`）和 MDX（`.mdx`）编写文档。
+
+Markdown 提供了一种简单、易读的方式来创建结构化内容，而 MDX 在 Markdown 的基础上增加了组件能力，使文档能够包含交互式元素。本质上，MDX 是 Markdown 与 JSX 的结合。
+
+## 什么是 Markdown？
+
+Markdown（通常缩写为 MD）是一种轻量级标记语言。
+
+它使用简单的符号来表示文本结构——例如标题、列表、链接和代码块——让作者能够专注于内容本身，而无需编写原始 HTML。
+
+一个简单的 Markdown 文件：
+
+```md
+# Hello Code Altas
+
+This is a paragraph.
+
+- Item A
+- Item B
+
+1. List A
+2. List B
+
+... other
+```
+
+Markdown 的主要特点：
+
+- 语法简单
+- 纯文本文件格式
+- 易于进行版本控制
+- 适合编写文档、README、博客文章等
+
+## 什么是 MDX？
+
+MDX 代表 `Markdown + JSX`。它在 Markdown 的基础上扩展了 JSX 能力，允许在 Markdown 文件中直接使用 React 组件。
+
+标准 Markdown 只能描述内容：
+
+```md
+# Installation
+
+Install CodeAltas with npm.
+```
+
+而 MDX 则允许嵌入组件：
+
+```mdx
+# Installation
+
+<InstallCommand package="codealtas" />
+```
+
+`InstallCommand` 是一个 JSX 组件。
+
+## Markdown 与 MDX 的区别
+
+尽管 MDX 融合了 Markdown，但两者并不完全相同。
+
+| 特性 | Markdown | MDX |
+|---|---|---|
+| 标题 | ✅ 支持 | ✅ 支持 |
+| 列表 | ✅ 支持 | ✅ 支持 |
+| 引用块 | ✅ 支持 | ✅ 支持 |
+| 代码块 | ✅ 支持 | ✅ 支持 |
+| 图片 | ✅ 支持 | ✅ 支持 |
+| 链接 | ✅ 支持 | ✅ 支持 |
+| HTML 标签 | ✅ 部分支持 | ❌ 不直接支持 |
+| JSX 组件 | ❌ 不支持 | ✅ 支持 |
+| React 组件 | ❌ 不支持 | ✅ 支持 |
+| 导入 / 导出 | ❌ 不支持 | ✅ 支持 |
+| JavaScript 表达式 | ❌ 不支持 | ✅ 支持 |
+| 视频 | ❌ 不支持 | ✅ 支持 |
+| Tabs | ❌ 不支持 | ✅ 支持 |
+| Steps | ❌ 不支持 | ✅ 支持 |
+| FileTree | ❌ 不支持 | ✅ 支持 |

@@ -1,0 +1,129 @@
+---
+title: 状态
+description: 以紧凑的状态栏展示 API 或组件的生命周期以及受支持的版本范围。
+---
+
+<Status since="0.1.6" />
+
+> 这便是 Status 的状态 ;)
+
+## 稳定
+
+如果不指定结束版本，支持会自动延续到 **Latest**。
+
+<Preview>
+  <Status since="1.2.0" />
+</Preview>
+
+## 实验性与 Beta
+
+使用 `status` 明确描述功能的成熟度。
+
+<Preview>
+
+<Status status="experimental" since="2.0.0" />
+
+</Preview>
+
+<Preview>
+
+<Status status="beta" since="2.1.0" />
+
+</Preview>
+
+```mdx
+<Status status="experimental" since="2.0.0" />
+<Status status="beta" since="2.1.0" />
+```
+
+## 已弃用
+
+弃用是生命周期中的一个里程碑，**而非最后一个受支持的版本**。如果不指定 `removedIn`，被弃用的功能仍会一直支持到 Latest。
+
+<Preview>
+
+<Status since="1.2.0" deprecatedIn="2.4.0" />
+
+</Preview>
+
+```mdx
+<Status since="1.2.0" deprecatedIn="2.4.0" />
+```
+
+## 已弃用并已移除
+
+该状态栏会清晰区分全部三个里程碑：在 v1.2.0 中引入，在 v2.4.0 中弃用，在 v3.0.0 中移除。Removed 版本标志着可用性的终止；它并不是一个包含在支持范围内的版本。
+
+<Preview>
+
+<Status since="1.2.0" deprecatedIn="2.4.0" removedIn="3.0.0" />
+
+</Preview>
+
+```mdx
+<Status since="1.2.0" deprecatedIn="2.4.0" removedIn="3.0.0" />
+```
+
+## 当前状态与计划中的里程碑
+
+Code Atlas 目前没有全局的当前版本。该组件会将所提供的里程碑视为已经到达：如果设置了 `removedIn` 则推断为 Removed，否则如果设置了 `deprecatedIn` 则推断为 Deprecated，否则为 Stable。它不会比较版本，也不会读取 UI 包的版本。
+
+显式设置的 `status` 始终会覆盖上述推断，同时不会隐藏生命周期信息。对于计划中的弃用或移除，请显式设置当前状态。未来的集成可以根据所记录产品的当前版本来计算该覆盖值。
+
+<Preview>
+
+<Status
+  status="deprecated"
+  since="1.2.0"
+  deprecatedIn="2.4.0"
+  removedIn="3.0.0"
+/>
+
+</Preview>
+
+```mdx
+<Status
+  status="deprecated"
+  since="1.2.0"
+  deprecatedIn="2.4.0"
+  removedIn="3.0.0"
+/>
+```
+
+## 属性
+
+`Status` 会自动注册到 MDX 中。在 React 中，可从 `@code-altas/ui` 导入 `Status`、`StatusProps` 和 `StatusType`。
+
+<Props name="Status">
+  <Prop
+    property="since"
+    type="string"
+    defaultValue="必填"
+    description="引入版本；可接受可选的前导 v。"
+  />
+  <Prop
+    property="deprecatedIn"
+    type="string"
+    defaultValue="-"
+    description="弃用里程碑。支持会一直持续到被移除。"
+  />
+  <Prop
+    property="removedIn"
+    type="string"
+    defaultValue="-"
+    description="移除里程碑。省略时，范围会在 Latest 结束。"
+  />
+  <Prop
+    property="status"
+    type="experimental | beta | stable | deprecated | removed"
+    defaultValue="推断"
+    description="覆盖当前状态，同时保留所有里程碑。"
+  />
+  <Prop
+    property="className"
+    type="string"
+    defaultValue="-"
+    description="为全宽区块提供的额外样式。"
+  />
+</Props>
+同时也支持标准的 `div` 属性。该状态栏会在狭窄的文档栏内自动换行，并复用现有的边框、圆角和主题 token，以适配浅色和深色模式。

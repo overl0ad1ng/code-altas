@@ -6,7 +6,7 @@ import rehypeKatex from "rehype-katex"
 
 import { getDocsComponents } from "../ui/mdx/components"
 import type { ReadDocResult } from "./docs-content"
-import type { ConfigExperimental } from "../interface/Config"
+import type { ConfigExperimental, ConfigDocsI18N } from "../interface/Config"
 import { remarkPreview } from "./remark-preview"
 import { rehypeHeadingIds } from "./rehype-heading-ids"
 import { rehypeMermaid } from "./rehype-mermaid"
@@ -15,13 +15,17 @@ import { rehypeMermaid } from "./rehype-mermaid"
 export async function renderDoc(
   doc: Pick<ReadDocResult, "content" | "extension" | "slug" | "title">,
   components?: MDXComponents,
-  experimental?: ConfigExperimental
+  experimental?: ConfigExperimental,
+  localization?: { locale?: string; i18n?: ConfigDocsI18N }
 ) {
   let result
   try {
     result = await evaluate<Record<string, unknown>>({
       source: doc.content,
-      components: { ...getDocsComponents(experimental), ...components },
+      components: {
+        ...getDocsComponents(experimental, localization),
+        ...components,
+      },
       options: {
         parseFrontmatter: true,
         disableImports: true,

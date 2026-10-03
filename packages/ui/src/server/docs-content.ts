@@ -7,6 +7,7 @@ import {
   type DocEntry,
 } from "../lib/docs-content"
 import { loadCodeAtlasConfig } from "./config"
+import { parseDocsRoute } from "../lib/docs-i18n"
 
 export type DocExtension = ".md" | ".mdx"
 export type DocContentErrorCode =
@@ -26,6 +27,8 @@ export class DocContentError extends Error {
 export type ReadDocResult = DocEntry & {
   content: string
   extension: DocExtension
+  locale?: string
+  contentLocale?: string
 }
 
 function assertContained(root: string, path: string) {
@@ -45,9 +48,12 @@ function isMissing(error: unknown) {
 }
 
 /** Index configured documents without requiring their content files to exist. */
-export async function loadDocsIndex(cwd = process.cwd()): Promise<DocEntry[]> {
+export async function loadDocsIndex(
+  cwd = process.cwd(),
+  locale?: string
+): Promise<DocEntry[]> {
   const config = await loadCodeAtlasConfig(cwd)
-  return flattenDocs(config.docs?.categories ?? [])
+  return flattenDocs(config.docs?.categories ?? [], locale)
 }
 
 /** Read UTF-8 source only; Markdown, frontmatter and JSX are returned unchanged. */
@@ -55,8 +61,12 @@ export async function readDoc(
   slug: string,
   cwd = process.cwd()
 ): Promise<ReadDocResult> {
-  const key = normalizeDocSlug(slug)
-  const entries = await loadDocsIndex(cwd)
+  normalizeDocSlug(slug)
+  const config = await loadCodeAtlasConfig(cwd)
+  const i18n = config.docs?.i18n
+  const route = parseDocsRoute(slug, i18n)
+  const key = normalizeDocSlug(route.slug)
+  const entries = flattenDocs(config.docs?.categories ?? [], route.locale)
   const entry = entries.find((item) => normalizeDocSlug(item.slug) === key)
   if (!entry)
     throw new DocContentError(
@@ -64,6 +74,8 @@ export async function readDoc(
       `Document slug is not configured: ${slug}`
     )
 
+  const contentPath = entry.contentPath
+  const documentSlug = entry.slug
   const root = resolve(cwd, "content")
   let physicalRoot: string
   try {
@@ -77,31 +89,44 @@ export async function readDoc(
     throw error
   }
 
-  const candidates = await Promise.all(
-    ([".md", ".mdx"] as const).map(async (extension) => {
-      const path = resolve(root, `${entry.contentPath}${extension}`)
-      assertContained(root, path)
-      let physicalPath: string
-      try {
-        physicalPath = await realpath(path)
-      } catch (error) {
-        if (isMissing(error)) return null
-        throw error
-      }
-      assertContained(physicalRoot, physicalPath)
-      if (!(await stat(physicalPath)).isFile()) {
-        throw new Error(`Content path is not a regular file: ${path}`)
-      }
-      return { path: physicalPath, extension }
-    })
-  )
-  const files = candidates.filter((file) => file !== null)
-  if (files.length > 1) {
-    throw new Error(
-      `Ambiguous content for ${entry.slug}: both ${entry.contentPath}.md and .mdx exist`
+  async function findFile(suffix: string) {
+    const candidates = await Promise.all(
+      ([".md", ".mdx"] as const).map(async (extension) => {
+        const path = resolve(root, `${contentPath}${suffix}${extension}`)
+        assertContained(root, path)
+        let physicalPath: string
+        try {
+          physicalPath = await realpath(path)
+        } catch (error) {
+          if (isMissing(error)) return null
+          throw error
+        }
+        assertContained(physicalRoot, physicalPath)
+        if (!(await stat(physicalPath)).isFile()) {
+          throw new Error(`Content path is not a regular file: ${path}`)
+        }
+        return { path: physicalPath, extension }
+      })
     )
+    const files = candidates.filter((file) => file !== null)
+    if (files.length > 1) {
+      throw new Error(
+        `Ambiguous content for ${documentSlug}: both ${contentPath}${suffix}.md and .mdx exist`
+      )
+    }
+    const file = files[0]
+    return file
   }
-  const file = files[0]
+  let contentLocale = route.locale
+  let file = i18n ? await findFile(`.${route.locale}`) : await findFile("")
+  if (!file && i18n && route.locale !== i18n.defaultLocale) {
+    contentLocale = i18n.defaultLocale
+    file = await findFile(`.${i18n.defaultLocale}`)
+  }
+  if (!file && i18n) {
+    contentLocale = i18n.defaultLocale
+    file = await findFile("")
+  }
   if (!file) {
     throw new DocContentError(
       "CONTENT_FILE_NOT_FOUND",
@@ -110,7 +135,15 @@ export async function readDoc(
   }
   return {
     ...entry,
+    title:
+      contentLocale !== route.locale
+        ? flattenDocs(config.docs?.categories ?? [], contentLocale).find(
+            (item) => item.contentPath === entry.contentPath
+          )!.title
+        : entry.title,
     extension: file.extension,
     content: await readFile(file.path, "utf8"),
+    locale: route.locale,
+    contentLocale,
   }
 }

@@ -1,0 +1,58 @@
+---
+title: 包安装
+description: 在 npm、pnpm、yarn 和 bun 的安装命令之间切换。
+---
+
+<Status since="0.1.4" />
+
+## 用法
+
+传入一个包名，即可为全部四种包管理器生成安装命令。每个标签页都会显示对应管理器的图标以及可复制的命令。
+
+<Preview>
+  <PackageInstall package="@code-altas/ui@beta" />
+</Preview>
+
+
+| 包管理器 | 命令 |
+| --- | --- |
+| npm | `npm install @code-altas/ui@beta` |
+| pnpm | `pnpm install @code-altas/ui@beta` |
+| yarn | `yarn add @code-altas/ui@beta` |
+| bun | `bun add @code-altas/ui@beta` |
+
+包的 scope、版本和分发标签都会被保留。你也可以传入多个以空格分隔的包名。
+
+## 默认包管理器
+
+默认选中的第一个标签页是 `npm`。可以使用 `defaultManager` 指定以其他包管理器作为初始选项。读者仍然可以在全部四个标签页之间切换。
+
+<Preview>
+
+<PackageInstall package="@code-altas/ui@beta" defaultManager="pnpm" />
+
+</Preview>
+
+```mdx title="Default Manager"
+<PackageInstall package="@code-altas/ui@beta" defaultManager="pnpm" />
+```
+
+## 多个包
+
+<Preview>
+
+<PackageInstall package="react react-dom" />
+
+</Preview>
+
+```mdx title="Multiple Packages"
+<PackageInstall package="react react-dom" />
+```
+
+## 属性
+
+<Props name="PackageInstall">
+  <Prop property="package" type="string" defaultValue="-" description="必填的包名，可以包含版本或标签。多个包之间用空格分隔。" />
+  <Prop property="defaultManager" type="npm | pnpm | yarn | bun" defaultValue="npm" description="初始选中的包管理器。" />
+  <Prop property="className" type="string" defaultValue="-" description="为该组件添加的额外类名。" />
+</Props>

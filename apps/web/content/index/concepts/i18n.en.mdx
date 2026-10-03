@@ -1,0 +1,179 @@
+---
+title: Internationalization (i18n)
+description: Configure languages, write translated documents, and keep navigation in the reader's selected language.
+---
+
+Internationalization, often shortened to **i18n**, prepares your documentation for multiple languages. Code Atlas lets translations share one navigation structure and one document slug, while each language has its own content file.
+
+Configure supported languages in `docs.i18n`, then add translated Markdown or MDX files beside your existing documents. Readers can switch languages from the header without leaving the current article.
+
+## Configure languages
+
+Add `i18n` to the `docs` section of `codealtas.config.ts`:
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config"
+
+export default defineConfig({
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.png",
+  docs: {
+    i18n: {
+      defaultLocale: "en",
+      locales: {
+        en: { label: "English" },
+        "zh-CN": { label: "简体中文" },
+      },
+    },
+    categories: [
+      {
+        name: "Getting Started",
+        i18n: { "zh-CN": "开始使用" },
+        icon: "lucide:lamp",
+        slug: "index",
+        docs: [
+          {
+            name: "Guides",
+            i18n: { "zh-CN": "指南" },
+            docs: [
+              {
+                name: "Quick Start",
+                i18n: { "zh-CN": "快速开始" },
+                slug: "quickstart",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+})
+```
+
+| Setting | Purpose |
+| --- | --- |
+| `defaultLocale` | Language used when the URL has no language prefix. Must be a key in `locales`. |
+| `locales` | Supported language codes and their configuration. |
+| `label` | Language name displayed in the header dropdown. |
+| `messages` | Optional overrides for documentation interface text. |
+
+Use the same language code everywhere, including capitalization: `zh-CN` in configuration, filenames, navigation translations, and URLs. Each language needs a nonempty label. Codes such as `en`, `zh-CN`, and `pt-BR` are supported; slashes and dots are not allowed in codes.
+
+The language dropdown appears automatically in the supplied layouts' header when at least two languages are configured. It sits to the left of the theme button. Omitting `docs.i18n` preserves the single-language behavior.
+
+## Write translated documents
+
+Keep the existing slug-to-file mapping and insert the language code before `.md` or `.mdx`:
+
+```text title="Content files"
+content/index/quickstart.en.mdx
+content/index/quickstart.zh-CN.mdx
+```
+
+Both files belong to the same `slug: "quickstart"` entry. Register the document once; you do not need a separate category or navigation entry for each translation.
+
+Each translation has its own frontmatter and body:
+
+```md title="content/index/quickstart.en.mdx"
+---
+title: Quick Start
+description: Set up your first documentation site.
+---
+
+## Install the package
+
+Add Code Atlas to your project with your package manager.
+```
+
+```md title="content/index/quickstart.zh-CN.mdx"
+---
+title: 快速开始
+description: 搭建你的第一个文档站点。
+---
+
+## 安装依赖
+
+使用包管理器将 Code Atlas 添加到你的项目。
+```
+
+Frontmatter `title` and `description` determine the page heading and metadata. Without a frontmatter title, the page uses the configured name for the content's language. See [Frontmatter](/docs/writting/frontmatter) for the supported fields.
+
+Existing files such as `quickstart.mdx` remain valid as default-language content. When both `quickstart.en.mdx` and `quickstart.mdx` exist, the explicitly named English version takes precedence. For any one suffix, keep either `.md` or `.mdx`: having both `quickstart.zh-CN.md` and `quickstart.zh-CN.mdx` is an error.
+
+## Translate navigation labels
+
+Categories, groups, and document entries all accept an `i18n` map. The keys are language codes; the values are translated display names:
+
+```ts title="Document entry"
+{
+  name: "Quick Start",
+  i18n: {
+    "zh-CN": "快速开始",
+  },
+  slug: "quickstart",
+}
+```
+
+`name` is the fallback when a label has no translation. Navigation translations control the sidebar and pagination labels; they do not translate the article body or its frontmatter. Keep `slug` unchanged across languages so switching languages resolves to the same document.
+
+## Language URLs and switching
+
+The default language keeps the existing `/docs` URLs. Other languages add a prefix immediately after `/docs`:
+
+| Document | English (`en`, default) | Simplified Chinese (`zh-CN`) |
+| --- | --- | --- |
+| Documentation home | `/docs` | `/docs/zh-CN` |
+| Quick Start | `/docs/quickstart` | `/docs/zh-CN/quickstart` |
+| This article | `/docs/concepts/i18n` | `/docs/zh-CN/concepts/i18n` |
+
+The supplied `DocsPage` reads the language from the existing catch-all `slug` parameter. You can keep `app/docs/[[...slug]]/page.tsx`; a separate route for every language is unnecessary. The filename mapping still includes category and parent group slugs, with `index` segments removed only from public URLs. See [File System](/docs/concepts/filesystem).
+
+The language dropdown preserves the current document path, query string, and hash. A translated heading may have a different generated anchor, so a preserved hash only scrolls to a heading if that ID also exists in the translated article. Selecting a language from a page outside `/docs` opens the documentation home in that language.
+
+Sidebar and pagination links use the selected language. Ordinary Markdown links such as `[Quick Start](/docs/quickstart)` also keep that language when rendered by `DocsPage`. A link with an explicit configured language prefix, such as `/docs/en/quickstart`, keeps its specified language; external links and links outside `/docs` stay unchanged. A custom `a` renderer is responsible for its own link handling.
+
+Configured language codes are reserved as the first segment of a public document slug. For example, a document cannot use `zh-CN/guide` when `zh-CN` is configured as a language.
+
+This site's `proxy.ts` redirects explicit default-language paths such as `/docs/en/quickstart` to `/docs/quickstart`. It also passes the current language to the root layout for the initial HTML `lang` attribute. If you use Code Atlas in another app, provide the corresponding app-level Proxy and root-layout integration when you need this behavior; `docs.i18n` alone does not install those files.
+
+## Missing translations
+
+For a Chinese request with English as the default language, Code Atlas looks for content in this order:
+
+1. The requested language: `quickstart.zh-CN.md` or `quickstart.zh-CN.mdx`.
+2. The default language: `quickstart.en.md` or `quickstart.en.mdx`.
+3. The existing file without a language suffix: `quickstart.md` or `quickstart.mdx`.
+
+For an English request, the reader starts at step 2. It does not fall back to an arbitrary other language.
+
+When the requested translation is unavailable, the URL and navigation keep the selected language. A notice above the article identifies the fallback language, and the article's `lang` attribute reflects the language of its content. If none of the candidate files exist, the page returns 404. A malformed or ambiguous translation produces an error rather than silently falling back.
+
+This allows you to enable a new language before translating every article.
+
+## Customize interface text
+
+Code Atlas includes English and Chinese text for the language selector, pagination, table of contents, and fallback notice. Other languages use English for these strings unless you supply `messages`:
+
+```ts title="Custom language messages"
+i18n: {
+  defaultLocale: "en",
+  locales: {
+    en: { label: "English" },
+    fr: {
+      label: "Français",
+      messages: {
+        language: "Langue",
+        previous: "Précédent",
+        next: "Suivant",
+        onThisPage: "Sur cette page",
+        fallback: "Ce document n'est pas disponible dans cette langue. Version affichée : {language}.",
+      },
+    },
+  },
+}
+```
+
+All message fields are optional, so you can override just one string. Keep `{language}` in a custom fallback message to display the name of the content's language.
+
+This feature covers documentation content and the interface strings listed above. Site title, header navigation labels, footer text, component-specific labels, and `ChangelogPage` content require separate translation handling.

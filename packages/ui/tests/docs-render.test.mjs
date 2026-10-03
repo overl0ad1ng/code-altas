@@ -50,6 +50,21 @@ const { getSiteMetadata, getDocMetadata } = await jiti.import(
   "../src/server/metadata.ts"
 )
 
+test("localized document links preserve queries and anchors without rewriting explicit locales or external URLs", async () => {
+  const result = await renderDoc({
+    content: '[Guide](/docs/quickstart?mode=read#setup)\n\n[English](/docs/en/quickstart)\n\n[External](https://example.com/docs)\n\n[Changelog](/changelog)',
+    extension: ".mdx", slug: "/", title: "首页",
+  }, undefined, undefined, {
+    locale: "zh-CN",
+    i18n: { defaultLocale: "en", locales: { en: { label: "English" }, "zh-CN": { label: "简体中文" } } },
+  })
+  const html = renderToStaticMarkup(result.content)
+  assert.match(html, /href="\/docs\/zh-CN\/quickstart\?mode=read#setup"/)
+  assert.match(html, /href="\/docs\/en\/quickstart"/)
+  assert.match(html, /href="https:\/\/example.com\/docs"/)
+  assert.match(html, /href="\/changelog"/)
+})
+
 test("Status keeps deprecation separate from the support endpoint", () => {
   for (const [props, expectedStatus, latest] of [
     [{ since: "1.2.0" }, "stable", true],

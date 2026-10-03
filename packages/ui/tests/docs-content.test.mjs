@@ -21,6 +21,8 @@ const { DocContentError, loadDocsIndex, readDoc } = await jiti.import(
 const { docHref, getDocsCategorySlug, getDocPagination } = await jiti.import(
   "../src/lib/docs-navigation.ts"
 )
+const { parseDocsRoute, docsMessages } = await jiti.import("../src/lib/docs-i18n.ts")
+const { defineConfig } = await jiti.import("../src/lib/DefineConfig.ts")
 
 test("navigation uses canonical document paths and indexed categories at every depth", () => {
   const entries = flattenDocs([
@@ -134,7 +136,7 @@ test("pagination skips inherited draft/disabled targets but supports direct visi
   })
 })
 
-async function fixture(t, categories) {
+async function fixture(t, categories, i18n) {
   const prefix = resolve(tmpdir(), "codeatlas-content-")
   const cwd = await mkdtemp(prefix)
   t.after(async () => {
@@ -145,7 +147,7 @@ async function fixture(t, categories) {
   })
   await writeFile(
     join(cwd, "codealtas.config.ts"),
-    `export default ${JSON.stringify({ title: "Test", description: "Test", logo: "/logo.png", docs: { categories } })}`
+    `export default ${JSON.stringify({ title: "Test", description: "Test", logo: "/logo.png", docs: { categories, i18n } })}`
   )
   const put = async (path, content) => {
     const fullPath = resolve(cwd, "content", path)
@@ -382,4 +384,59 @@ test("reads the repository's existing Chinese homepage", async () => {
     await readFile(join(cwd, "content/index/index.mdx"), "utf8")
   )
   assert.equal(result.contentPath, "index/index")
+})
+
+const i18n = {
+  defaultLocale: "en",
+  locales: { en: { label: "English" }, "zh-CN": { label: "简体中文" } },
+}
+
+test("locale routes preserve document identity and pagination stays in the selected language", () => {
+  assert.deepEqual(parseDocsRoute("/zh-CN/api/reference", i18n), {
+    locale: "zh-CN", slug: "/api/reference", prefixed: true,
+  })
+  assert.equal(parseDocsRoute("/api/reference", i18n).locale, "en")
+  assert.equal(parseDocsRoute("/fr/api/reference", i18n).slug, "/fr/api/reference")
+  assert.equal(docHref("/", "zh-CN", i18n), "/docs/zh-CN")
+  assert.equal(docHref("/api/", "en", i18n), "/docs/api")
+  const index = flattenDocs([category("index", [
+    page("index"), page("quickstart", { i18n: { "zh-CN": "快速开始" } }),
+  ])], "zh-CN")
+  assert.deepEqual(getDocPagination(index, "/", "zh-CN", i18n).next, {
+    href: "/docs/zh-CN/quickstart", name: "快速开始",
+  })
+  assert.equal(docsMessages("zh-CN", i18n).next, "下一页")
+  assert.equal(docsMessages("en", { ...i18n, locales: { en: { label: "English", messages: { next: "Continue" } } } }).next, "Continue")
+})
+
+test("localized sources take precedence, then fall back to the default locale and legacy source", async (t) => {
+  const { cwd, put } = await fixture(t, [category("index", [
+    page("index", { name: "Home", i18n: { "zh-CN": "首页" } }),
+  ])], i18n)
+  await put("index/index.mdx", "Legacy")
+  let result = await readDoc("/zh-CN", cwd)
+  assert.equal(result.content, "Legacy")
+  assert.equal(result.contentLocale, "en")
+  assert.equal(result.locale, "zh-CN")
+  assert.equal(result.title, "Home")
+  await put("index/index.en.md", "English")
+  result = await readDoc("/zh-CN", cwd)
+  assert.equal(result.content, "English")
+  assert.equal(result.extension, ".md")
+  await put("index/index.zh-CN.mdx", "中文")
+  result = await readDoc("/zh-CN", cwd)
+  assert.equal(result.content, "中文")
+  assert.equal(result.title, "首页")
+  assert.equal(result.contentLocale, "zh-CN")
+  assert.equal((await readDoc("/", cwd)).content, "English")
+  await put("index/index.zh-CN.md", "duplicate")
+  await assert.rejects(readDoc("/zh-CN", cwd), /Ambiguous content/)
+  await assert.rejects(readDoc("/fr", cwd), (error) => error.code === "DOCUMENT_NOT_CONFIGURED")
+})
+
+test("i18n config rejects invalid defaults, unsafe locale codes and reserved document slugs", () => {
+  const config = { title: "Test", description: "Test", logo: "/logo.png" }
+  assert.throws(() => defineConfig({ ...config, docs: { i18n: { ...i18n, defaultLocale: "fr" } } }), /defaultLocale/)
+  assert.throws(() => defineConfig({ ...config, docs: { i18n: { defaultLocale: "../en", locales: { "../en": { label: "Unsafe" } } } } }), /Invalid docs locale/)
+  assert.throws(() => defineConfig({ ...config, docs: { i18n, categories: [category("index", [page("zh-CN/index")])] } }), /conflicts with a locale/)
 })

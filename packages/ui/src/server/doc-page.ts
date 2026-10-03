@@ -9,11 +9,11 @@ import type { MDXComponents } from "next-mdx-remote-client/rsc"
 export const readRenderedDoc = cache(
   async (slug: string, cwd: string, components?: MDXComponents) => {
     const doc = await readDoc(slug, cwd)
-    const rendered = await renderDoc(
-      doc,
-      components,
-      (await loadCodeAtlasConfig(cwd)).experimental
-    )
+    const config = await loadCodeAtlasConfig(cwd)
+    const rendered = await renderDoc(doc, components, config.experimental, {
+      locale: doc.locale,
+      i18n: config.docs?.i18n,
+    })
     return { doc, rendered }
   }
 )

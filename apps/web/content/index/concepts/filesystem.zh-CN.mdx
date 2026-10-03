@@ -1,0 +1,213 @@
+---
+title: 文件系统
+description: 了解配置中的 slug 如何映射到内容文件和 URL、index 文件的工作方式，以及变更日志应存放在哪里。
+---
+
+Code Atlas 将文档保存在你的项目中。Next.js 负责应用路由，而 Code Atlas 则依据 `codealtas.config.ts` 中的 slug 从 `content` 目录读取文档文件。
+
+这两者职责相互独立：将文件放入 `content` 并不会创建 Next.js 路由，也不会自动将其加入你的文档导航。
+
+## 项目结构
+
+下面的示例采用了与本文档站点相同的目录布局：
+
+<FileTree
+  files={[
+    "app/layout.tsx",
+    "app/docs/layout.tsx",
+    "app/docs/[[...slug]]/page.tsx",
+    "app/changelog/page.tsx",
+    "content/index/index.mdx",
+    "content/index/quickstart.mdx",
+    "content/index/guides/index.mdx",
+    "content/index/guides/installation.md",
+    "content/components/index.mdx",
+    "content/components/tabs.mdx",
+    "content/changelog.mdx",
+    "public/logo.png",
+    "codealtas.config.ts",
+    "package.json",
+  ]}
+/>
+
+路径都相对于 **Next.js 应用根目录**，也就是你运行应用的目录。在本 monorepo 中，该目录是 `apps/web`，因此内容目录是 `apps/web/content`。
+
+如果你的 Next.js 路由位于 `src/app`，请仍将 `content` 和 `codealtas.config.ts` 放在应用根目录下。把路由移入 `src` 不会改变默认内容读取器查找文件的位置。
+
+## 配置决定文档路径
+
+在 `codealtas.config.ts` 中定义你的文档分类和页面。文件名使用 `codealtas`，与包名 `@code-altas/ui` 相对应。
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config"
+
+export default defineConfig({
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.png",
+  docs: {
+    tags: {
+      "Version Released": "#8A0194",
+    },
+    categories: [
+      {
+        name: "Getting Started",
+        icon: "lucide:lamp",
+        slug: "index",
+        docs: [
+          {
+            name: "Overview",
+            docs: [
+              { name: "Introduction", slug: "index" },
+              { name: "Quick Start", slug: "quickstart" },
+            ],
+          },
+          {
+            name: "Guides",
+            slug: "guides",
+            docs: [
+              { name: "Overview", slug: "index" },
+              { name: "Installation", slug: "installation" },
+            ],
+          },
+        ],
+      },
+      {
+        name: "Components",
+        icon: "lucide:puzzle",
+        slug: "components",
+        docs: [
+          { name: "Introduction", slug: "index" },
+          { name: "Tabs", slug: "tabs" },
+        ],
+      },
+    ],
+  },
+})
+```
+
+一个文档的文件路径由它的分类 slug、各级父分组 slug 以及它自身的 slug 组合而成，然后再加上 `.md` 或 `.mdx`：
+
+```text
+content/<category-slug>/<parent-slugs>/<document-slug>.mdx
+```
+
+在 slug 中使用正斜杠，并省略文件扩展名。`name` 是用于显示的标签，而不是文件名。像 `Overview` 这样没有 `slug` 的分组只用于组织导航，不会在路径中增加目录。
+
+在上面的示例中，`Guides` 分组带有 `slug: "guides"`，因此它的文档位于 `content/index/guides/`。
+
+## index 文件的工作方式
+
+`index` 是存储文件路径中真实存在的一段，但 Code Atlas 会从公开的文档 URL 中移除名为 `index` 的片段。
+
+当文档挂载在 `/docs` 下时，示例配置的映射结果如下：
+
+| 配置 slug 路径 | 内容文件 | 公开 URL |
+| ------------------------------- | -------------------------------------- | --------------------------- |
+| `index → index`                 | `content/index/index.mdx`              | `/docs`                     |
+| `index → quickstart`            | `content/index/quickstart.mdx`         | `/docs/quickstart`          |
+| `index → guides → index`        | `content/index/guides/index.mdx`       | `/docs/guides`              |
+| `index → guides → installation` | `content/index/guides/installation.md` | `/docs/guides/installation` |
+| `components → index`            | `content/components/index.mdx`         | `/docs/components`          |
+| `components → tabs`             | `content/components/tabs.mdx`          | `/docs/components/tabs`     |
+
+第一行特意包含了两个 `index` 片段：一个用于分类，一个用于它的介绍页。它们在磁盘上都会保留，但在 URL 中都会消失。
+
+index 文档充当其配置路径的落地页。它不会成为应用的 `/` 首页；首页仍然是需要你单独定义的 Next.js 页面。
+
+除非你为某个文件夹配置了 index 文档，否则该文件夹并不要求必须有 index 文件。仅创建 `index.mdx` 也不会注册页面：它必须在配置中有对应的条目。
+
+末尾斜杠指向的是同一个文档。例如，`/docs/components` 与 `/docs/components/` 会解析到同一个配置条目。
+
+## Markdown 与 MDX 文件
+
+每个已配置的文档都可以使用 `.md` 或 `.mdx`：
+
+- 使用 `.md` 编写 Markdown 内容。
+- 当你需要 JSX、表达式，或 `Tabs`、`Steps`、`FileTree` 等组件时，请使用 `.mdx`。
+
+读取器会同时检查这两种扩展名。对于每个已配置的文档，请只保留一个文件：如果在同一路径下同时存在 `quickstart.md` 和 `quickstart.mdx`，将产生错误，而不会自动选择其中一个。
+
+文件以 UTF-8 读取。两种格式都可以添加 frontmatter：
+
+```md title="content/index/quickstart.mdx"
+---
+title: Quick Start
+description: Set up your first documentation pages.
+---
+
+## Prepare your project
+
+Your documentation starts here.
+```
+
+frontmatter 控制的是展示效果，而不是路由。修改 `title` 不会重命名文件，也不会改变它的 URL；这些都由配置中的 slug 决定。如果 frontmatter 中没有 title，文档会使用它配置的 `name`。
+
+更多详情请参阅 [MD and MDX](/docs/writting/md-and-mdx) 和 [Frontmatter](/docs/writting/frontmatter)。
+
+## 变更日志文件
+
+变更日志使用一套单独且固定的文件约定：
+
+```text
+content/changelog.mdx
+```
+
+`ChangelogPage` 会直接从应用根目录读取这个文件。你无需将它添加到 `docs.categories`，无需把它放进 `content/index`，也无需创建名为 `changelog` 的分类。
+
+要将其暴露在 `/changelog` 路径下，请在 Next.js 路由中渲染该组件：
+
+```tsx title="app/changelog/page.tsx"
+import { ChangelogPage } from "@code-altas/ui"
+
+export const dynamic = "force-dynamic"
+export const metadata = { title: "Changelog" }
+
+export default function Page() {
+  return <ChangelogPage />
+}
+```
+
+使用 `DefaultLayout` 作为该路由的布局，以提供站点配置和主题，就像本站点所做的那样。布局与路由的细节请参阅 [Layout and Page](/docs/layout-and-page)。
+
+该文件支持 frontmatter，以及和文档页面相同的 MDX 组件。使用 `Changelogs` 对版本进行分组，用 `Changelog` 表示单个条目：
+
+```mdx title="content/changelog.mdx"
+---
+title: Changelog
+---
+
+<Changelogs sortBy="date">
+  <Changelog date="2026/10/2" title="First release" tags={["Version Released"]}>
+    Our first release is available.
+  </Changelog>
+</Changelogs>
+```
+
+`sortBy="date"` 会把最新的版本排在最前面。使用 `sortBy="index"` 可以保留文件中的书写顺序。日期接受 `YYYY/MM/DD` 或 `YYYY-MM-DD` 格式，并会以格式化后的日历日期显示。
+
+版本标签使用 `docs.tags` 中对应的颜色。没有配置颜色的标签仍会以灰色作为回退颜色显示。
+
+变更日志读取器明确要求 `.mdx`；`content/changelog.md` 不能作为替代。空的 `changelog.mdx` 是有效的，而文件缺失会返回 404。页面标题来自 frontmatter，缺省时回退为 `Changelog`。
+
+## 公开资源
+
+将图片和其他公开资源存放在应用的 `public` 目录中，与 `content` 分开：
+
+```text
+public/logo.png       → /logo.png
+public/images/ui.png  → /images/ui.png
+```
+
+例如，在配置中使用 `logo: "/logo.png"`，或在文档中使用 `![Interface](/images/ui.png)`。请不要在 URL 中包含 `public`。
+
+## 常见错误
+
+- **文件存在但页面返回 404。** 请检查它是否已在 `docs.categories` 中注册，以及它的路径是否与每一个配置的 slug 匹配。
+- **已配置的页面返回 404。** 请检查它的 `.md` 或 `.mdx` 文件是否存在于应用的 `content` 目录下。
+- **找不到 index 页面。** 即使 `index` 会从 URL 中省略，也要在存储路径中保留它。
+- **两个条目共用同一个 URL。** 移除 `index` 片段可能导致不同的配置路径解析到同一个 URL。Code Atlas 会拒绝重复的文档 slug。
+- **两种文件扩展名同时存在。** 每个文档只保留 `.md` 或 `.mdx` 中的一种，而不是两者都要。
+- **变更日志无法加载。** 请检查是否存在 `content/changelog.mdx`，并确保该路由渲染的是 `ChangelogPage` 而不是 `DocsPage`。
+
+Next.js 的页面和布局由你掌控。这些约定定义了内置的文档读取器如何查找你的内容，而不会接管应用的其他部分。

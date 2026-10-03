@@ -1,0 +1,113 @@
+---
+title: 提示
+description: 使用图标、富标题以及可选的折叠内容来突出显示提示信息。
+---
+
+<Status since="0.1.4" />
+
+## 用法
+
+<Preview>
+
+<Hint icon="lucide:info">
+  <HintTitle>请留意</HintTitle>
+  <HintContent>
+
+    标题和内容均支持 **Markdown**、JSX 以及自定义组件。
+
+  </HintContent>
+</Hint>
+
+</Preview>
+
+## 折叠
+
+点击标题上的任意位置即可展开或折叠内容。当标题获得焦点时，也支持通过 **Enter** 和 **Space** 键操作。自定义标题组件内的链接和控件会保留其自身的交互行为。
+
+切换时高度会平滑过渡。内容会保持挂载状态以保留组件状态，并且动画会遵循“减少动态效果”的系统偏好。
+
+<Preview>
+
+<Hint type="tip" icon="lucide:lightbulb" allowCollapse>
+  <HintTitle>默认折叠</HintTitle>
+  <HintContent>
+
+    在不设置 `collapsed` 的情况下设置 `allowCollapse`，提示会以折叠状态开始。
+
+  </HintContent>
+</Hint>
+
+</Preview>
+
+<Preview>
+
+<Hint type="info" icon="lucide:info" collapsed={false}>
+  <HintTitle>默认展开</HintTitle>
+  <HintContent>
+
+    设置 `collapsed={false}` 会启用折叠功能，并让提示以展开状态开始。
+
+  </HintContent>
+</Hint>
+
+</Preview>
+
+| allowCollapse | collapsed | 行为 |
+| --- | --- | --- |
+| 省略 | 省略 | 始终展开，无切换按钮 |
+| 省略 | `true` | 可折叠，默认折叠 |
+| 省略 | `false` | 可折叠，默认展开 |
+| `true` | 省略 | 可折叠，默认折叠 |
+| `true` | `true` / `false` | 可折叠，使用传入的状态 |
+| `false` | 任意值 | 始终展开，无切换按钮 |
+
+更改 `collapsed` 会更新显示的状态。
+
+## 类型
+
+使用 `type` 可以选择提示的边框、背景、标题和图标颜色。默认值为 `default`。所有类型均支持浅色和深色主题。
+
+<Hint type="default" icon="lucide:sticky-note">
+  <HintTitle>默认</HintTitle>
+  <HintContent>使用中性颜色的普通提示。</HintContent>
+</Hint>
+
+<Hint type="info" icon="lucide:info">
+  <HintTitle>信息</HintTitle>
+  <HintContent>以蓝色显示的补充信息。</HintContent>
+</Hint>
+
+<Hint type="success" icon="lucide:circle-check">
+  <HintTitle>成功</HintTitle>
+  <HintContent>以绿色显示的成功结果。</HintContent>
+</Hint>
+
+<Hint type="warning" icon="lucide:triangle-alert">
+  <HintTitle>警告</HintTitle>
+  <HintContent>以琥珀色显示的注意事项。</HintContent>
+</Hint>
+
+<Hint type="danger" icon="lucide:circle-alert">
+  <HintTitle>危险</HintTitle>
+  <HintContent>以红色显示的严重问题。使用 `error` 可获得相同的颜色。</HintContent>
+</Hint>
+
+<Hint type="error" icon="lucide:circle-x">
+  <HintTitle>错误</HintTitle>
+  <HintContent>以红色显示的错误消息。</HintContent>
+</Hint>
+
+<Hint type="tip" icon="lucide:lightbulb">
+  <HintTitle>提示</HintTitle>
+  <HintContent>以紫色显示的有用建议。</HintContent>
+</Hint>
+
+## 属性
+
+<Props name="Hint">
+  <Prop property="icon" type="string" defaultValue="-" description="Lucide 或 Simple Icons 的图标名称，例如 lucide:info 或 simple:typescript。" />
+  <Prop property="type" type="default | info | success | warning | danger | error | tip" defaultValue="default" description="提示的颜色。`error` 与 `danger` 使用相同的颜色。" />
+  <Prop property="allowCollapse" type="boolean" defaultValue="collapsed !== undefined" description="内容是否可折叠。显式设置为 false 会禁用折叠。" />
+  <Prop property="collapsed" type="boolean" defaultValue="undefined" description="为 true 表示折叠。当启用折叠且省略此项时，提示会以折叠状态开始。" />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="HintTitle 和 HintContent，包括自定义组件的子元素。" />
+</Props>

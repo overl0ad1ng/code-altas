@@ -1,0 +1,179 @@
+---
+title: 国际化（i18n）
+description: 配置语言、编写多语言文档，让导航始终跟随读者选择的语言。
+---
+
+国际化通常简称为 **i18n**，用于让文档支持多种语言。Code Atlas 让不同语言的文章共用一套导航结构和同一个文档 slug，每种语言的正文则保存在独立文件中。
+
+在 `docs.i18n` 中配置支持的语言，再把翻译后的 Markdown 或 MDX 文件放到现有文档旁边。读者可以通过 header 中的语言下拉框切换语言，并继续阅读同一篇文章。
+
+## 配置语言
+
+在 `codealtas.config.ts` 的 `docs` 中添加 `i18n`：
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config"
+
+export default defineConfig({
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.png",
+  docs: {
+    i18n: {
+      defaultLocale: "en",
+      locales: {
+        en: { label: "English" },
+        "zh-CN": { label: "简体中文" },
+      },
+    },
+    categories: [
+      {
+        name: "Getting Started",
+        i18n: { "zh-CN": "开始使用" },
+        icon: "lucide:lamp",
+        slug: "index",
+        docs: [
+          {
+            name: "Guides",
+            i18n: { "zh-CN": "指南" },
+            docs: [
+              {
+                name: "Quick Start",
+                i18n: { "zh-CN": "快速开始" },
+                slug: "quickstart",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+})
+```
+
+| 配置项 | 作用 |
+| --- | --- |
+| `defaultLocale` | URL 没有语言前缀时使用的语言，必须是 `locales` 中的一个键。 |
+| `locales` | 支持的语言代码及其配置。 |
+| `label` | header 下拉框中显示的语言名称。 |
+| `messages` | 可选，用于覆盖文档界面的固定文案。 |
+
+语言代码及大小写必须在各处保持一致，例如配置、文件名、导航翻译和 URL 都使用 `zh-CN`。每种语言都需要一个非空的 `label`。支持 `en`、`zh-CN`、`pt-BR` 等代码，代码中不能包含斜杠或点号。
+
+配置至少两种语言后，内置布局的 header 会自动显示语言下拉框，位置在主题按钮左边。不配置 `docs.i18n` 时，保持原有的单语言行为。
+
+## 编写翻译文件
+
+保留现有的 slug 与文件路径映射，在 `.md` 或 `.mdx` 前插入语言代码：
+
+```text title="文档文件"
+content/index/quickstart.en.mdx
+content/index/quickstart.zh-CN.mdx
+```
+
+这两个文件都对应同一个 `slug: "quickstart"` 条目。文档只需注册一次，不必为每种翻译重复创建分类或导航条目。
+
+每个翻译文件都有自己的 frontmatter 和正文：
+
+```md title="content/index/quickstart.en.mdx"
+---
+title: Quick Start
+description: Set up your first documentation site.
+---
+
+## Install the package
+
+Add Code Atlas to your project with your package manager.
+```
+
+```md title="content/index/quickstart.zh-CN.mdx"
+---
+title: 快速开始
+description: 搭建你的第一个文档站点。
+---
+
+## 安装依赖
+
+使用包管理器将 Code Atlas 添加到你的项目。
+```
+
+frontmatter 中的 `title` 和 `description` 决定页面标题和元数据。没有 frontmatter 标题时，页面会使用正文语言对应的配置名称。支持的字段详见 [Frontmatter](/docs/writting/frontmatter)。
+
+已有的 `quickstart.mdx` 仍可作为默认语言的正文。当 `quickstart.en.mdx` 和 `quickstart.mdx` 同时存在时，优先读取带英文后缀的文件。对于同一个后缀，保留 `.md` 或 `.mdx` 中的一种即可：同时存在 `quickstart.zh-CN.md` 和 `quickstart.zh-CN.mdx` 会报错。
+
+## 翻译导航名称
+
+分类、分组和文章条目都支持 `i18n` 映射。键是语言代码，值是翻译后的显示名称：
+
+```ts title="文章条目"
+{
+  name: "Quick Start",
+  i18n: {
+    "zh-CN": "快速开始",
+  },
+  slug: "quickstart",
+}
+```
+
+缺少名称翻译时，使用 `name`。导航翻译决定侧栏和上一篇、下一篇链接中的名称，文章正文和 frontmatter 需要在对应文件中单独翻译。不同语言始终共用同一个 `slug`，这样切换语言时才能定位到同一篇文章。
+
+## 语言 URL 与切换
+
+默认语言保留原有的 `/docs` URL，其他语言在 `/docs` 后添加语言前缀：
+
+| 文档 | 英文（`en`，默认） | 简体中文（`zh-CN`） |
+| --- | --- | --- |
+| 文档首页 | `/docs` | `/docs/zh-CN` |
+| 快速开始 | `/docs/quickstart` | `/docs/zh-CN/quickstart` |
+| 本文 | `/docs/concepts/i18n` | `/docs/zh-CN/concepts/i18n` |
+
+内置 `DocsPage` 会从现有的 catch-all `slug` 参数中解析语言。可以继续使用 `app/docs/[[...slug]]/page.tsx`，无需为每种语言单独建立路由。文件路径仍包含分类和父分组的 slug，只有公开 URL 会省略 `index` 段。详见[文件系统](/docs/concepts/filesystem)。
+
+语言下拉框会保留当前文章路径、查询参数和 hash。翻译后的标题可能生成不同的锚点，因此保留的 hash 只有在目标文章中存在相同 ID 时，才能定位到对应标题。在 `/docs` 以外的页面选择语言时，会打开该语言的文档首页。
+
+侧栏和上一篇、下一篇链接会使用当前语言。由 `DocsPage` 渲染的普通 Markdown 链接，例如 `[快速开始](/docs/quickstart)`，也会保留当前语言。显式带有已配置语言前缀的链接，例如 `/docs/en/quickstart`，保留指定的语言；外部链接和 `/docs` 以外的链接保持原样。如果覆盖了 `a` 渲染器，则需要自行处理链接的语言。
+
+已配置的语言代码是公开文档 slug 第一段的保留名称。例如，配置 `zh-CN` 后，文章不能再使用 `zh-CN/guide` 作为公开路径。
+
+本站的 `proxy.ts` 会把 `/docs/en/quickstart` 这样的默认语言前缀路径重定向到 `/docs/quickstart`，并将当前语言传给根布局，用于首次渲染 HTML 的 `lang` 属性。在其他应用中使用 Code Atlas 时，如果需要这些行为，应添加对应的应用级 Proxy 和根布局处理；配置 `docs.i18n` 本身不会自动安装这些文件。
+
+## 缺少翻译时如何回退
+
+当默认语言为英文、读者请求中文时，Code Atlas 按以下顺序查找正文：
+
+1. 所选语言：`quickstart.zh-CN.md` 或 `quickstart.zh-CN.mdx`。
+2. 默认语言：`quickstart.en.md` 或 `quickstart.en.mdx`。
+3. 不带语言后缀的原有文件：`quickstart.md` 或 `quickstart.mdx`。
+
+请求英文时，从第 2 步开始查找，不会回退到任意其他语言。
+
+缺少所选语言的翻译时，URL 和导航继续使用读者选择的语言，文章上方会显示提示，说明正在使用哪种语言的正文；文章的 `lang` 属性也会标明正文语言。如果所有候选文件都不存在，页面返回 404。翻译文件存在语法错误或同一后缀对应多个文件时，会直接报错，不会静默回退。
+
+因此，你可以先启用一种新语言，再逐步补齐文章翻译。
+
+## 自定义界面文案
+
+Code Atlas 内置了语言选择框、上一篇、下一篇、本页目录和回退提示的英文与中文文案。其他语言默认使用这些字符串的英文版本，也可以通过 `messages` 提供翻译：
+
+```ts title="自定义语言文案"
+i18n: {
+  defaultLocale: "en",
+  locales: {
+    en: { label: "English" },
+    fr: {
+      label: "Français",
+      messages: {
+        language: "Langue",
+        previous: "Précédent",
+        next: "Suivant",
+        onThisPage: "Sur cette page",
+        fallback: "Ce document n'est pas disponible dans cette langue. Version affichée : {language}.",
+      },
+    },
+  },
+}
+```
+
+所有文案字段都是可选的，因此也可以只覆盖一个字符串。自定义回退提示时，保留 `{language}` 占位符，以显示实际正文的语言名称。
+
+这项功能覆盖文档正文和上面列出的界面文案。站点标题、header 导航名称、footer 文案、各组件自身的标签以及 `ChangelogPage` 正文，需要另外处理翻译。

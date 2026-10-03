@@ -4,6 +4,7 @@ import { DocsCategoryNav } from "../../components/docs-category-nav"
 import { DocsCategoryMenu } from "../../components/docs-category-menu"
 import type {
   ConfigDocsCategories,
+  ConfigDocsI18N,
   ConfigDocsCategoryDocs,
 } from "../../interface/Config"
 import { docHref } from "../../lib/docs-navigation"
@@ -17,7 +18,9 @@ import { Logo } from "./logo"
 function collectDocuments(
   docs: ConfigDocsCategoryDocs,
   base: string,
-  entries: Map<string, DocEntry>
+  entries: Map<string, DocEntry>,
+  locale?: string,
+  i18n?: ConfigDocsI18N
 ): BranchedMenuChild[] {
   return docs.flatMap((doc) => {
     if (doc.draft || doc.disabled) return []
@@ -25,11 +28,11 @@ function collectDocuments(
       .filter(Boolean)
       .join("/")
     if (doc.docs?.length) {
-      const children = collectDocuments(doc.docs, path, entries)
+      const children = collectDocuments(doc.docs, path, entries, locale, i18n)
       return children.length
         ? [
             {
-              label: doc.name,
+              label: (locale && doc.i18n?.[locale]) || doc.name,
               value: path,
               children,
               icon: doc.icon && (
@@ -44,8 +47,8 @@ function collectDocuments(
     if (!entry || entry.draft || entry.disabled) return []
     return [
       {
-        label: doc.name,
-        value: docHref(entry.slug),
+        label: (locale && doc.i18n?.[locale]) || doc.name,
+        value: docHref(entry.slug, locale, i18n),
         icon: doc.icon && <ConfigIcon name={doc.icon} className="size-4" />,
       },
     ]
@@ -55,7 +58,9 @@ function collectDocuments(
 function createMenuItems(
   docs: ConfigDocsCategoryDocs,
   base: string,
-  entries: Map<string, DocEntry>
+  entries: Map<string, DocEntry>,
+  locale?: string,
+  i18n?: ConfigDocsI18N
 ): BranchedMenuItem[] {
   return docs.flatMap<BranchedMenuItem>((doc) => {
     if (doc.draft || doc.disabled) return []
@@ -63,18 +68,33 @@ function createMenuItems(
       .filter(Boolean)
       .join("/")
     if (doc.docs?.length) {
-      const children = collectDocuments(doc.docs, path, entries)
-      return children.length ? [{ label: doc.name, children }] : []
+      const children = collectDocuments(doc.docs, path, entries, locale, i18n)
+      return children.length
+        ? [{ label: (locale && doc.i18n?.[locale]) || doc.name, children }]
+        : []
     }
     const entry = entries.get(path)
     return doc.slug && entry && !entry.draft && !entry.disabled
-      ? [{ label: doc.name, value: docHref(entry.slug) }]
+      ? [
+          {
+            label: (locale && doc.i18n?.[locale]) || doc.name,
+            value: docHref(entry.slug, locale, i18n),
+          },
+        ]
       : []
   })
 }
 
-function DocsNav({ categories = [] }: { categories?: ConfigDocsCategories }) {
-  const index = flattenDocs(categories)
+function DocsNav({
+  categories = [],
+  locale,
+  i18n,
+}: {
+  categories?: ConfigDocsCategories
+  locale?: string
+  i18n?: ConfigDocsI18N
+}) {
+  const index = flattenDocs(categories, locale)
   const entries = new Map(index.map((entry) => [entry.contentPath, entry]))
   const menus = categories.map((category) => {
     const slug = category.slug.split("/").filter(Boolean).join("/")
@@ -82,8 +102,8 @@ function DocsNav({ categories = [] }: { categories?: ConfigDocsCategories }) {
       slug,
       hrefs: index
         .filter((entry) => entry.categorySlug === slug)
-        .map((entry) => docHref(entry.slug)),
-      items: createMenuItems(category.docs, slug, entries),
+        .map((entry) => docHref(entry.slug, locale, i18n)),
+      items: createMenuItems(category.docs, slug, entries, locale, i18n),
     }
   })
   const items = categories.flatMap((category) => {
@@ -95,9 +115,9 @@ function DocsNav({ categories = [] }: { categories?: ConfigDocsCategories }) {
     return [
       {
         slug,
-        name: category.name,
-        href: docHref(first.slug),
-        hrefs: documents.map((entry) => docHref(entry.slug)),
+        name: (locale && category.i18n?.[locale]) || category.name,
+        href: docHref(first.slug, locale, i18n),
+        hrefs: documents.map((entry) => docHref(entry.slug, locale, i18n)),
         icon: (
           <ConfigIcon
             name={category.icon}

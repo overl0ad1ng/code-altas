@@ -34,7 +34,7 @@ function visible(element: HTMLElement) {
   )
 }
 
-export function DocsToc() {
+export function DocsToc({ label = "On this page" }: { label?: string }) {
   const anchorRef = useRef<HTMLSpanElement>(null)
   const listRef = useRef<HTMLOListElement>(null)
   const scrollerRef = useRef<HTMLDivElement>(null)
@@ -314,15 +314,15 @@ export function DocsToc() {
       {items.length > 0 && (
         <nav
           data-slot="docs-toc"
-          aria-label="On this page"
+          aria-label={label}
           className="flex min-h-0 flex-col"
         >
           <p className="mb-3 shrink-0 text-sm font-medium text-foreground">
-            On this page
+            {label}
           </p>
           <div
             ref={scrollerRef}
-            className="min-h-0 overflow-y-auto overflow-x-visible overscroll-contain"
+            className="min-h-0 overflow-x-visible overflow-y-auto overscroll-contain"
           >
             <div className="relative">
               <svg

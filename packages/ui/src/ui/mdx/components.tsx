@@ -17,14 +17,35 @@ import { Props, Prop } from "./components/props"
 import { Changelogs, Changelog } from "./components/changelog"
 import { Status } from "./components/status"
 
-import type { ConfigExperimental } from "../../interface/Config"
+import type { ConfigExperimental, ConfigDocsI18N } from "../../interface/Config"
+import { localizedDocHref, parseDocsRoute } from "../../lib/docs-i18n"
 import { Preview, PreviewCode } from "./components/preview"
 
 export function getDocsComponents(
-  experimental?: ConfigExperimental
+  experimental?: ConfigExperimental,
+  localization?: { locale?: string; i18n?: ConfigDocsI18N }
 ): MDXComponents {
   return {
     ...defaultDocsComponents,
+    ...(localization?.i18n
+      ? {
+          a: (props: ComponentPropsWithoutRef<"a">) => {
+            let href = props.href
+            if (href && /^\/docs(?=\/|[?#]|$)/.test(href)) {
+              const [, path, suffix = ""] = href.match(/^([^?#]*)(.*)$/)!
+              const route = parseDocsRoute(path!.slice(5), localization.i18n)
+              if (!route.prefixed)
+                href =
+                  localizedDocHref(
+                    route.slug,
+                    localization.locale,
+                    localization.i18n
+                  ) + suffix
+            }
+            return <DocsLink {...props} href={href} />
+          },
+        }
+      : {}),
     ...(experimental?.experimentalComponentsInMDX
       ? { Preview, __CodeAltasPreviewCode: PreviewCode }
       : {}),

@@ -1,0 +1,63 @@
+---
+title: 代码差异
+description: 并排比较两个代码块，对齐展示新增与删除的内容。
+---
+
+<Status since="0.1.5" />
+
+`CodeDiff` 用于比较两个围栏代码块。第一个代码块是旧版本，第二个是新版本。
+
+<Preview>
+  <CodeDiff>
+    ```tsx
+    123231321
+    ```
+
+    ```tsx
+    123
+    231
+    321
+    ```
+  </CodeDiff>
+</Preview>
+
+删除的行以红色显示在左侧，新增的行以绿色显示在右侧。缺少对应行的位置会保留空白。每一侧都保留各自原本的行号。过长的行会自动换行，且成对的行始终具有相同的高度。
+
+## 未更改的行与标题
+
+未更改的行会同时显示在两侧。可以使用代码围栏的 `title` 为每个版本添加标签；否则，标题栏会显示 `Before` 和 `After`。
+
+<Preview>
+
+<CodeDiff>
+  ```tsx title="Before: greeting.tsx"
+  export function Greeting() {
+    return <p>Hello</p>
+  }
+  ```
+  ```tsx title="After: greeting.tsx"
+  export function Greeting() {
+    const name = "Code Atlas"
+    return <p>Hello, {name}!</p>
+  }
+  ```
+</CodeDiff>
+
+</Preview>
+
+必须且只能提供两个围栏代码块。语法高亮会根据每个代码块的语言进行渲染，并支持浅色和深色主题。
+
+<Props name="CodeDiff">
+  <Prop
+    property="children"
+    type="React.ReactNode"
+    defaultValue="-"
+    description="必须且只能提供两个围栏代码块，按旧版本、新版本的顺序排列。"
+  />
+  <Prop
+    property="className"
+    type="string"
+    defaultValue="-"
+    description="为差异容器添加的额外类名。"
+  />
+</Props>

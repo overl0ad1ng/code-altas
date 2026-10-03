@@ -1,0 +1,108 @@
+---
+title: 预览
+description: 在一个紧凑的视口中同时展示示例及其原始 MDX 源码。
+---
+
+<Status status="experimental" since="0.1.7" />
+
+## 启用预览
+
+预览功能目前是实验性的，默认不包含在 MDX 组件列表中。请在 `codealtas.config.ts` 中启用它：
+
+```ts title="codealtas.config.ts"
+export default defineConfig({
+  // Your existing configuration...
+  experimental: {
+    experimentalComponentsInMDX: true,
+  },
+})
+```
+
+该选项默认为 `false`。启用后，它会在文档和 changelog 的 MDX 页面中启用 Preview。
+
+## 用法
+
+Preview 会首先显示其子内容。选择 Code 即可查看同一子内容的源码，该源码在 MDX 编译期间被捕获，并带有语法高亮和行号。你无需单独提供代码字符串。
+
+<Preview>
+  <Button alertMessage="来自 Preview 的问候！">你好</Button>
+</Preview>
+
+```mdx title="Usage"
+<Preview>
+  <Button alertMessage="Hello from Preview!">Hello</Button>
+</Preview>
+```
+
+点击「你好」按钮会打开一个提示框。这些示例注册了一个客户端 `Button` 组件，带有悬停、按下和键盘焦点状态。它的 `alertMessage` 属性属于示例按钮；Preview 只会渲染其子内容，并保留其编写时的 JSX。
+
+## Playground
+
+提供任意 playground URL 即可显示一个外部操作。该链接会在新标签页中打开。如果不提供 URL，则会省略该操作。
+
+<Preview playgroundUrl="https://example.com/playground">
+  <Button variant="outline">你好</Button>
+</Preview>
+
+```mdx title="Playground"
+<Preview playgroundUrl="https://example.com/playground">
+  <Button variant="outline">Hello</Button>
+</Preview>
+```
+
+## 多行示例
+
+使用与代码围栏相同的行范围语法，在 Code 视图中高亮对应行。
+
+<Preview highlight="{2-3}">
+  <div className="flex w-full flex-wrap justify-center gap-3">
+    <Button>保存</Button>
+    <Button variant="outline">取消</Button>
+  </div>
+</Preview>
+
+```mdx title="Multiline Example"
+<Preview highlight="{2-3}">
+  <div className="flex w-full flex-wrap justify-center gap-3">
+    <Button>Save</Button>
+    <Button variant="outline">Cancel</Button>
+  </div>
+</Preview>
+```
+
+## 属性
+
+<Props name="Preview">
+  <Prop
+    property="children"
+    type="ReactNode"
+    defaultValue="-"
+    description="示例内容。MDX 编译器会自动捕获其源码。"
+  />
+  <Prop
+    property="playgroundUrl"
+    type="string"
+    defaultValue="-"
+    description="可选的 URL，由 Playground 操作在新标签页中打开。"
+  />
+  <Prop
+    property="highlight"
+    type="string"
+    defaultValue="-"
+    description="要高亮的源码行范围，例如 {2,4-6}。"
+  />
+  <Prop
+    property="sourceUrl"
+    type="string"
+    defaultValue="-"
+    description="为将来基于文件的源码预留的外部 URL。在此版本中不会显示 Source 操作。"
+  />
+  <Prop
+    property="className"
+    type="string"
+    defaultValue="-"
+    description="外层容器的额外类名。"
+  />
+</Props>
+
+此版本不支持基于文件的 `source`、实时编辑以及 iframe 隔离。自动源码捕获仅适用于由 CodeAltas 编译的 MDX；直接以 React 方式使用时不会从子内容中恢复源码。

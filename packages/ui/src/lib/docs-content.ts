@@ -38,7 +38,10 @@ export function normalizeDocSlug(slug: string): string {
 }
 
 /** Build an ordered index from config; index segments stay in file paths only. */
-export function flattenDocs(categories: ConfigDocsCategories): DocEntry[] {
+export function flattenDocs(
+  categories: ConfigDocsCategories,
+  locale?: string
+): DocEntry[] {
   const entries: DocEntry[] = []
   const seen = new Map<string, string>()
 
@@ -77,7 +80,7 @@ export function flattenDocs(categories: ConfigDocsCategories): DocEntry[] {
       seen.set(key, contentPath)
       entries.push({
         slug,
-        title: doc.name,
+        title: (locale && doc.i18n?.[locale]) || doc.name,
         categorySlug,
         contentPath,
         ...flags,

@@ -1,0 +1,27 @@
+---
+title: 代码分组
+description: CodeGroup 以标签页的形式展示代码块，并附带语言图标。
+---
+
+<Status since="0.1.3" />
+
+<Preview>
+
+<CodeGroup>
+  ```tsx title="src/main.tsx"
+  // code here
+  ```
+  ```html title="src/index/html"
+  <!-- Code here -->
+  ```
+</CodeGroup>
+
+</Preview>
+
+标签页的标签使用代码块的 `title`，若未提供则回退为代码块的语言。图标会根据语言自动选择，例如 `tsx` 使用 TypeScript 图标，`html` 使用 HTML5 图标。
+
+<Props name="CodeGroup">
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="以标签页形式展示的围栏代码块。" />
+  <Prop property="defaultIndex" type="number" defaultValue={0} description="初始选中标签页的索引。" />
+  <Prop property="className" type="string" defaultValue="-" description="为该分组添加的额外类名。" />
+</Props>

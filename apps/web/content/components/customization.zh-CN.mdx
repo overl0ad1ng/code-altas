@@ -1,0 +1,248 @@
+---
+title: 自定义
+description: 创建你自己的 React 组件，将其注册到 Code Atlas，并在 MDX 中使用它们。
+---
+
+Code Atlas 允许你在内置组件（例如 `Hint`、`Tabs` 和 `CodeGroup`）之外使用你自己的 React 组件。你可以在应用中创建组件，通过页面的 `components` prop 将其注册，然后在 `.mdx` 文件中按名称引用它。
+
+## 创建组件
+
+本示例创建一个带有标题、颜色和丰富内容的 `Notice` 组件。请将它放在你应用的 `components` 目录中。下面的路径以 `apps/web` 作为应用根目录；如果你的应用使用 `src/`，请改为将组件和路由文件放在该目录下。
+
+```tsx title="components/notice.tsx"
+import type { ReactNode } from "react"
+
+interface NoticeProps {
+  title: ReactNode
+  tone?: "info" | "success" | "warning"
+  children: ReactNode
+  className?: string
+}
+
+const colors = {
+  info: "border-blue-500/30 bg-blue-500/10",
+  success: "border-emerald-500/30 bg-emerald-500/10",
+  warning: "border-amber-500/30 bg-amber-500/10",
+}
+
+export function Notice({
+  title,
+  tone = "info",
+  children,
+  className,
+}: NoticeProps) {
+  return (
+    <aside
+      className={`my-6 min-w-0 rounded-lg border p-4 ${colors[tone]} ${className ?? ""}`}
+    >
+      <div className="text-sm font-semibold">{title}</div>
+      <div className="mt-2 text-sm leading-6 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0">
+        {children}
+      </div>
+    </aside>
+  )
+}
+```
+
+`children` 接受 `ReactNode`，因此作者可以提供 Markdown、JSX 或其他已注册的组件。当标题和内容容器可能包含段落、列表或代码块等块级元素时，请将它们保留为 `div` 元素。
+
+该组件使用了 Tailwind 类名，但你也可以使用 CSS Modules 或你现有的样式方案。
+
+## 注册组件
+
+创建一个共享的组件映射。键是作者将在 MDX 中使用的名称，它不必与组件的导出名一致。
+
+```tsx title="components/mdx-components.tsx"
+import type { MDXComponents } from "@code-altas/ui"
+import { Notice } from "./notice"
+
+export const mdxComponents = {
+  Notice,
+} satisfies MDXComponents
+```
+
+在你的文档路由中，将这个映射传递给 `DocsPage`。保留你现有的 metadata、布局和侧边栏设置；唯一新增的是 `components` prop。
+
+```tsx title="app/docs/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+import { mdxComponents } from "@/components/mdx-components"
+
+export const dynamic = "force-dynamic"
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} components={mdxComponents} />
+}
+```
+
+该示例假设 `@/` 解析到你的应用根目录。如果实际情况不同，请使用相对导入或你项目中的别名。
+
+Code Atlas 会将你的映射与其默认组件合并。注册 `Notice` 后，`Hint`、`Tabs` 以及其他内置组件仍然可用。复用已有的键会替换使用该映射渲染的页面中的对应组件。
+
+<Preview>
+
+<Hint type="info" icon="lucide:info">
+  <HintTitle>在应用代码中注册组件</HintTitle>
+  <HintContent>
+
+    Code Atlas 会禁用内容文件中的 `import` 和 `export` 语句。请在应用中导入你的 React 组件，并通过 `components` 传递它，而不是从 `.mdx` 文件中导入。仅有约定俗成的 `mdx-components.tsx` 文件并不会向 `DocsPage` 注册组件；你必须显式传递该映射。
+
+  </HintContent>
+</Hint>
+
+</Preview>
+
+## 在 MDX 中使用
+
+在文档中直接使用已注册的名称即可，无需任何 import 语句。
+
+```mdx title="content/index/quickstart.mdx"
+---
+title: Quick Start
+---
+
+<Notice title="Before you start" tone="warning">
+
+Make sure you have installed the project dependencies.
+
+- Use your project's package manager.
+- Keep **configuration files** at the app root.
+
+</Notice>
+
+<Notice title={<span>Setup <strong>complete</strong></span>} tone="success">
+
+Your documentation is ready. Continue with [components](/docs/components).
+
+</Notice>
+```
+
+在组件内的 Markdown 前后各留一个空行，这样标题、列表和段落才会按 Markdown 解析。字符串使用引号，而布尔值、数字、数组和 JSX 使用花括号，例如 `enabled={true}` 或 `title={<strong>Ready</strong>}`。
+
+组件标签需使用 `.mdx` 文件。标准的 `.md` 文档不支持这种 JSX 组件语法。如果你新建了文档，还需要将它添加到 `codealtas.config.ts` 中的 `docs.categories`，这样文档路由才能找到它。
+
+## 复用内置组件
+
+你可以在现有的 Code Atlas 组件之上构建组件，为作者提供更简洁的 API。例如，`Important` 提示可以复用 `Hint` 的颜色、图标和折叠行为。
+
+```tsx title="components/important.tsx"
+import { Hint, HintContent, HintTitle } from "@code-altas/ui"
+import type { ReactNode } from "react"
+
+interface ImportantProps {
+  title?: ReactNode
+  children: ReactNode
+  collapsed?: boolean
+}
+
+export function Important({
+  title = "Important",
+  children,
+  collapsed,
+}: ImportantProps) {
+  return (
+    <Hint type="warning" icon="lucide:triangle-alert" collapsed={collapsed}>
+      <HintTitle>{title}</HintTitle>
+      <HintContent>{children}</HintContent>
+    </Hint>
+  )
+}
+```
+
+将 `Important` 添加到你的共享组件映射中，然后在内容中使用它：
+
+```tsx title="components/mdx-components.tsx"
+import type { MDXComponents } from "@code-altas/ui"
+import { Important } from "./important"
+import { Notice } from "./notice"
+
+export const mdxComponents = {
+  Notice,
+  Important,
+} satisfies MDXComponents
+```
+
+```mdx title="Usage"
+<Important title="Check your configuration" collapsed={false}>
+
+Review `codealtas.config.ts` before deploying.
+
+</Important>
+```
+
+省略 `collapsed` 会使该提示保持展开且不显示切换按钮。传入 `true` 或 `false` 会启用折叠并设置其初始状态。
+
+## 添加交互性
+
+使用状态、事件处理函数或浏览器 API 的组件需要客户端边界。在组件文件中添加 `"use client"`，同时让文档路由和共享注册映射保持在服务端。
+
+```tsx title="components/counter.tsx"
+"use client"
+
+import { useState } from "react"
+
+export function Counter({ initialCount = 0 }: { initialCount?: number }) {
+  const [count, setCount] = useState(initialCount)
+
+  return (
+    <button
+      type="button"
+      onClick={() => setCount((value) => value + 1)}
+      className="rounded-md border border-border px-3 py-2 text-sm"
+    >
+      Count: {count}
+    </button>
+  )
+}
+```
+
+将 `Counter` 导入共享映射并添加 `Counter` 键。之后作者就可以这样写：
+
+```mdx title="Usage"
+<Counter initialCount={5} />
+```
+
+跨服务端/客户端边界传递可序列化的 props，例如字符串、数字、布尔值以及普通数组或对象。请在客户端组件内部定义事件处理函数，而不是从 MDX 文档中传入函数。
+
+## 覆盖 Markdown 元素
+
+同一个映射也可以自定义标准的 Markdown 元素。例如，`h2` 条目会改变 `##` 标题的渲染方式。
+
+```tsx title="components/mdx-components.tsx"
+import type { MDXComponents } from "@code-altas/ui"
+import { Notice } from "./notice"
+
+export const mdxComponents = {
+  Notice,
+  h2: ({ className, ...props }) => (
+    <h2
+      {...props}
+      className={`mt-10 mb-4 border-b border-border pb-2 text-2xl font-semibold ${className ?? ""}`}
+    />
+  ),
+} satisfies MDXComponents
+```
+
+请透传传入的 props（包括 `children` 和 `id`），以保留标题锚点和目录。覆盖会替换默认渲染器及其样式，因此请包含你希望保留的样式。
+
+## 在更新日志中使用组件
+
+注册仅对接收该映射的页面生效。若要在 `content/changelog.mdx` 中使用相同的组件，也请将该映射传递给 `ChangelogPage`。
+
+```tsx title="app/changelog/page.tsx"
+import { ChangelogPage } from "@code-altas/ui"
+import { mdxComponents } from "@/components/mdx-components"
+
+export default function Page() {
+  return <ChangelogPage components={mdxComponents} />
+}
+```
+
+## 疑难解答
+
+| 问题 | 需要检查的内容 |
+| --- | --- |
+| 组件被报告为缺失 | 将它导入映射，把该映射传递给页面，并确保 MDX 中注册名称的大小写一致。 |
+| 组件内的 Markdown 渲染不正确 | 在 Markdown 前后添加空行，并在组件中使用块级容器。 |
+| 组件在文档中可用，但在更新日志中不可用 | 也把该映射传递给 `ChangelogPage`。 |
+| 状态或事件处理函数失效 | 在交互组件中添加 `"use client"`，并在该文件内部定义处理函数。 |
+| 自定义标题链接或目录停止工作 | 将 `id` 及其余标题 props 透传给渲染出的元素。 |
