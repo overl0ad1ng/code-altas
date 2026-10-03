@@ -20,6 +20,15 @@ export {
 } from "./ui/mdx/components/tabs"
 export { FileTree, type FileTreeProps } from "./ui/mdx/components/file-tree"
 export { CodeGroup, type CodeGroupProps } from "./ui/mdx/components/code-group"
+export {
+  Hint,
+  HintTitle,
+  HintContent,
+  type HintProps,
+  type HintTitleProps,
+  type HintContentProps,
+  type HintType,
+} from "./ui/mdx/components/hint"
 export { Tags, type TagsProps } from "./ui/mdx/components/tags"
 export {
   Changelogs,

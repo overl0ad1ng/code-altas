@@ -96,6 +96,10 @@ export default defineConfig({
                 name: "Code Groups",
                 slug: "code-groups",
               },
+              {
+                name: "Hint",
+                slug: "hint",
+              },
             ],
           },
         ],

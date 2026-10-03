@@ -38,6 +38,9 @@ const { Steps, Step } = await jiti.import("../src/ui/mdx/components/steps.tsx")
 const { CodeGroup } = await jiti.import(
   "../src/ui/mdx/components/code-group.tsx"
 )
+const { Hint, HintTitle, HintContent } = await jiti.import(
+  "../src/ui/mdx/components/hint.tsx"
+)
 const { getSiteMetadata, getDocMetadata } = await jiti.import(
   "../src/server/metadata.ts"
 )
@@ -268,6 +271,113 @@ test("CodeGroup supports language labels, text fallback, and default selection",
       ),
     /CodeGroup only accepts fenced code blocks/
   )
+})
+
+test("Hint renders rich MDX titles, content, and server-resolved icons", async () => {
+  const rendered = await renderDoc(
+    doc(
+      '<Hint icon="simple:typescript">\n<HintTitle>\n\n**TypeScript** note\n\n</HintTitle>\n<HintContent>\n\nUse a [typed component](https://example.com).\n\n```tsx\nconst value: number = 1\n```\n\n</HintContent>\n</Hint>'
+    )
+  )
+  const html = renderToStaticMarkup(rendered.content)
+  assert.match(html, /data-slot="hint"/)
+  assert.match(html, /<title>TypeScript<\/title>/)
+  assert.match(html, /<strong[^>]*>TypeScript<\/strong>/)
+  assert.match(html, /href="https:\/\/example.com"/)
+  assert.match(html, /language-tsx/)
+  assert.doesNotMatch(html, /aria-expanded|aria-hidden="true"[^>]*inert/)
+})
+
+test("Hint applies every combination of allowCollapse and collapsed", () => {
+  for (const allowCollapse of [undefined, true, false]) {
+    for (const collapsed of [undefined, true, false]) {
+      const collapsible = allowCollapse ?? collapsed !== undefined
+      const isCollapsed = collapsible && (collapsed ?? true)
+      const html = renderToStaticMarkup(
+        createElement(
+          Hint,
+          { allowCollapse, collapsed },
+          createElement(HintTitle, null, "Title"),
+          createElement(HintContent, null, "Content")
+        )
+      )
+      assert.match(html, new RegExp(`data-collapsed="${isCollapsed}"`))
+      assert.equal(html.includes('inert=""'), isCollapsed)
+      assert.match(
+        html,
+        new RegExp(`grid-template-rows:${isCollapsed ? "0fr" : "1fr"}`)
+      )
+      assert.match(html, /transition-\[grid-template-rows,opacity\]/)
+      assert.match(html, />Content<\/div>/)
+      if (collapsible) {
+        assert.match(html, /data-slot="hint-title" role="button" tabindex="0"/)
+        assert.match(html, new RegExp(`aria-expanded="${!isCollapsed}"`))
+        const contentId = html.match(/aria-controls="([^"]+)"/)[1]
+        assert.ok(html.includes(`id="${contentId}" data-slot="hint-content"`))
+      } else {
+        assert.doesNotMatch(html, /<button|aria-expanded/)
+      }
+    }
+  }
+})
+
+test("Hint supports component-wrapped slots and interactive title children", () => {
+  const CustomTitle = () =>
+    createElement(
+      HintTitle,
+      null,
+      createElement("a", { href: "/docs" }, "Read docs")
+    )
+  const CustomContent = () =>
+    createElement(
+      HintContent,
+      null,
+      createElement("em", null, "Custom content")
+    )
+  const html = renderToStaticMarkup(
+    createElement(
+      Hint,
+      { collapsed: false },
+      createElement(CustomTitle),
+      createElement(CustomContent)
+    )
+  )
+  assert.match(html, /<a href="\/docs">Read docs<\/a>/)
+  assert.match(html, /<em>Custom content<\/em>/)
+  assert.match(html, /aria-expanded="true"/)
+  assert.doesNotMatch(html, /<button[^>]*>[\s\S]*?<a /)
+  for (const Component of [HintTitle, HintContent]) {
+    assert.throws(
+      () => renderToStaticMarkup(createElement(Component)),
+      /must be inside Hint/
+    )
+  }
+})
+
+test("Hint documentation renders sections, every color type, and collapsible titles", async () => {
+  const source = await readFile(
+    new URL("../../../apps/web/content/components/hint.mdx", import.meta.url),
+    "utf8"
+  )
+  const html = renderToStaticMarkup((await renderDoc(doc(source))).content)
+  for (const section of ["Usage", "Collapse", "Type", "Props"]) {
+    assert.match(html, new RegExp(`<h2[^>]*>${section}</h2>`))
+  }
+  for (const [type, color] of Object.entries({
+    default: "border-border",
+    info: "border-blue-500/30",
+    success: "border-emerald-500/30",
+    warning: "border-amber-500/30",
+    danger: "border-red-500/30",
+    error: "border-red-500/30",
+    tip: "border-violet-500/30",
+  })) {
+    const hint = html.match(new RegExp(`<aside[^>]*data-type="${type}"[^>]*>`))
+    assert.ok(hint, `Missing hint type: ${type}`)
+    assert.ok(hint[0].includes(color))
+  }
+  assert.match(html, /role="button" tabindex="0" aria-expanded="false"/)
+  assert.match(html, /role="button" tabindex="0" aria-expanded="true"/)
 })
 
 test("Steps renders the selected label, icon, Markdown content, and exact page count", async () => {

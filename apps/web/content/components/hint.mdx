@@ -1,0 +1,127 @@
+---
+title: Hint
+description: Highlight a note with an icon, a rich title, and optional collapsible content.
+---
+
+## Usage
+
+<Hint icon="lucide:info">
+  <HintTitle>Keep in mind</HintTitle>
+  <HintContent>
+
+    Titles and content support **Markdown**, JSX, and custom components.
+
+  </HintContent>
+</Hint>
+
+```mdx title="Usage"
+<Hint icon="lucide:info">
+  <HintTitle>Keep in mind</HintTitle>
+  <HintContent>
+    Content can include Markdown or components.
+  </HintContent>
+</Hint>
+```
+
+## Collapse
+
+Click anywhere on the title to expand or collapse the content. A focused title also responds to **Enter** and **Space**. Links and controls inside custom title components keep their own actions.
+
+The height transitions smoothly when toggled. Content stays mounted to preserve component state, and animations respect reduced motion preferences.
+
+<Hint type="tip" icon="lucide:lightbulb" allowCollapse>
+  <HintTitle>Starts collapsed</HintTitle>
+  <HintContent>
+
+    Setting `allowCollapse` without `collapsed` starts the hint collapsed.
+
+  </HintContent>
+</Hint>
+
+<Hint type="info" icon="lucide:info" collapsed={false}>
+  <HintTitle>Starts expanded</HintTitle>
+  <HintContent>
+
+    Setting `collapsed={false}` enables folding and starts the hint expanded.
+
+  </HintContent>
+</Hint>
+
+```mdx title="Collapse"
+<Hint icon="lucide:lightbulb" allowCollapse>
+  <HintTitle>Starts collapsed</HintTitle>
+  <HintContent>Click the title to expand.</HintContent>
+</Hint>
+
+<Hint icon="lucide:info" collapsed={false}>
+  <HintTitle>Starts expanded</HintTitle>
+  <HintContent>Click the title to collapse.</HintContent>
+</Hint>
+```
+
+| allowCollapse | collapsed | Behavior |
+| --- | --- | --- |
+| Omitted | Omitted | Always expanded, no toggle |
+| Omitted | `true` | Collapsible, starts collapsed |
+| Omitted | `false` | Collapsible, starts expanded |
+| `true` | Omitted | Collapsible, starts collapsed |
+| `true` | `true` / `false` | Collapsible, uses the supplied state |
+| `false` | Any value | Always expanded, no toggle |
+
+Changing `collapsed` updates the displayed state.
+
+## Type
+
+Use `type` to choose the hint's border, background, title, and icon colors. The default is `default`. All types support both light and dark themes.
+
+<Hint type="default" icon="lucide:sticky-note">
+  <HintTitle>Default</HintTitle>
+  <HintContent>A general note with neutral colors.</HintContent>
+</Hint>
+
+<Hint type="info" icon="lucide:info">
+  <HintTitle>Info</HintTitle>
+  <HintContent>Additional information in blue.</HintContent>
+</Hint>
+
+<Hint type="success" icon="lucide:circle-check">
+  <HintTitle>Success</HintTitle>
+  <HintContent>A successful result in green.</HintContent>
+</Hint>
+
+<Hint type="warning" icon="lucide:triangle-alert">
+  <HintTitle>Warning</HintTitle>
+  <HintContent>Something to keep in mind in amber.</HintContent>
+</Hint>
+
+<Hint type="danger" icon="lucide:circle-alert">
+  <HintTitle>Danger</HintTitle>
+  <HintContent>A critical issue in red. Use `error` for the same colors.</HintContent>
+</Hint>
+
+<Hint type="error" icon="lucide:circle-x">
+  <HintTitle>Error</HintTitle>
+  <HintContent>An error message in red.</HintContent>
+</Hint>
+
+<Hint type="tip" icon="lucide:lightbulb">
+  <HintTitle>Tip</HintTitle>
+  <HintContent>A helpful suggestion in violet.</HintContent>
+</Hint>
+
+```mdx title="Type"
+<Hint type="success" icon="lucide:circle-check">
+  <HintTitle>Ready</HintTitle>
+  <HintContent>Your configuration is complete.</HintContent>
+</Hint>
+```
+
+## Props
+
+<Props name="Hint">
+  <Prop property="icon" type="string" defaultValue="-" description="A Lucide or Simple Icons name, such as lucide:info or simple:typescript." />
+  <Prop property="type" type="default | info | success | warning | danger | error | tip" defaultValue="default" description="Hint colors. Error uses the same colors as danger." />
+  <Prop property="allowCollapse" type="boolean" defaultValue="collapsed !== undefined" description="Whether the content can be collapsed. Explicit false disables folding." />
+  <Prop property="collapsed" type="boolean" defaultValue="undefined" description="True means collapsed. When folding is enabled and this is omitted, the hint starts collapsed." />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="HintTitle and HintContent, including custom component children." />
+</Props>
