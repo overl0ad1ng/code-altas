@@ -65,10 +65,10 @@ pages feel like one site.
 Start with a Next.js App Router application, or use one you already have:
 
 ```bash
-pnpm add @code-altas/ui@beta
+pnpm add @code-altas/ui@latest
 ```
 
-The current release is **0.1.0-beta**. It supports Node.js 22.12+, Next.js
+It supports Node.js 22.12+, Next.js
 16.3.6+ within 16.x, and React / React DOM 19.2.8+ within 19.x.
 
 ### 2. Make it your own
