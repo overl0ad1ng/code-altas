@@ -29,7 +29,7 @@ export function ThemeToggle() {
       aria-label={label}
       title={label}
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className="size-8 flex items-center justify-center rounded-lg border border-border cursor-pointer hover:bg-accent"
+      className="size-8 flex items-center justify-center rounded-lg border border-border cursor-pointer hover:bg-accent transition-all duration-200 ease-out"
     >
       <Moon aria-hidden="true" className="size-4 dark:hidden" />
       <Sun aria-hidden="true" className="hidden size-4 dark:block" />

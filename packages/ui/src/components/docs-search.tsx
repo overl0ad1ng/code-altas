@@ -103,7 +103,7 @@ function SearchDialog({
   useEffect(() => {
     list.current
       ?.querySelector(`[data-result-index="${selected}"]`)
-      ?.scrollIntoView({ block: "nearest" })
+      ?.scrollIntoView({ block: "nearest", behavior: "smooth" })
   }, [selected, results])
 
   function navigate(result: DocsSearchResult) {
@@ -115,7 +115,7 @@ function SearchDialog({
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger
         ref={trigger}
-        className="flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-sm text-muted-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+        className="flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-sm text-muted-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring transition-all duration-200 ease-out"
         aria-label={messages.search}
       >
         <Search className="size-4" aria-hidden="true" />
@@ -283,11 +283,7 @@ export function DocsSearch() {
   const { docs } = useConfig()
   const pathname = usePathname()
   const { locale, messages } = useDocsLocale()
-  if (
-    !docs?.search ||
-    !(pathname === "/docs" || pathname?.startsWith("/docs/"))
-  )
-    return null
+  if (!docs?.search) return null
   return (
     <SearchDialog
       key={`${pathname}:${locale}`}
