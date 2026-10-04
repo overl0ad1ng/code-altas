@@ -2,14 +2,16 @@
 
 import { SiGithub } from "@icons-pack/react-simple-icons"
 import { useEffect, useState } from "react"
+import { cn } from "cn"
 
 import type { ConfigHeaderGithub } from "../interface/Config"
 
 interface HeaderGithubProps {
   github: string | ConfigHeaderGithub
+  className?: string
 }
 
-function HeaderGithub({ github }: HeaderGithubProps) {
+function HeaderGithub({ github, className }: HeaderGithubProps) {
   const url = typeof github === "string" ? github : github.url
   const showStars = typeof github === "string" || github.showStars !== false
 
@@ -62,20 +64,24 @@ function HeaderGithub({ github }: HeaderGithubProps) {
 
   if (!repository) return null
 
-  const count = showStars && stars && stars.apiUrl === apiUrl ? stars.count : null
+  const count =
+    showStars && stars && stars.apiUrl === apiUrl ? stars.count : null
 
   return (
     <a
       href={repository.url}
       aria-label={`GitHub: ${repository.name}${count !== null ? `, ${count.toLocaleString("en-US")} stars` : ""}`}
       target="_blank"
-      className="active:scale-98 origin-b border border-border inline-flex items-center gap-2 rounded-lg max-h-8 px-2.5 py-1.5 text-sm transition-all hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+      className={cn(
+        "origin-b inline-flex max-h-8 items-center gap-2 rounded-lg border border-border px-2.5 py-1.5 text-sm transition-all hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring active:scale-98 motion-reduce:transition-none",
+        className
+      )}
     >
-      <SiGithub aria-hidden="true" className="size-4 text-neutral-700" />
+      <SiGithub aria-hidden="true" className="size-4 text-foreground" />
 
       {count !== null ? (
         <span
-          className="inline-flex items-center gap-1 tabular-nums font-medium"
+          className="inline-flex items-center gap-1 font-medium tabular-nums"
           aria-label={`${count.toLocaleString("en-US")} stars`}
           title={`${count.toLocaleString("en-US")} stars`}
         >
@@ -83,7 +89,7 @@ function HeaderGithub({ github }: HeaderGithubProps) {
         </span>
       ) : (
         <span
-          className="inline-flex items-center gap-1 tabular-nums font-medium"
+          className="inline-flex items-center gap-1 font-medium tabular-nums"
           aria-label="no stars"
           title="no stars"
         >

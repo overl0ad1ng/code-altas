@@ -9,6 +9,13 @@ import { useDocsLocale } from "../lib/use-docs-locale"
 import type { DocsMessages } from "../interface/Config"
 import type { DocsSearchResponse, DocsSearchResult } from "../lib/docs-search"
 import { ScrollArea } from "../primitives/scroll-area"
+import { cn } from "cn"
+
+interface DocsSearchProps {
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  triggerClassName?: string
+}
 
 function HighlightedSnippet({ result }: { result: DocsSearchResult }) {
   let end = 0
@@ -36,13 +43,21 @@ function SearchDialog({
   api,
   locale,
   messages,
+  open: controlledOpen,
+  onOpenChange,
+  triggerClassName,
 }: {
   api: string
   locale?: string
   messages: DocsMessages
-}) {
+} & DocsSearchProps) {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen ?? internalOpen
+  function setOpen(value: boolean) {
+    if (controlledOpen === undefined) setInternalOpen(value)
+    onOpenChange?.(value)
+  }
   const [query, setQuery] = useState("")
   const [retry, setRetry] = useState(0)
   const [active, setActive] = useState(0)
@@ -66,12 +81,13 @@ function SearchDialog({
     function shortcut(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault()
-        setOpen((value) => !value)
+        if (controlledOpen === undefined) setInternalOpen((value) => !value)
+        onOpenChange?.(!open)
       }
     }
     window.addEventListener("keydown", shortcut)
     return () => window.removeEventListener("keydown", shortcut)
-  }, [])
+  }, [open, controlledOpen, onOpenChange])
 
   useEffect(() => {
     if (!open || !valid) return
@@ -115,7 +131,10 @@ function SearchDialog({
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger
         ref={trigger}
-        className="flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-sm text-muted-foreground hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring transition-all duration-200 ease-out"
+        className={cn(
+          "flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-sm text-muted-foreground transition-all duration-200 ease-out hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transition-none",
+          triggerClassName
+        )}
         aria-label={messages.search}
       >
         <Search className="size-4" aria-hidden="true" />
@@ -279,7 +298,7 @@ function SearchDialog({
   )
 }
 
-export function DocsSearch() {
+export function DocsSearch(props: DocsSearchProps = {}) {
   const { docs } = useConfig()
   const pathname = usePathname()
   const { locale, messages } = useDocsLocale()
@@ -290,6 +309,7 @@ export function DocsSearch() {
       api={docs.search.api ?? "/api/search"}
       locale={locale}
       messages={messages}
+      {...props}
     />
   )
 }

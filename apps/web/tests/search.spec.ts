@@ -130,7 +130,9 @@ test("dialog fits narrow screens and both themes", async ({
 }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto("/docs/zh-CN")
-  await expect(page.getByRole("button", { name: /^Switch to/ })).toBeEnabled()
+  await expect(
+    page.getByRole("button", { name: "搜索文档", exact: true })
+  ).toBeVisible()
   const trigger = page.getByRole("button", { name: "搜索文档", exact: true })
   const triggerBounds = await trigger.boundingBox()
   expect(

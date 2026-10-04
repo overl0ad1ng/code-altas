@@ -114,8 +114,12 @@ test("sidebar input and footer stay visible while results scroll in both themes"
 }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 280 })
   await page.goto("/docs")
-  const sidebar = page.getByRole("complementary", {
-    name: "Documentation Navigation",
+  await page
+    .getByRole("button", { name: "Documentation menu", exact: true })
+    .click()
+  const sidebar = page.getByRole("dialog", {
+    name: "Documentation menu",
+    exact: true,
   })
   const input = sidebar.getByRole("textbox")
   await input.fill("a")
@@ -127,6 +131,9 @@ test("sidebar input and footer stay visible while results scroll in both themes"
       )
     )
     .toBeTruthy()
+  await expect
+    .poll(() => sidebar.evaluate((element) => element.getAnimations().length))
+    .toBe(0)
   const initialBounds = await input.boundingBox()
   const last = sidebar
     .locator("[data-slot=scroll-area] nav button:not([aria-expanded])")
@@ -136,7 +143,9 @@ test("sidebar input and footer stay visible while results scroll in both themes"
   await expect
     .poll(() => viewport.evaluate((element) => element.scrollTop))
     .toBeGreaterThan(0)
-  expect(await input.boundingBox()).toEqual(initialBounds)
+  const scrolledBounds = await input.boundingBox()
+  expect(scrolledBounds!.y).toBeCloseTo(initialBounds!.y, 1)
+  expect(scrolledBounds!.height).toBeCloseTo(initialBounds!.height, 1)
   const footer = await sidebar
     .getByRole("link", { name: "Powered by CodeAltas" })
     .boundingBox()

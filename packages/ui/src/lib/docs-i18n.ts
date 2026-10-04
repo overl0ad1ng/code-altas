@@ -1,6 +1,11 @@
 import type { ConfigDocsI18N, DocsMessages } from "../interface/Config"
 
 const english: DocsMessages = {
+  docsNavigation: "Documentation menu",
+  docsNavigationClose: "Close documentation menu",
+  categorySelect: "Select category",
+  menuOpen: "Open menu",
+  menuClose: "Close menu",
   navSearchPlaceholder: "Search article titles…",
   navSearchClear: "Clear title search",
   search: "Search docs",
@@ -22,6 +27,11 @@ const english: DocsMessages = {
 }
 
 const chinese: DocsMessages = {
+  docsNavigation: "文档目录",
+  docsNavigationClose: "关闭文档目录",
+  categorySelect: "选择分类",
+  menuOpen: "打开菜单",
+  menuClose: "关闭菜单",
   navSearchPlaceholder: "搜索文章标题…",
   navSearchClear: "清空标题搜索",
   search: "搜索文档",

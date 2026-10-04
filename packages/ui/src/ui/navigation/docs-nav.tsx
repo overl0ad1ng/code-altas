@@ -13,6 +13,7 @@ import type {
   BranchedMenuItem,
 } from "../../primitives/branched-menu"
 import { Logo } from "./logo"
+import { cn } from "cn"
 
 function collectDocuments(
   docs: ConfigDocsCategoryDocs,
@@ -88,10 +89,12 @@ function DocsNav({
   categories = [],
   locale,
   i18n,
+  mobile = false,
 }: {
   categories?: ConfigDocsCategories
   locale?: string
   i18n?: ConfigDocsI18N
+  mobile?: boolean
 }) {
   const index = flattenDocs(categories, locale)
   const entries = new Map(index.map((entry) => [entry.contentPath, entry]))
@@ -120,7 +123,7 @@ function DocsNav({
         icon: (
           <ConfigIcon
             name={category.icon}
-            className="size-4 shrink-0 text-neutral-700"
+            className="size-4 shrink-0 text-muted-foreground"
           />
         ),
       },
@@ -128,9 +131,14 @@ function DocsNav({
   })
 
   return (
-    <div className="grid h-full w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-xl border border-border p-2">
-      <DocsCategoryNav items={items} />
-      <DocsCategoryMenu categories={menus} />
+    <div
+      className={cn(
+        "grid h-full min-h-0 w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden",
+        !mobile && "rounded-xl border border-border p-2"
+      )}
+    >
+      <DocsCategoryNav items={items} mobile={mobile} />
+      <DocsCategoryMenu categories={menus} mobile={mobile} />
       <a
         href="https://github.com/overl0ad1ng/code-altas"
         target="_blank"

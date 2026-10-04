@@ -5,8 +5,9 @@ import { Languages, ChevronDown, Check } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { useDocsLocale } from "../lib/use-docs-locale"
 import { localizedDocHref } from "../lib/docs-i18n"
+import { cn } from "cn"
 
-export function LanguageSelect() {
+export function LanguageSelect({ className }: { className?: string } = {}) {
   const { locale, slug, i18n, messages } = useDocsLocale()
   const pathname = usePathname()
   const router = useRouter()
@@ -33,7 +34,10 @@ export function LanguageSelect() {
     >
       <Select.Trigger
         aria-label={messages.language}
-        className="group flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-sm text-foreground transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[popup-open]:bg-accent"
+        className={cn(
+          "group flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-sm text-foreground transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[popup-open]:bg-accent",
+          className
+        )}
       >
         <Languages
           aria-hidden="true"

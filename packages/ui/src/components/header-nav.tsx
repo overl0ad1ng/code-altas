@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import { useRef, useState } from "react"
+import { cn } from "cn"
 
 import type { ConfigHeaderNav } from "../interface/Config"
 import { SharedIndicator } from "./shared-indicator"
@@ -12,7 +13,15 @@ function routePath(href: string) {
   return href.split(/[?#]/)[0]?.replace(/\/+$/, "") || "/"
 }
 
-function HeaderNav({ nav }: { nav: ConfigHeaderNav }) {
+function HeaderNav({
+  nav,
+  mobile = false,
+  onNavigate,
+}: {
+  nav: ConfigHeaderNav
+  mobile?: boolean
+  onNavigate?: () => void
+}) {
   const { locale, i18n } = useDocsLocale()
   const pathname = usePathname()
   const containerRef = useRef<HTMLElement>(null)
@@ -45,7 +54,10 @@ function HeaderNav({ nav }: { nav: ConfigHeaderNav }) {
     <nav
       ref={containerRef}
       aria-label="Header Navigation"
-      className="relative isolate flex items-center gap-4"
+      className={cn(
+        "relative isolate flex",
+        mobile ? "flex-col gap-2" : "items-center gap-4"
+      )}
       onPointerLeave={() => setHoveredPath(null)}
       onPointerCancel={() => setHoveredPath(null)}
       onBlur={(event) => {
@@ -54,11 +66,13 @@ function HeaderNav({ nav }: { nav: ConfigHeaderNav }) {
         }
       }}
     >
-      <SharedIndicator
-        containerRef={containerRef}
-        target={targetPath}
-        className="border border-border bg-background"
-      />
+      {!mobile && (
+        <SharedIndicator
+          containerRef={containerRef}
+          target={targetPath}
+          className="border border-border bg-background"
+        />
+      )}
       {entries.map(([path, item]) => (
         <a
           key={path}
@@ -74,7 +88,13 @@ function HeaderNav({ nav }: { nav: ConfigHeaderNav }) {
           aria-current={path === activePath ? "page" : undefined}
           aria-disabled={item.disabled || undefined}
           tabIndex={item.disabled ? -1 : undefined}
-          className="relative z-10 rounded-lg px-2 py-1 text-sm whitespace-nowrap outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+          className={cn(
+            "relative z-10 rounded-lg text-sm outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
+            mobile
+              ? "flex min-h-11 w-full items-center px-3 py-2.5 hover:bg-accent/50 aria-[current=page]:bg-accent"
+              : "px-2 py-1 whitespace-nowrap"
+          )}
+          onClick={item.disabled ? undefined : onNavigate}
           onPointerEnter={() => setHoveredPath(item.disabled ? null : path)}
           onFocus={() => setFocusedPath(item.disabled ? null : path)}
         >

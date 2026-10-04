@@ -4,13 +4,13 @@ import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useSyncExternalStore } from "react"
 
-import { Button } from "../ui/button"
+import { cn } from "cn"
 
 const subscribe = () => () => {}
 const getSnapshot = () => true
 const getServerSnapshot = () => false
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string } = {}) {
   const { resolvedTheme, setTheme } = useTheme()
   const mounted = useSyncExternalStore(
     subscribe,
@@ -29,7 +29,10 @@ export function ThemeToggle() {
       aria-label={label}
       title={label}
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className="size-8 flex items-center justify-center rounded-lg border border-border cursor-pointer hover:bg-accent transition-all duration-200 ease-out"
+      className={cn(
+        "flex size-8 cursor-pointer items-center justify-center rounded-lg border border-border transition-all duration-200 ease-out hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
+        className
+      )}
     >
       <Moon aria-hidden="true" className="size-4 dark:hidden" />
       <Sun aria-hidden="true" className="hidden size-4 dark:block" />

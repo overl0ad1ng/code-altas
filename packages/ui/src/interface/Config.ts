@@ -39,6 +39,11 @@ export interface ConfigDocsI18N {
 }
 
 export interface DocsMessages {
+  docsNavigation?: string
+  docsNavigationClose?: string
+  categorySelect?: string
+  menuOpen?: string
+  menuClose?: string
   navSearchPlaceholder?: string
   navSearchClear?: string
   search?: string

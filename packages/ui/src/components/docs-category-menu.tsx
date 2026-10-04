@@ -6,12 +6,15 @@ import { Search, X } from "lucide-react"
 
 import { getDocsCategorySlug, normalizeDocsPath } from "../lib/docs-navigation"
 import { useDocsLocale } from "../lib/use-docs-locale"
+import { useMobileDocsNavigation } from "../lib/mobile-docs-navigation"
+import { cn } from "cn"
 import { ScrollArea } from "../primitives/scroll-area"
 import BranchedMenu, {
   type BranchedMenuItem,
 } from "../primitives/branched-menu"
 
 interface DocsCategoryMenuProps {
+  mobile?: boolean
   categories: {
     slug: string
     hrefs: string[]
@@ -41,7 +44,10 @@ function branchKeys(items: BranchedMenuItem[], parent = ""): string[] {
   })
 }
 
-function DocsCategoryMenu({ categories }: DocsCategoryMenuProps) {
+function DocsCategoryMenu({
+  categories,
+  mobile = false,
+}: DocsCategoryMenuProps) {
   const pathname = usePathname()
   const { locale } = useDocsLocale()
   const activeSlug = getDocsCategorySlug(pathname, categories)
@@ -51,18 +57,22 @@ function DocsCategoryMenu({ categories }: DocsCategoryMenuProps) {
     <SearchableCategoryMenu
       key={`${locale}:${activeSlug}`}
       category={category}
+      mobile={mobile}
     />
   )
 }
 
 function SearchableCategoryMenu({
   category,
+  mobile,
 }: {
   category: DocsCategoryMenuProps["categories"][number] | undefined
+  mobile: boolean
 }) {
   const pathname = usePathname()
   const router = useRouter()
   const { messages } = useDocsLocale()
+  const mobileNavigation = useMobileDocsNavigation()
   const [query, setQuery] = useState("")
   const input = useRef<HTMLInputElement>(null)
   const keyword = query.trim().toLowerCase()
@@ -93,19 +103,31 @@ function SearchableCategoryMenu({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === "Escape" && !event.nativeEvent.isComposing)
+            if (
+              event.key === "Escape" &&
+              !event.nativeEvent.isComposing &&
+              query
+            ) {
+              event.stopPropagation()
               clear()
+            }
           }}
           aria-label={messages.navSearchPlaceholder}
           placeholder={messages.navSearchPlaceholder}
-          className="h-9 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          className={cn(
+            "min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground",
+            mobile ? "h-11" : "h-9"
+          )}
         />
         {query && (
           <button
             type="button"
             onClick={clear}
             aria-label={messages.navSearchClear}
-            className="shrink-0 cursor-pointer rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+            className={cn(
+              "shrink-0 cursor-pointer rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring",
+              mobile && "flex size-11 items-center justify-center"
+            )}
           >
             <X className="size-3.5" aria-hidden="true" />
           </button>
@@ -122,8 +144,10 @@ function SearchableCategoryMenu({
             items={items}
             defaultOpen={keyword ? branchKeys(items) : 0}
             active={active}
+            rowHeight={mobile ? 44 : undefined}
             onSelect={(href) => {
               setQuery("")
+              mobileNavigation?.onArticleSelect()
               router.push(href)
             }}
             color="var(--foreground)"

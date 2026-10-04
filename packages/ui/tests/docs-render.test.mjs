@@ -189,7 +189,8 @@ test("docs menu preserves nested groups and opens all ancestors of the active pa
       },
     ],
   })
-  const { items } = nav.props.children[1].props.children.props.categories[0]
+  const menu = nav.props.children.find((child) => child?.props?.categories)
+  const { items } = menu.props.categories[0]
   assert.deepEqual(
     items[1].children.map((item) => item.label),
     ["Synatx"]

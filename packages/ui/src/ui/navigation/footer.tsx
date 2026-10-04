@@ -6,14 +6,17 @@ function Footer() {
   const { footer } = useConfig()
 
   return (
-    <div className="py-8 w-full border-t border-border bg-background/80 px-8 backdrop-blur-xs">
-      <div className="xl:w-5xl mx-auto">
-        <div className="w-full flex items-center justify-between">
+    <footer className="w-full border-t border-border bg-background/80 px-4 py-6 backdrop-blur-xs sm:px-8 md:py-8">
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="flex w-full flex-col items-center gap-3 text-center md:flex-row md:justify-between md:gap-6 md:text-left">
           <div>
             {footer?.author && (
-              <span className="text-sm dark:text-neutral-400 text-neutral-600 flex items-baseline gap-1">
+              <span className="flex flex-wrap items-baseline justify-center gap-1 text-sm text-muted-foreground md:justify-start">
                 Made by
-                <a href={footer?.author.homepage} className="border-b border-neutral-200 cursor-pointer hover:border-neutral-600 duration-200 ease-out">
+                <a
+                  href={footer?.author.homepage}
+                  className="cursor-pointer border-b border-neutral-200 duration-200 ease-out hover:border-neutral-600"
+                >
                   {footer?.author.name}
                 </a>
               </span>
@@ -21,16 +24,18 @@ function Footer() {
           </div>
           <div>
             {footer?.copyright && (
-              <span className="text-sm dark:text-neutral-400 text-neutral-600 flex items-baseline gap-2">
+              <span className="flex flex-wrap items-baseline justify-center gap-2 text-sm text-muted-foreground md:justify-end">
                 {footer?.copyright}
                 {footer?.license && (
                   <>
-                    <span>
-                      ·
-                    </span>
+                    <span>·</span>
                     <span className="flex items-baseline gap-1">
                       Under
-                      <a href={footer?.license} target="_blank" className="border-b border-neutral-200 cursor-pointer hover:border-neutral-600 duration-200 ease-out">
+                      <a
+                        href={footer?.license}
+                        target="_blank"
+                        className="cursor-pointer border-b border-neutral-200 duration-200 ease-out hover:border-neutral-600"
+                      >
                         license
                       </a>
                     </span>
@@ -41,7 +46,7 @@ function Footer() {
           </div>
         </div>
       </div>
-    </div>
+    </footer>
   )
 }
 
