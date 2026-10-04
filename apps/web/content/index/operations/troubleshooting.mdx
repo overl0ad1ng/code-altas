@@ -1,0 +1,57 @@
+---
+title: Troubleshooting
+description: Diagnose document 404s, MDX compilation, themes, metadata, and production search failures.
+---
+
+Identify whether the failure comes from routing, content loading, MDX compilation, or deployment. When development works but production fails, start with server logs and deployed files.
+
+## A file exists but returns 404
+
+Check in this order:
+
+1. Create `app/docs/[[...slug]]/page.tsx` rendering `DocsPage`.
+2. Register the article in `docs.categories`.
+3. Include category, parent group, and article slugs in the content path.
+4. Keep `index` in the disk path even though it is omitted from the URL.
+5. Run from the app root and put content in that directory's `content/`.
+
+For example, `content/index/guides/install.mdx` maps from `index → guides → install` to `/docs/guides/install`. See [File System](/docs/concepts/filesystem) for more mappings.
+
+## Duplicate paths or extensions
+
+Keep only `.md` or `.mdx` for each article. Different entries can also produce the same URL after removing `index` segments, causing an error. Change configuration slugs and file paths; frontmatter titles do not resolve route conflicts.
+
+## MDX fails to compile or a component is undefined
+
+Document `import` and `export` statements are disabled. Import components in the Next.js page and register them with `DocsPage.components`. Check JSX closing tags, component prop names, and code fence delimiters.
+
+Components and expressions require `.mdx`; `.md` is for Markdown. Experimental Preview needs its configuration flag. Ordinary code blocks, Mermaid, and KaTeX need no experimental option.
+
+## A document is hidden but opens directly
+
+Check `draft` and `disabled` on the article and its parent groups. These flags currently exclude navigation, pagination, and search, but do not block direct URL reading. See [Navigation](/docs/concepts/navigation).
+
+## Duplicate headers or unexpected styles
+
+Do not wrap `DocsLayout` with `DefaultLayout`; both provide headers and footers. The root layout needs your application providers, `html`, `body`, and global styles.
+
+Load package styles and import custom CSS after them. Theme switching changes root classes, so add `suppressHydrationWarning` to the root layout. See [Styles and Themes](/docs/concepts/theme).
+
+## Article headings are correct but browser titles are wrong
+
+Rendering `DocsPage` does not export Next.js metadata automatically. Connect `getSiteMetadata` in the root layout and `getDocMetadata` in the document route. Do not export static `metadata` and `generateMetadata` from the same file. See [Page Metadata](/docs/concepts/metadata).
+
+## A translation does not appear
+
+Match language codes exactly across `docs.i18n.locales`, filename suffixes, and URLs. Unsuffixed files can supply the default language. Missing translations fall back, so default-language prose does not necessarily indicate a routing error. Navigation translations and article translations are configured separately.
+
+## Search works in development but fails in production
+
+| Status | What to inspect |
+| --- | --- |
+| 404 | Missing route, mismatched `search.api`, or disabled `docs.search`. |
+| 400 | More than 100 Unicode query characters or an unknown language. |
+| 503 | Server logs, index generation before `next build`, and deployed configuration and index files. |
+| 200 with no results | Registration, draft flags, translations, and query scope; a single character searches titles and headings only. |
+
+Rebuild and redeploy after changing production content. See [Search](/docs/concepts/search) and [Build and Deployment](/docs/operations/deployment) for complete setup.

@@ -1,0 +1,85 @@
+---
+title: 站点配置
+description: 配置站点品牌、Logo、header 导航、GitHub 和 footer。
+---
+
+Code Atlas 从应用根目录的 `codealtas.config.ts` 读取配置。文件与应用的 `package.json` 同级；即使路由位于 `src/app`，配置也不移入 `src`。
+
+## 完整示例
+
+下面的配置注册了一篇介绍文档，正文应放在 `content/index/index.mdx`：
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config"
+
+export default defineConfig({
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.svg",
+  icon: "/favicon.svg",
+  logoHref: "/",
+  dark: { logo: "/logo-dark.svg" },
+  header: {
+    nav: {
+      "/docs": { label: "Docs" },
+      "/changelog": { label: "Changelog" },
+    },
+    github: { url: "https://github.com/owner/repository", showStars: false },
+  },
+  footer: {
+    author: { name: "Your Team", homepage: "https://example.com" },
+    copyright: "© Your Team",
+    license: "https://example.com/license",
+  },
+  docs: {
+    tags: { Beta: "#1447E6" },
+    categories: [
+      {
+        name: "Guides",
+        slug: "index",
+        icon: "lucide:book-open",
+        docs: [{ name: "Introduction", slug: "index" }],
+      },
+    ],
+  },
+})
+```
+
+将示例资源替换为实际文件，并创建导航链接对应的 Next.js 页面。配置导航链接不会自动创建路由。
+
+## 品牌与站点信息
+
+| 字段 | 必填 | 作用 |
+| --- | --- | --- |
+| `title` | 是 | header 中的站点名称，也是站点元数据的默认标题。 |
+| `description` | 是 | 站点默认描述。 |
+| `logo` | 是 | 浅色主题 Logo，使用公开 URL 或 `/logo.svg` 这样的路径。 |
+| `icon` | 否 | 浏览器图标 URL，未设置时回退到 `logo`。 |
+| `logoHref` | 否 | 点击 Logo 后的目标，默认 `/`。 |
+| `dark.logo` | 否 | 深色主题 Logo，未设置时沿用 `logo`。 |
+
+把本地资源放入 `public`，URL 中省略 `public`。`icon`、标题和描述需要接入元数据辅助函数才会应用到浏览器，见 [页面元数据](/docs/concepts/metadata)。
+
+## Header 导航和 GitHub
+
+`header.nav` 的键是目标路径，`label` 是显示文本，条目按配置顺序展示。`disabled: true` 会保留一个不可点击的导航项，与文档导航中的 `disabled` 行为不同。
+
+GitHub 配置可以是仓库 URL 字符串，也可以是 `{ url, showStars }`。字符串形式默认请求并显示 star 数；设置 `showStars: false` 只展示仓库链接。如果不需要 GitHub 和顶部链接，可以省略整个 `header`。当前类型要求声明 `header` 时同时提供 `github`。
+
+顶部导航会匹配当前路径，并优先高亮更具体的条目，例如 `/docs/api` 优先于 `/docs`。`/docs` 链接会跟随当前文档语言，其他链接按配置目标访问。
+
+## Footer
+
+`footer.author` 设置作者名称和可选主页，`copyright` 设置版权文本，`license` 设置许可链接。内置 footer 会在配置了版权文本时同时显示许可链接。
+
+## 文档和实验性选项
+
+| 字段 | 用途 |
+| --- | --- |
+| `docs.categories` | 文档分类、分组和页面，详见 [导航配置](/docs/concepts/navigation)。 |
+| `docs.tags` | frontmatter 标签名称到 CSS 颜色的映射。 |
+| `docs.i18n` | 语言、导航翻译和界面文案，详见 [国际化](/docs/concepts/i18n)。 |
+| `docs.search` | 全文搜索开关和 API 路径，详见 [搜索配置](/docs/concepts/search)。 |
+| `experimental.experimentalComponentsInMDX` | 默认关闭；开启后注册实验性 Preview 能力。 |
+
+`DocsLayout` 和 `DefaultLayout` 会自动加载配置并提供给客户端界面。不要在配置中存放密钥。主题和样式覆盖见 [样式与主题](/docs/concepts/theme)，生产环境文件打包见 [构建与部署](/docs/operations/deployment)。

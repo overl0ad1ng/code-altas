@@ -1,0 +1,152 @@
+---
+title: Search
+description: Enable full-text documentation search with an API route, production indexes, and language-specific configuration.
+---
+
+Code Atlas provides full-text documentation search. Readers can click the header search button or press `Ctrl+K` / `Cmd+K`, then open a matching article or heading.
+
+Once enabled, the shared built-in header displays the search entry on documentation and other pages. The search corpus still consists of configured documents; home pages and changelogs are not automatically indexed.
+
+All paths and commands below are relative to the **Next.js app root**, beside its `package.json`. In this repository, that directory is `apps/web`.
+
+## 1. Enable search
+
+Add `search` to the existing `docs` configuration in `codealtas.config.ts`, keeping your categories and other settings:
+
+```ts title="codealtas.config.ts (excerpt)"
+docs: {
+  search: {},
+  // Keep your existing categories, i18n, and other settings.
+},
+```
+
+An empty object uses `/api/search`. Omit `search` or set `search: false` to disable it. Enabling this option does not create the API route.
+
+## 2. Add the search API
+
+Create `app/api/search/route.ts`, or `src/app/api/search/route.ts` if your routes live under `src`:
+
+```ts title="app/api/search/route.ts"
+import { createDocsSearchHandler } from "@code-altas/ui/server"
+
+export const runtime = "nodejs"
+export const GET = createDocsSearchHandler()
+```
+
+The handler requires the Node.js Runtime. In development, it builds indexes in memory and checks documents and configuration for changes, so you do not need to generate index files after each edit.
+
+With the development server running, visit `/api/search?q=Code`. A successful response contains `{ results: [...] }`, or `{ results: [] }` when nothing matches.
+
+### Use a custom endpoint
+
+If your route is `app/api/docs-search/route.ts`, update the configuration:
+
+```ts title="codealtas.config.ts (excerpt)"
+docs: {
+  search: { api: "/api/docs-search" },
+  // Keep your existing documentation settings.
+},
+```
+
+Use the same custom endpoint in the deployment configuration below.
+
+## 3. Generate indexes before the production build
+
+Production reads prebuilt index files rather than scanning articles on each request. Create this script for the published, compiled npm package:
+
+```js title="scripts/build-search.mjs"
+import { buildDocsSearchIndex } from "@code-altas/ui/search"
+
+console.table(await buildDocsSearchIndex())
+```
+
+If you consume the workspace TypeScript source package, as this repository does, install `jiti`:
+
+```bash
+pnpm add -D jiti
+```
+
+Use this script instead of the direct import:
+
+```js title="scripts/build-search.mjs (workspace source package)"
+import { createJiti } from "jiti"
+
+const { buildDocsSearchIndex } = await createJiti(import.meta.url).import(
+  "@code-altas/ui/search"
+)
+console.table(await buildDocsSearchIndex())
+```
+
+Run index generation before `next build` in `package.json`:
+
+```json title="package.json (scripts excerpt)"
+{
+  "scripts": {
+    "build": "node scripts/build-search.mjs && next build"
+  }
+}
+```
+
+Keep any existing build tasks and make sure indexes are generated before `next build`. Running `pnpm build` prints page counts and index sizes for each language. The default output directory is `.codealtas/search/`.
+
+Add `.codealtas/` to `.gitignore`. If you cache build outputs, include `.codealtas/search/**` so deployments also receive indexes when a build is restored from cache.
+
+## 4. Include indexes in deployment
+
+Merge these fields into your existing `next.config.ts`:
+
+```ts title="next.config.ts"
+import type { NextConfig } from "next"
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ["c12", "jiti"],
+  outputFileTracingIncludes: {
+    "/api/search": ["./.codealtas/search/**/*.json", "./codealtas.config.ts"],
+  },
+}
+
+export default nextConfig
+```
+
+Keep your other Next.js settings. Include any local files imported by your configuration, and adjust the endpoint and config filename if you customize them.
+
+Keep indexes on the server, outside `public`. Clients receive at most 20 matching results and their snippets. Rebuild and redeploy after changing documents to update production search. This API requires a Node.js service and does not work with a purely static export.
+
+## Languages and search messages
+
+With `docs.i18n` configured, the build script generates an index for each language. Documentation pages search the language selected by their URL; other pages use `defaultLocale`.
+
+Files without a language suffix belong to the default language. Documents displayed as translation fallbacks are excluded from the requested language's index. See [Internationalization](/docs/concepts/i18n) for file naming and locale configuration.
+
+Override search labels through the `messages` field in `docs.i18n.locales`. For example, merge these fields into an existing English locale:
+
+```ts title="English locale configuration"
+en: {
+  label: "English",
+  messages: {
+    search: "Search docs",
+    searchPlaceholder: "Enter a title, text, or code…",
+    searchNoResults: "No matching documents.",
+    searchError: "Search is unavailable. Please try again.",
+  },
+},
+```
+
+The API also accepts an explicit language, such as `/api/search?q=configuration&locale=en`. Without `locale`, it uses the default language.
+
+## Search scope and troubleshooting
+
+Search includes registered, enabled, non-draft documents: titles, headings, frontmatter descriptions, prose, JSX child text, and code blocks. It does not execute MDX expressions or components.
+
+The sidebar title filter and header full-text search are separate features. The sidebar filters configuration titles in the current category without calling the search API.
+
+| Symptom | What to check |
+| --- | --- |
+| Search entry is missing | Enable `docs.search` and use the shared built-in header. |
+| API returns 404 | Check that the route exists, `search.api` matches it, and search is enabled. |
+| Development works but production returns 503 | Check server logs, generate indexes before the build, and include `.codealtas/search/` and the configuration file in deployment. |
+| A new article is missing | Register it in `docs.categories`, check draft and disabled settings, and rebuild and redeploy production. |
+| A language has no results | Check that translated files exist and their language codes match the configuration. |
+| One character does not match body text | Single-character queries search titles and headings only. Enter more characters for full-text search. |
+
+Multiple query words must all match the same page. Titles and headings support prefix matching, with no fuzzy or arbitrary substring matching. Queries are limited to 100 Unicode characters; unknown languages and longer queries return 400.

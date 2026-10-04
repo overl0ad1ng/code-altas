@@ -25,6 +25,7 @@ export default defineConfig({
     tags: {
       Beta: "#1447E6",
       "Version Released": "#8A0194",
+      "Feature Milestone": "#2563EB",
     },
     categories: [
       {
@@ -70,6 +71,11 @@ export default defineConfig({
                 slug: "frontmatter",
               },
               {
+                name: "Code Blocks",
+                i18n: { "zh-CN": "代码块" },
+                slug: "code-blocks",
+              },
+              {
                 name: "Mermaid",
                 slug: "mermaid",
               },
@@ -80,10 +86,20 @@ export default defineConfig({
             ],
           },
           {
-            name: "Concepts",
-            i18n: { "zh-CN": "核心概念" },
+            name: "Configuration and Organization",
+            i18n: { "zh-CN": "配置与组织" },
             slug: "concepts",
             docs: [
+              {
+                name: "Site Configuration",
+                i18n: { "zh-CN": "站点配置" },
+                slug: "configuration",
+              },
+              {
+                name: "Navigation",
+                i18n: { "zh-CN": "导航配置" },
+                slug: "navigation",
+              },
               {
                 name: "File System",
                 i18n: { "zh-CN": "文件系统" },
@@ -93,6 +109,38 @@ export default defineConfig({
                 name: "Internationalization",
                 i18n: { "zh-CN": "国际化（i18n）" },
                 slug: "i18n",
+              },
+              {
+                name: "Search",
+                i18n: { "zh-CN": "搜索配置" },
+                slug: "search",
+              },
+              {
+                name: "Styles and Themes",
+                i18n: { "zh-CN": "样式与主题" },
+                slug: "theme",
+              },
+              {
+                name: "Page Metadata",
+                i18n: { "zh-CN": "页面元数据" },
+                slug: "metadata",
+              },
+            ],
+          },
+          {
+            name: "Deployment and Maintenance",
+            i18n: { "zh-CN": "部署与维护" },
+            slug: "operations",
+            docs: [
+              {
+                name: "Build and Deployment",
+                i18n: { "zh-CN": "构建与部署" },
+                slug: "deployment",
+              },
+              {
+                name: "Troubleshooting",
+                i18n: { "zh-CN": "常见问题" },
+                slug: "troubleshooting",
               },
             ],
           },

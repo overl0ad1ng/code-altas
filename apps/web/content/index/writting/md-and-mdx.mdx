@@ -52,10 +52,12 @@ MDX, however, allows for embedded components:
 ```mdx
 # Installation
 
-<InstallCommand package="codealtas" />
+<Steps>
+  <Step label="Install">Add Code Atlas to your project.</Step>
+</Steps>
 ```
 
-`InstallCommand` is a JSX component.
+`Steps` and `Step` are registered built-in JSX components.
 
 ## Differences between Markdown and MDX
 
@@ -69,12 +71,33 @@ Although MDX incorporates Markdown, the two are not identical.
 | Code blocks | ✅ Supported | ✅ Supported |
 | Images | ✅ Supported | ✅ Supported |
 | Links | ✅ Supported | ✅ Supported |
-| HTML tags | ✅ Partially supported | ❌ Not directly supported |
+| HTML elements | ❌ Raw HTML disabled | ✅ Use JSX |
 | JSX components | ❌ Not supported | ✅ Supported |
 | React components | ❌ Not supported | ✅ Supported |
-| Import / Export | ❌ Not supported | ✅ Supported |
+| Import / Export | ❌ Not supported | ❌ Disabled in Code Atlas |
 | JavaScript expressions | ❌ Not supported | ✅ Supported |
 | Videos | ❌ Not supported | ✅ Supported |
 | Tabs | ❌ Not supported | ✅ Supported |
 | Steps | ❌ Not supported | ✅ Supported |
 | FileTree | ❌ Not supported | ✅ Supported |
+
+## Code Atlas rendering rules
+
+The table describes content rendered by Code Atlas. Its server renderer disables MDX `import` and `export` statements. Import custom React components in your Next.js page and pass them through `DocsPage`'s `components` prop instead:
+
+```tsx title="app/docs/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+import { InstallCommand } from "../../../components/install-command"
+
+export const dynamic = "force-dynamic"
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} components={{ InstallCommand }} />
+}
+```
+
+The example assumes your project provides `components/install-command.tsx` exporting `InstallCommand`. Once registered, use `<InstallCommand />` in an `.mdx` article without importing it there. Client components must declare `"use client"` in their own module; keep the route page as a Server Component.
+
+Markdown rendering supports tables, task lists, and strikethrough through GitHub Flavored Markdown. Raw HTML in `.md` is not enabled by the current renderer; use JSX in `.mdx` for HTML-like elements. MDX expressions such as `{1 + 1}` are supported, so keep document source under your project's control.
+
+Use `##` and `###` for article sections: the page already renders the frontmatter title as its main heading. Store images in `public`, and use paths such as `![Screenshot](/images/screenshot.png)`. Links such as `[Quick Start](/docs/quickstart)` target configured documents; see [File System](/docs/concepts/filesystem) for path mapping and [Code Blocks](/docs/writting/code-blocks) for code examples.

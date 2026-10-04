@@ -1,102 +1,141 @@
 ---
 title: 快速开始
-description: 只需几分钟，即可基于 Code Altas 构建一个文档站点
+description: 从安装到第一篇文章，搭建一个可以运行的 Code Atlas 文档站点。
 ---
 
-该包已包含编译后的 JavaScript、类型定义以及 CSS。导入 `@code-altas/ui` 时会自动加载其全局样式；如果你还需要编写自己的 UI，Tailwind 是可选的。页面和布局应保持为 Server Components。
+本教程使用 Next.js App Router，将文档挂载在 `/docs`。已有 Next.js 项目可以从安装依赖开始，保留原有首页和业务路由。
 
-在 `next.config.ts` 中添加配置加载器所需的依赖：
+## 1. 准备项目
 
-```ts
-import type { NextConfig } from "next"
+使用 Node.js 22.12 或以上版本。项目需要 Next.js 16.3.6+（16.x）以及 React / React DOM 19.2.8+（19.x）。
 
-export default {
-  serverExternalPackages: ["c12", "jiti"],
-} satisfies NextConfig
+没有项目时，创建一个启用 TypeScript 和 App Router 的 Next.js 项目：
+
+```bash
+pnpm create next-app my-docs
+cd my-docs
 ```
 
-部署时请使用 Node.js Runtime，并确保包含 `content/` 目录以及 `codealtas.config.ts` 文件。项目应使用 App Router，并满足以下版本要求：Next.js 16.3.6+（16.x）以及 React / React DOM 19.2.8+（19.x）。
-
-<Tabs>
-<Tab icon="lucide:square-terminal" name="创建新项目">
-    ## 前置要求
-
-    首先，请确保已经安装以下工具：
-    
-    - Node.js：`^22.12.0, ^24.0.0, or >= 26.0.0`
-    - pnpm：`11.18.0`
-    
-    ### 1. 创建 Next.js 项目
-    
-    ```bash
-    npx create-next-app@latest
-    ```
-    
-    按照 CLI 提示完成项目创建。
-    
-    ### 2. 安装 @code-altas/ui
-    
-    在项目根目录中安装 `@code-altas/ui`：
-    
-    ```bash
-    pnpm add @code-altas/ui@latest
-    ```
-    
-    ### 3. 配置 codealtas.config.ts
-    
-    ```ts title="codealtas.config.ts"
-    import { defineConfig } from "@code-altas/ui/config";
-    
-    export default defineConfig({
-    title: "Code Altas",
-    description: "This is a demo documentation site powered by Code Altas.",
-    logo: "/logo.png",
-    
-    // other configurations
-    });
-    ```
-    
-    ### 4. 配置布局与页面
-    
-    这一步与许多类似的站点生成器有较大区别。Code Altas 不会强制规定你的布局和页面必须采用某种固定的内容结构，因此你可以自由编写自己需要的组件。
-    
-    当然，你也可以直接使用 Code Altas 提供的现成组件，例如 `DefaultLayout`、`DocsLayout`、`DocsPage` 等。更多信息请参阅：[Components](/docs/components)
-  </Tab>
-<Tab icon="lucide:package-open" name="从现有项目迁移">
-## 前置要求
-
-首先，请确保你的项目基于 Next.js 和 React 构建，并满足以下版本要求：
-
-- Next.js：`>= 16.3.6`
-- React：`>= 19.2.8`
-
-### 1. 安装 @code-altas/ui
-
-在项目根目录中安装 `@code-altas/ui`：
+安装 Code Atlas：
 
 ```bash
 pnpm add @code-altas/ui@beta
 ```
 
-### 2. 配置 codealtas.config.ts
+包已包含 JavaScript、类型定义和编译后的 CSS，使用内置界面不需要额外安装 Tailwind。下面以 `app/` 为例；如果项目使用 `src/app/`，将路由文件放到 `src/app/`，其余文件位置保持不变。
+
+## 2. 配置站点和第一篇文章
+
+在应用的 `package.json` 旁创建配置文件：
 
 ```ts title="codealtas.config.ts"
-import { defineConfig } from "@code-altas/ui/config";
+import { defineConfig } from "@code-altas/ui/config"
 
 export default defineConfig({
-  title: "Code Altas",
-  description: "This is a demo documentation site powered by Code Altas.",
-  logo: "/logo.png",
-  
-  // other configurations
-});
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.svg",
+  docs: {
+    categories: [
+      {
+        name: "Guides",
+        icon: "lucide:book-open",
+        slug: "index",
+        docs: [{ name: "Introduction", slug: "index" }],
+      },
+    ],
+  },
+})
 ```
 
-### 3. 配置布局与页面
+将你的 Logo 保存为 `public/logo.svg`。然后创建正文文件：
 
-这一步与许多类似的站点生成器有较大区别。Code Altas 不会强制规定你的布局和页面必须采用某种固定的内容结构，因此你可以自由编写自己需要的组件。
+```md title="content/index/index.mdx"
+---
+title: 欢迎使用
+description: 这是我的第一篇文档。
+---
 
-当然，你也可以直接使用 Code Altas 提供的现成组件，例如 `DefaultLayout`、`DocsLayout`、`DocsPage` 等。更多信息请参阅：[Components](/docs/components)
-</Tab>
+## 开始阅读
 
-</Tabs>
+使用 Markdown 编写正文，使用 MDX 添加组件。
+```
+
+此处两个 `index` 保留在文件路径中，从公开 URL 中省略，因此文章的地址是 `/docs`。以后添加文章时，需要同时创建内容文件并注册导航条目，详见 [文件系统](/docs/concepts/filesystem)。
+
+## 3. 配置 Next.js
+
+将这些设置合并到现有配置，不要覆盖项目其他选项：
+
+```ts title="next.config.ts"
+import type { NextConfig } from "next"
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ["c12", "jiti"],
+}
+
+export default nextConfig
+```
+
+## 4. 添加根布局和文档路由
+
+根布局提供 `html`、`body` 和全局样式。已有根布局时，合并样式导入与 `suppressHydrationWarning`，保留自己的 provider 和其他设置：
+
+```tsx title="app/layout.tsx"
+import "@code-altas/ui/styles.css"
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="zh-CN" suppressHydrationWarning>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+`DocsLayout` 会加载站点配置并提供文档导航、主题、header 和 footer：
+
+```tsx title="app/docs/layout.tsx"
+import { DocsLayout } from "@code-altas/ui"
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <DocsLayout>{children}</DocsLayout>
+}
+```
+
+可选 catch-all 路由同时处理 `/docs` 和它下面的文章地址：
+
+```tsx title="app/docs/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} />
+}
+```
+
+页面和布局保持为 Server Components，不添加 `"use client"`。`params` 是 Promise，由 `DocsPage` 负责读取。
+
+## 5. 启动并检查
+
+```bash
+pnpm dev
+```
+
+访问 `http://localhost:3000/docs`，应看到「欢迎使用」的标题、正文和左侧导航。首页 `/` 仍由你的 Next.js 首页负责。
+
+如果出现 404，检查配置、正文文件和路由是否都已创建，以及命令是否在应用根目录运行。不要同时保留 `app/docs/page.tsx` 与上述可选 catch-all 路由，它们会争用 `/docs`。
+
+## 接下来
+
+- 用 [站点配置](/docs/concepts/configuration) 设置品牌、header 和 footer。
+- 用 [导航配置](/docs/concepts/navigation) 添加分类、分组和文章。
+- 阅读 [MD 与 MDX](/docs/writting/md-and-mdx) 开始编写正文。
+- 通过 [搜索配置](/docs/concepts/search) 启用全文搜索。
+- 上线前完成 [构建与部署](/docs/operations/deployment) 和 [页面元数据](/docs/concepts/metadata) 的配置。

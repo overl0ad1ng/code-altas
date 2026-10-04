@@ -2,7 +2,42 @@
 title: Changelog
 ---
 
+<ProjectOverview repository="overl0ad1ng/code-altas" packageName="@code-altas/ui" />
+
 <Changelogs sortBy="date">
+    <Changelog
+        date="2026/10/3"
+        title="Code Altas v0.3.0 — Documentation Search"
+        tags={["Feature Milestone"]}
+    >
+        Find documentation by title, heading, body text, or code with locale-aware full-text search.
+
+        - Added `docs.search` configuration and a search dialog with `Ctrl+K` / `Cmd+K` shortcuts, keyboard navigation, highlighted snippets, and links to matching headings.
+        - Added `createDocsSearchHandler()` for the search API and `buildDocsSearchIndex()` for production index generation.
+        - Added separate indexes for each language, excluding draft, disabled, and translation-fallback documents.
+        - Added development index refresh, production index caching, and query validation. Production deployments must generate and include search indexes.
+
+        Follow the [search setup guide](/docs/concepts/search) to configure the API and build step. This milestone covers header full-text search; sidebar title filtering was added afterward.
+
+        [View the implementation commit](https://github.com/overl0ad1ng/code-altas/commit/ee0a53a661555734176b79f8d8647d7b665f2fb2).
+    </Changelog>
+    <Changelog
+        date="2026/10/3"
+        title="Code Altas v0.2.0 — Internationalization"
+        tags={["Feature Milestone"]}
+    >
+        Publish documentation in multiple languages while sharing the same navigation structure and document slugs.
+
+        - Added `docs.i18n` configuration for the default language, supported locales, and interface message overrides.
+        - Added language-specific Markdown and MDX files, translated category and article names, and default-language content fallback with a reader notice.
+        - Added a header language selector that preserves the current document, query string, and hash.
+        - Added localized navigation, pagination, and internal documentation links, plus language-aware article attributes and canonical metadata.
+        - Added English and Simplified Chinese documentation and interface messages.
+
+        Follow the [internationalization guide](/docs/concepts/i18n) to configure locales and translation files. Default-language documents retain their existing URLs; other languages use a prefix inside `/docs`.
+
+        [View the implementation commit](https://github.com/overl0ad1ng/code-altas/commit/ffeea03359923c2e07f06b707d9fac856f99f271).
+    </Changelog>
     <Changelog
         date="2026/10/2"
         title="Code Altas v0.1.0"

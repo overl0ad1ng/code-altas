@@ -1,0 +1,81 @@
+---
+title: 导航配置
+description: 组织分类、分组和文章，配置阅读顺序、图标和发布状态。
+---
+
+`docs.categories` 决定文档导航结构和阅读顺序。内容文件不会自动进入导航，需要在配置中注册。
+
+## 分类、分组与文章
+
+下面的示例可以放入现有 `docs.categories`：
+
+```ts title="categories 配置片段"
+categories: [
+  {
+    name: "Guides",
+    icon: "lucide:book-open",
+    slug: "index",
+    docs: [
+      {
+        name: "Getting Started",
+        docs: [
+          { name: "Introduction", slug: "index" },
+          { name: "Installation", slug: "installation" },
+        ],
+      },
+      {
+        name: "Advanced",
+        slug: "advanced",
+        docs: [
+          { name: "Overview", slug: "index" },
+          { name: "Configuration", slug: "configuration" },
+        ],
+      },
+    ],
+  },
+],
+```
+
+- **分类**提供 `name`、`icon`、`slug` 和 `docs`，显示在分类切换区域。
+- **分组**包含非空 `docs` 数组，可以继续嵌套。没有 `slug` 的分组只影响导航组织；有 `slug` 时也会增加文件目录和 URL 路径。
+- **文章**是带 `slug`、没有非空子文档数组的叶子条目。配置名称用于导航，也作为缺少 frontmatter 标题时的页面标题。
+
+分组本身不同时充当正文页面。需要分组落地页时，在它的 `docs` 中添加 `slug: "index"` 的文章。
+
+| 示例条目 | 正文文件 | URL |
+| --- | --- | --- |
+| Introduction | `content/index/index.mdx` | `/docs` |
+| Installation | `content/index/installation.mdx` | `/docs/installation` |
+| Advanced → Overview | `content/index/advanced/index.mdx` | `/docs/advanced` |
+| Advanced → Configuration | `content/index/advanced/configuration.mdx` | `/docs/advanced/configuration` |
+
+完整路径规则见 [文件系统](/docs/concepts/filesystem)。
+
+## 顺序与分类入口
+
+分类、分组和文章按数组书写顺序展示，不按文件名或标题排序。页面底部的上一篇/下一篇也按照配置顺序遍历，并可以跨越分类。
+
+点击分类会前往该分类中第一个未标记 `draft` 或 `disabled` 的文档。如果希望分类先展示概览，将它的 index 文章放在最前面。没有可见文档的分类不会显示分类入口。
+
+## 草稿和禁用
+
+```ts title="文档条目配置片段"
+docs: [
+  { name: "Upcoming Guide", slug: "upcoming", draft: true },
+  { name: "Archived Guide", slug: "archived", disabled: true },
+],
+```
+
+当前实现中，`draft: true` 和 `disabled: true` 都会排除导航、上一篇/下一篇和全文搜索中的条目。配置在分组上时，会作用于整条子树。
+
+它们**不会阻止直接访问文档 URL**：只要配置条目和文件仍然存在，读取器就能渲染文章。要停止公开某篇文章，应移除配置条目；需要私有文档时，由应用另行实现访问控制。这两个字段应写在配置中，不能通过 frontmatter 生效。
+
+## 图标与翻译
+
+分类图标支持 `lucide:book-open`、`simple:github` 等字符串。Lucide 也接受 `BookOpen`、`book-open` 等名称，Simple Icons 也接受 `SiGithub`。无法识别的图标会使用问号图标回退。
+
+嵌套分组和文章也支持可选 `icon`；当前顶层菜单项的渲染不展示该字段，分类图标始终在分类切换区域显示。
+
+分类、分组和文章均可以通过 `i18n: { "zh-CN": "中文名称" }` 翻译导航名称，而无需重复注册正文。翻译正文仍要创建相应的语言文件，见 [国际化](/docs/concepts/i18n)。
+
+侧边栏的搜索输入只筛选当前分类的配置标题，忽略大小写，不搜索正文。正文搜索使用 header 中的独立入口，见 [搜索配置](/docs/concepts/search)。

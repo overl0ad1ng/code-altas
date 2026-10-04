@@ -10,8 +10,8 @@ Typically, you only need the following layout and page files:
 
 <FileTree
   files={[
-    "src/app/(site)/[[...slug]]/page.tsx",
-    "src/app/(site)/layout.tsx",
+    "src/app/docs/[[...slug]]/page.tsx",
+    "src/app/docs/layout.tsx",
     "src/app/layout.tsx",
     "codealtas.config.ts",
   ]}
@@ -21,7 +21,7 @@ Typically, you only need the following layout and page files:
 
 If you only need to maintain the Docs pages, simply do this:
 
-```tsx title="src/app/(site)/layout.tsx"
+```tsx title="src/app/docs/layout.tsx"
 import { DocsLayout } from "@code-altas/ui"
 
 export default function Layout({
@@ -35,7 +35,7 @@ export default function Layout({
 
 Next, configure `DocsPage` in `page.tsx`:
 
-```tsx title="src/app/(site)/[[...slug]]/page.tsx"
+```tsx title="src/app/docs/[[...slug]]/page.tsx"
 import { DocsPage, type DocsPageProps } from "@code-altas/ui"
 
 export const dynamic = "force-dynamic"
@@ -53,7 +53,9 @@ Finally, configure the docs-related settings in `codealtas.config`:
 import { defineConfig } from "@code-altas/ui/config"
 
 export default defineConfig({
-  // ... other configurations
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.svg",
 
   docs: {
     categories: [
@@ -67,17 +69,17 @@ export default defineConfig({
             docs: [
               {
                 name: "Introduction",
-                slug: "index"
-              }
+                slug: "index",
+              },
               {
                 name: "Quick Start",
-                slug: "quickstart"
-              }
-            ]
-          }
-        ]
+                slug: "quickstart",
+              },
+            ],
+          },
+        ],
       },
-    ]
+    ],
   },
 })
 ```
@@ -98,6 +100,10 @@ lorem ipsum...
 ```
 
 ## Important Notes
+
+The `docs` folder creates the `/docs` URL prefix; a route group such as `(site)` does not. Built-in navigation and document links target `/docs`, so keep this mount point when using them. The root `app/layout.tsx` should contain `html` and `body`; see [Quick Start](/docs/quickstart) for a complete example.
+
+`DocsLayout` loads configuration, provides the theme, and renders the header, document navigation, and footer. `DocsPage` reads and renders the article. For home pages or changelog routes, use `DefaultLayout` in that route's layout instead. Avoid nesting `DefaultLayout` around `DocsLayout`, which would render two headers and footers.
 
 1. Store `content/` at the app root, beside `package.json` and `codealtas.config.ts`.
 2. Parent group slugs contribute to the file path and URL. `index` segments remain in file paths and are omitted from URLs.

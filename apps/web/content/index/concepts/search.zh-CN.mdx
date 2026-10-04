@@ -1,0 +1,154 @@
+---
+title: 搜索配置
+description: 启用文档全文搜索，配置 API 路由、构建索引和多语言搜索。
+---
+
+Code Atlas 提供文档全文搜索。读者可以点击 header 中的搜索按钮，或按 `Ctrl+K` / `Cmd+K` 打开搜索弹窗，从结果直接跳转到文章或对应的小标题。
+
+启用后，使用内置公共 header 的页面都会显示搜索入口，包括非 docs 页面。搜索范围仍然是配置中的文档，不会自动收录首页或更新日志。
+
+下面的文件路径和命令都以 **Next.js 应用根目录** 为基准，也就是应用的 `package.json` 所在目录。本仓库中对应 `apps/web`。
+
+## 1. 启用搜索
+
+在现有 `codealtas.config.ts` 的 `docs` 中添加 `search`，保留已经配置的 `categories` 等字段：
+
+```ts title="codealtas.config.ts（配置片段）"
+docs: {
+  search: {},
+  // 保留现有 categories、i18n 等配置。
+},
+```
+
+空对象表示使用默认接口 `/api/search`。省略 `search` 或设置 `search: false` 可以关闭搜索。
+
+开启配置不会自动创建 API 路由，还需要完成下一步。
+
+## 2. 添加搜索 API
+
+创建 `app/api/search/route.ts`。如果项目使用 `src/app`，则创建 `src/app/api/search/route.ts`：
+
+```ts title="app/api/search/route.ts"
+import { createDocsSearchHandler } from "@code-altas/ui/server"
+
+export const runtime = "nodejs"
+export const GET = createDocsSearchHandler()
+```
+
+搜索处理器需要 Node.js Runtime。开发模式会在内存中创建索引，并检查文档和配置的变化，无需每次修改文章后手动生成索引。
+
+启动开发服务器后，可以访问 `/api/search?q=Code` 检查接口。成功时返回 `{ results: [...] }`；没有匹配文章时返回 `{ results: [] }`。
+
+### 自定义接口路径
+
+如果将路由放在 `app/api/docs-search/route.ts`，同步修改搜索配置：
+
+```ts title="codealtas.config.ts（配置片段）"
+docs: {
+  search: { api: "/api/docs-search" },
+  // 保留现有文档配置。
+},
+```
+
+后面的部署配置也要使用新的接口路径。
+
+## 3. 在生产构建前生成索引
+
+生产环境读取预先生成的索引文件，不会在请求时扫描文章。创建构建脚本：
+
+```js title="scripts/build-search.mjs"
+import { buildDocsSearchIndex } from "@code-altas/ui/search"
+
+console.table(await buildDocsSearchIndex())
+```
+
+以上写法适用于安装的已编译 npm 包。如果像本仓库一样直接使用 workspace 中的 TypeScript 源码包，先安装 `jiti`：
+
+```bash
+pnpm add -D jiti
+```
+
+然后使用下面的脚本替代直接导入：
+
+```js title="scripts/build-search.mjs（workspace 源码包）"
+import { createJiti } from "jiti"
+
+const { buildDocsSearchIndex } = await createJiti(import.meta.url).import(
+  "@code-altas/ui/search"
+)
+console.table(await buildDocsSearchIndex())
+```
+
+在 `package.json` 中将索引生成放到 `next build` 前面：
+
+```json title="package.json（scripts 片段）"
+{
+  "scripts": {
+    "build": "node scripts/build-search.mjs && next build"
+  }
+}
+```
+
+如果已有构建前置任务，请保留它们，并确保生成索引发生在 `next build` 之前。运行 `pnpm build` 后，脚本会输出每种语言的文章数和索引字节数，文件默认保存到 `.codealtas/search/`。
+
+将 `.codealtas/` 加入 `.gitignore`。使用构建缓存时，需要将 `.codealtas/search/**` 纳入构建产物，确保命中缓存后仍能部署索引。
+
+## 4. 将索引包含在部署中
+
+把以下字段合并到现有 `next.config.ts`：
+
+```ts title="next.config.ts"
+import type { NextConfig } from "next"
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ["c12", "jiti"],
+  outputFileTracingIncludes: {
+    "/api/search": ["./.codealtas/search/**/*.json", "./codealtas.config.ts"],
+  },
+}
+
+export default nextConfig
+```
+
+保留项目已有的其他配置。如果配置文件导入了本地文件，也要将这些文件加入部署包含列表。自定义 API 路径或配置文件名时，同步修改上面的路径。
+
+索引保存在服务端，不需要放进 `public`。客户端只接收最多 20 条匹配结果及摘要。修改文档后，需要重新构建并部署，生产环境才会使用新的搜索内容。该搜索接口需要运行 Node.js 服务，不适用于纯静态导出。
+
+## 多语言与搜索文案
+
+配置 `docs.i18n` 后，构建脚本会为每种语言生成独立索引。docs 页面根据当前 URL 的语言搜索，非 docs 页面默认使用 `defaultLocale`。
+
+没有语言后缀的文件属于默认语言；缺少翻译时用于页面回退的文章不会加入该翻译语言的索引。文件命名和语言配置详见 [国际化](/docs/zh-CN/concepts/i18n)。
+
+可以通过 `docs.i18n.locales` 中的 `messages` 覆盖搜索文案。例如，将以下字段合并到已有的中文语言配置：
+
+```ts title="zh-CN 语言配置"
+"zh-CN": {
+  label: "简体中文",
+  messages: {
+    search: "搜索文档",
+    searchPlaceholder: "输入标题、正文或代码…",
+    searchNoResults: "没有找到相关文档。",
+    searchError: "搜索暂时不可用，请稍后重试。",
+  },
+},
+```
+
+接口也支持显式指定语言，例如 `/api/search?q=配置&locale=zh-CN`。未传入 `locale` 时使用默认语言。
+
+## 搜索范围与常见问题
+
+搜索收录已注册、启用且非草稿的文档，包括标题、小标题、frontmatter 描述、正文、JSX 子文本和代码块，不会执行 MDX 表达式或组件。
+
+侧边栏的标题筛选与 header 全文搜索是两个独立入口：侧边栏只筛选当前分类的配置标题，不调用搜索 API。
+
+| 现象 | 检查方式 |
+| --- | --- |
+| 没有搜索入口 | 确认启用了 `docs.search`，且页面使用内置公共 header。 |
+| 接口返回 404 | 检查 API 路由是否存在、`search.api` 是否一致，以及搜索是否被关闭。 |
+| 开发正常，生产返回 503 | 查看服务端日志，确认构建前已生成索引，并将 `.codealtas/search/` 和配置文件包含在部署中。 |
+| 找不到新增文章 | 确认文章已注册到 `docs.categories`，且没有被禁用或标记为草稿；生产环境还需要重新构建部署。 |
+| 某个语言没有结果 | 检查该语言的翻译文件是否存在，语言代码是否与配置一致。 |
+| 单个字符搜不到正文 | 单字符查询只搜索标题和小标题；输入更多字符后才会搜索全文。 |
+
+多个搜索词必须都匹配同一篇文章。标题和小标题支持前缀匹配，不支持模糊匹配或任意子字符串匹配。查询最多支持 100 个 Unicode 字符，未知语言或超长查询会返回 400。

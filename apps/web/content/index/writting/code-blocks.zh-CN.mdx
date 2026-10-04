@@ -1,0 +1,66 @@
+---
+title: 代码块
+description: 为代码示例设置语言、文件名标题、行高亮和复制按钮。
+---
+
+在 `.md` 和 `.mdx` 中都可以使用代码围栏，无需启用实验性功能。Code Atlas 使用 Shiki 进行语法高亮，并提供行号和复制按钮。
+
+## 语言与标题
+
+在三个反引号后写语言标识，使用 `title` 添加文件名或说明：
+
+````md
+```ts title="greeting.ts"
+const greeting = "Hello, Code Atlas"
+console.log(greeting)
+```
+````
+
+渲染结果：
+
+```ts title="greeting.ts"
+const greeting = "Hello, Code Atlas"
+console.log(greeting)
+```
+
+`title` 支持双引号或单引号。不指定语言，或语言无法识别时，代码会按纯文本显示。目录结构、日志等内容可以显式使用 `text`。
+
+## 高亮指定行
+
+在围栏元信息中使用花括号。行号从 1 开始，逗号分隔单行或范围：
+
+````md
+```ts title="settings.ts" {2,4-5}
+const settings = {
+  title: "My Documentation",
+  docs: {
+    search: {},
+  },
+}
+```
+````
+
+渲染结果：
+
+```ts title="settings.ts" {2,4-5}
+const settings = {
+  title: "My Documentation",
+  docs: {
+    search: {},
+  },
+}
+```
+
+高亮只影响显示，不修改代码或复制内容。
+
+## 复制与主题
+
+代码块的复制按钮复制代码正文，不包含文件名或行号。复制依赖浏览器 Clipboard API；请在 localhost 或 HTTPS 页面上检查该功能。
+
+高亮颜色随浅色和深色主题切换，分别使用 `github-light` 与 `github-dark`。当前站点配置没有更换高亮主题的字段。
+
+## 展示围栏语法
+
+文章需要展示三个反引号的写法时，用四个反引号包住示例，就像本页的源码示例一样。这样内层围栏会作为文本展示。
+
+普通围栏适合单段代码。多语言切换或多个文件可以使用 [Code Groups](/docs/components/code-groups)，修改前后对比可以使用 [Code Diff](/docs/components/code-diff)。`mermaid` 围栏会渲染为图表，详见 [Mermaid](/docs/writting/mermaid)。

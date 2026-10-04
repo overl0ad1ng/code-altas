@@ -52,10 +52,12 @@ Install CodeAltas with npm.
 ```mdx
 # Installation
 
-<InstallCommand package="codealtas" />
+<Steps>
+  <Step label="安装">将 Code Atlas 添加到项目中。</Step>
+</Steps>
 ```
 
-`InstallCommand` 是一个 JSX 组件。
+`Steps` 和 `Step` 是已经注册的内置 JSX 组件。
 
 ## Markdown 与 MDX 的区别
 
@@ -69,12 +71,33 @@ Install CodeAltas with npm.
 | 代码块 | ✅ 支持 | ✅ 支持 |
 | 图片 | ✅ 支持 | ✅ 支持 |
 | 链接 | ✅ 支持 | ✅ 支持 |
-| HTML 标签 | ✅ 部分支持 | ❌ 不直接支持 |
+| HTML 元素 | ❌ 未启用原始 HTML | ✅ 使用 JSX |
 | JSX 组件 | ❌ 不支持 | ✅ 支持 |
 | React 组件 | ❌ 不支持 | ✅ 支持 |
-| 导入 / 导出 | ❌ 不支持 | ✅ 支持 |
+| 导入 / 导出 | ❌ 不支持 | ❌ Code Atlas 中已禁用 |
 | JavaScript 表达式 | ❌ 不支持 | ✅ 支持 |
 | 视频 | ❌ 不支持 | ✅ 支持 |
 | Tabs | ❌ 不支持 | ✅ 支持 |
 | Steps | ❌ 不支持 | ✅ 支持 |
 | FileTree | ❌ 不支持 | ✅ 支持 |
+
+## Code Atlas 的渲染规则
+
+上表描述的是 Code Atlas 实际渲染的内容。服务端渲染器禁用了 MDX 中的 `import` 和 `export`。需要使用自定义 React 组件时，应在 Next.js 页面中导入，再通过 `DocsPage` 的 `components` 属性注册：
+
+```tsx title="app/docs/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+import { InstallCommand } from "../../../components/install-command"
+
+export const dynamic = "force-dynamic"
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} components={{ InstallCommand }} />
+}
+```
+
+示例假设项目已有 `components/install-command.tsx`，并导出 `InstallCommand`。注册后即可在 `.mdx` 文章中写 `<InstallCommand />`，无需在文章内导入。交互组件应在自己的模块中声明 `"use client"`，路由页面保持为 Server Component。
+
+Markdown 渲染通过 GitHub Flavored Markdown 支持表格、任务列表和删除线。当前渲染器没有启用 `.md` 中的原始 HTML；需要 HTML 类元素时，请在 `.mdx` 中使用 JSX。MDX 支持 `{1 + 1}` 这样的表达式，因此应使用项目自己维护的文档源文件。
+
+正文使用 `##`、`###` 编写章节，页面已将 frontmatter 标题渲染为主标题。图片放进 `public`，使用 `![截图](/images/screenshot.png)` 引用。`[快速开始](/docs/quickstart)` 指向已配置的文档，路径规则见 [文件系统](/docs/concepts/filesystem)，代码示例写法见 [代码块](/docs/writting/code-blocks)。

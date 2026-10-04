@@ -1,0 +1,68 @@
+---
+title: Page Metadata
+description: Connect site configuration and article frontmatter to browser titles, descriptions, and icons.
+---
+
+The article heading and browser tab title come from separate rendering and Next.js metadata paths. Code Atlas provides two server helpers to connect site configuration and frontmatter to metadata.
+
+## Site metadata
+
+Export `generateMetadata` from the root layout, keeping the existing layout function:
+
+```tsx title="app/layout.tsx (metadata export)"
+import { getSiteMetadata } from "@code-altas/ui/server"
+
+export async function generateMetadata() {
+  return getSiteMetadata()
+}
+```
+
+The helper reads `codealtas.config.ts` and returns the default title, a `%s | Site Name` title template, description, and `icon` with `logo` as fallback. For a site named `My Documentation` and an article named `Quick Start`, the browser title becomes `Quick Start | My Documentation`.
+
+## Article metadata
+
+Add `generateMetadata` to the document route:
+
+```tsx title="app/docs/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+import { getDocMetadata } from "@code-altas/ui/server"
+
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
+export async function generateMetadata({ params }: DocsPageProps) {
+  const { slug } = await params
+  return getDocMetadata(`/${(slug ?? []).join("/")}`)
+}
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} />
+}
+```
+
+Pass the document path after `/docs`, without adding `/docs` again. Titles use frontmatter `title`, falling back to the configured name. Descriptions use frontmatter `description`, falling back to the site description.
+
+With i18n enabled, the helper also supplies a canonical path. If a missing translation falls back to default-language content, the canonical points to that content's language URL.
+
+## Set the site domain
+
+Provide a base for relative metadata URLs by extending the root helper result:
+
+```tsx title="app/layout.tsx (metadata with a domain)"
+import { getSiteMetadata } from "@code-altas/ui/server"
+
+export async function generateMetadata() {
+  return {
+    ...(await getSiteMetadata()),
+    metadataBase: new URL("https://docs.example.com"),
+  }
+}
+```
+
+Replace the example with your production domain. Your Next.js application still supplies sitemaps, robots, and sharing images; the helpers do not generate them.
+
+## Verify the output
+
+Open different articles and inspect browser titles and source tags for description, icon, and canonical. Do not export both `metadata` and `generateMetadata` from the same file. Metadata exports work only in Server Components.
+
+`getDocMetadata` compiles articles with the default component registry and does not accept `DocsPage.components`. For articles using custom components, implement application metadata logic that handles the same components rather than calling this helper in isolation and causing compilation errors.

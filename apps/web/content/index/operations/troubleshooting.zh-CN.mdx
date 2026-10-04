@@ -1,0 +1,57 @@
+---
+title: 常见问题
+description: 排查文档 404、MDX 编译、主题、元数据和生产搜索问题。
+---
+
+先判断问题出现在路由、正文读取、MDX 编译还是部署阶段。开发正常但生产失败时，优先查看服务端日志与部署文件。
+
+## 文件存在，页面却返回 404
+
+检查以下顺序：
+
+1. 是否创建 `app/docs/[[...slug]]/page.tsx`，并渲染 `DocsPage`。
+2. 是否在 `docs.categories` 注册了该文章。
+3. 内容路径是否包含分类、父分组和文章的全部 slug。
+4. `index` 是否仍保留在磁盘路径中，尽管 URL 已省略它。
+5. 是否在应用根目录运行命令，且正文位于该目录的 `content/`。
+
+例如 `content/index/guides/install.mdx` 对应配置路径 `index → guides → install`，公开 URL 为 `/docs/guides/install`。更多映射见 [文件系统](/docs/concepts/filesystem)。
+
+## 重复路径或扩展名报错
+
+同一篇文章只保留 `.md` 或 `.mdx` 中的一种。移除 `index` 片段后，不同配置可能生成相同 URL，也会触发错误。不要用 frontmatter 标题试图解决路由冲突，应修改配置 slug 和文件路径。
+
+## MDX 编译失败或组件未定义
+
+Code Atlas 禁用了文档中的 `import` 和 `export`。将组件导入移动到 Next.js 页面，并通过 `DocsPage.components` 注册。检查 JSX 标签是否闭合、属性名是否符合组件接口，示例代码是否正确包在围栏中。
+
+只有 `.mdx` 支持组件和表达式；`.md` 用于 Markdown。实验性 Preview 需要开启对应配置。普通代码块、Mermaid 和 KaTeX 无需实验性开关。
+
+## 导航没有文章，直接访问却能看到
+
+检查文章或父分组是否设置了 `draft` 或 `disabled`。当前这两个标记仅排除导航、分页和搜索，不阻止直接 URL 读取。行为说明见 [导航配置](/docs/concepts/navigation)。
+
+## 显示重复 header 或样式异常
+
+不要在 `DocsLayout` 外再包 `DefaultLayout`，两者都提供 header 和 footer。根布局只需要应用自己的 provider、`html`、`body` 和全局样式。
+
+确认加载包样式，自定义 CSS 在其后导入。主题切换会调整根元素 class，根布局应添加 `suppressHydrationWarning`。更多说明见 [样式与主题](/docs/concepts/theme)。
+
+## 页面标题正确，浏览器标题不对
+
+渲染 `DocsPage` 不会自动导出 Next.js 元数据。根布局接入 `getSiteMetadata`，文档路由接入 `getDocMetadata`，不要同文件同时导出静态 `metadata` 与 `generateMetadata`。示例见 [页面元数据](/docs/concepts/metadata)。
+
+## 翻译没有生效
+
+检查 `docs.i18n.locales`、文件名语言后缀和 URL 的语言代码是否完全一致。默认语言可以使用无后缀文件；缺少翻译时页面会回退，因此看到默认语言正文不一定是路由错误。导航名称翻译和正文文件是分别配置的。
+
+## 搜索开发正常，生产失败
+
+| 状态 | 排查方向 |
+| --- | --- |
+| 404 | API 路由不存在、`search.api` 不一致，或 `docs.search` 已关闭。 |
+| 400 | 查询超过 100 个 Unicode 字符，或传入了未配置的语言。 |
+| 503 | 查看服务端日志；确认在 `next build` 前生成索引，且部署包含配置和索引文件。 |
+| 200 但没有结果 | 检查注册、草稿状态、翻译文件和查询范围；单字符只搜索标题与小标题。 |
+
+生产内容变更后必须重新构建部署。完整配置见 [搜索配置](/docs/concepts/search) 与 [构建与部署](/docs/operations/deployment)。

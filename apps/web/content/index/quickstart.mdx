@@ -1,101 +1,141 @@
 ---
 title: Quick Start
-description: Build a documentation site based on Code Altas in just a few minutes
+description: Install Code Atlas and publish your first local documentation page with a working layout and route.
 ---
 
-The package includes compiled JavaScript, types, and CSS. Importing `@code-altas/ui` loads its global styles; Tailwind is optional for your own UI. Keep pages and layouts as Server Components.
+This guide uses the Next.js App Router and mounts documentation at `/docs`. For an existing Next.js project, start with package installation and keep your home page and application routes.
 
-Add the configuration loader dependencies to `next.config.ts`:
+## 1. Prepare the project
 
-```ts
-import type { NextConfig } from "next"
+Use Node.js 22.12 or later, Next.js 16.3.6+ (16.x), and React / React DOM 19.2.8+ (19.x).
 
-export default {
-  serverExternalPackages: ["c12", "jiti"],
-} satisfies NextConfig
+If you need a new project, create one with TypeScript and the App Router:
+
+```bash
+pnpm create next-app my-docs
+cd my-docs
 ```
 
-Deploy with a Node.js runtime and include `content/` and `codealtas.config.ts`. Use the App Router with Next.js 16.3.6+ (16.x) and React / React DOM 19.2.8+ (19.x).
+Install Code Atlas:
 
-<Tabs>
-    <Tab icon="lucide:square-terminal" name="Create New Project">
-    ## Prerequisites
-    
-    First, ensure you have the following tools installed:
-    
-    - Node.js: `^22.12.0, ^24.0.0, or >= 26.0.0`
-    - pnpm: `11.18.0`
-    
-    ### 1. Create a Next.js project
-    
-    ```bash
-    npx create-next-app@latest
-    ```
-    
-    Follow the CLI prompts to complete the installation.
-    
-    ### 2. Install @code-altas/ui
-    
-    Install the `@code-altas/ui` package in the root directory of your project:
-    
-    ```bash
-    pnpm add @code-altas/ui@latest
-    ```
-    
-    ### 3. Configure codealtas.config.ts
-    
-    ```ts title="codealtas.config.ts"
-    import { defineConfig } from "@code-altas/ui/config";
-    
-    export default defineConfig({
-      title: "Code Altas",
-      description: "This is a demo documentation site powered by Code Altas.",
-      logo: "/logo.png",
-      
-      // other configurations
-    });
-    ```
-    
-    ### 4. Configure layout and page
-    
-    This step differs significantly from other similar site generators; Code Altas does not force specific content structures on your layouts and pages, allowing you to write exactly the components you want. Of course, you can also directly use the components we provide. 
-    
-    Examples include `DefaultLayout`, `DocsLayout`, `DocsPage`, etc. See details: [Components](/docs/components)
-    </Tab>
-    <Tab icon="lucide:package-open" name="Migrate from an existing project">
-    ## Prerequisites
-    
-    First, ensure your project is built with Next.js and React, and meets the following version requirements:
-    
-    - Next.js: `>= 16.3.6`
-    - React: `>= 19.2.8`
-    
-    ### 1. Install @code-altas/ui
-    
-    Install the `@code-altas/ui` package in the root directory of your project:
-    
-    ```bash
-    pnpm add @code-altas/ui@beta
-    ```
-    
-    ### 2. Configure codealtas.config.ts
-    
-    ```ts title="codealtas.config.ts"
-    import { defineConfig } from "@code-altas/ui/config";
-    
-    export default defineConfig({
-      title: "Code Altas",
-      description: "This is a demo documentation site powered by Code Altas.",
-      logo: "/logo.png",
-      
-      // other configurations
-    });
-    ```
-    
-    ### 3. Configure layouts and pages
-    
-    This step differs significantly from other similar site generators; Code Altas does not force specific content structures on your layouts and pages, allowing you to write whatever components you wish. Of course, you can also directly use the components we provide. 
-    
-    Examples include `DefaultLayout`, `DocsLayout`, `DocsPage`, etc. See details: [Components](/docs/components)
-    </Tab>
-</Tabs>
+```bash
+pnpm add @code-altas/ui@beta
+```
+
+The package includes JavaScript, types, and compiled CSS. Tailwind is not required for the built-in interface. Examples use `app/`; if you use `src/app/`, put route files there and keep other files in the locations shown.
+
+## 2. Configure the site and first article
+
+Create this file beside the application's `package.json`:
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config"
+
+export default defineConfig({
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.svg",
+  docs: {
+    categories: [
+      {
+        name: "Guides",
+        icon: "lucide:book-open",
+        slug: "index",
+        docs: [{ name: "Introduction", slug: "index" }],
+      },
+    ],
+  },
+})
+```
+
+Save your logo as `public/logo.svg`, then create the article:
+
+```md title="content/index/index.mdx"
+---
+title: Welcome
+description: My first documentation page.
+---
+
+## Start reading
+
+Write prose in Markdown and add components with MDX.
+```
+
+Both `index` segments remain in the file path and are omitted from the public URL, giving this article the `/docs` address. Each new article needs both a content file and a registered navigation entry; see [File System](/docs/concepts/filesystem).
+
+## 3. Configure Next.js
+
+Merge these settings into the existing configuration, keeping your other options:
+
+```ts title="next.config.ts"
+import type { NextConfig } from "next"
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ["c12", "jiti"],
+}
+
+export default nextConfig
+```
+
+## 4. Add the root layout and document route
+
+The root layout supplies `html`, `body`, and global styles. In an existing layout, merge the stylesheet import and `suppressHydrationWarning`, preserving your providers and other settings:
+
+```tsx title="app/layout.tsx"
+import "@code-altas/ui/styles.css"
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+`DocsLayout` loads site configuration and provides navigation, the theme, header, and footer:
+
+```tsx title="app/docs/layout.tsx"
+import { DocsLayout } from "@code-altas/ui"
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <DocsLayout>{children}</DocsLayout>
+}
+```
+
+An optional catch-all route handles both `/docs` and individual article addresses:
+
+```tsx title="app/docs/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} />
+}
+```
+
+Keep pages and layouts as Server Components without `"use client"`. `params` is a Promise that `DocsPage` reads for you.
+
+## 5. Start and verify
+
+```bash
+pnpm dev
+```
+
+Visit `http://localhost:3000/docs`. You should see the Welcome title, article body, and sidebar navigation. Your Next.js home page still controls `/`.
+
+For a 404, check that the configuration, content file, and route all exist and that commands run from the app root. Do not keep `app/docs/page.tsx` alongside this optional catch-all route, because both would serve `/docs`.
+
+## Next steps
+
+- Configure branding, header, and footer with [Site Configuration](/docs/concepts/configuration).
+- Add categories, groups, and articles with [Navigation](/docs/concepts/navigation).
+- Write content with [MD and MDX](/docs/writting/md-and-mdx).
+- Enable full-text search with [Search](/docs/concepts/search).
+- Before going live, configure [Build and Deployment](/docs/operations/deployment) and [Page Metadata](/docs/concepts/metadata).

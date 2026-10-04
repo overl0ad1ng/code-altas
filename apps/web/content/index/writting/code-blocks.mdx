@@ -1,0 +1,66 @@
+---
+title: Code Blocks
+description: Add languages, file titles, highlighted lines, and copy buttons to code examples.
+---
+
+Code fences work in both `.md` and `.mdx` without experimental options. Code Atlas uses Shiki for syntax highlighting and provides line numbers and a copy button.
+
+## Languages and titles
+
+Add a language after the opening triple backticks and use `title` for a filename or caption:
+
+````md
+```ts title="greeting.ts"
+const greeting = "Hello, Code Atlas"
+console.log(greeting)
+```
+````
+
+Rendered result:
+
+```ts title="greeting.ts"
+const greeting = "Hello, Code Atlas"
+console.log(greeting)
+```
+
+Titles accept single or double quotes. Missing or unknown languages fall back to plain text. Use `text` explicitly for directory listings or logs.
+
+## Highlight lines
+
+Use braces in the fence metadata. Line numbers start at 1; commas separate individual lines and ranges:
+
+````md
+```ts title="settings.ts" {2,4-5}
+const settings = {
+  title: "My Documentation",
+  docs: {
+    search: {},
+  },
+}
+```
+````
+
+Rendered result:
+
+```ts title="settings.ts" {2,4-5}
+const settings = {
+  title: "My Documentation",
+  docs: {
+    search: {},
+  },
+}
+```
+
+Highlighting changes presentation, not the code or copied text.
+
+## Copying and themes
+
+The copy button copies code without the filename or line numbers. It uses the browser Clipboard API; check it on localhost or HTTPS.
+
+Syntax colors follow the light and dark theme, using `github-light` and `github-dark`. Site configuration currently has no option to replace these syntax themes.
+
+## Show fence syntax
+
+To demonstrate a triple-backtick fence, wrap it in four backticks, as the source examples on this page do. The inner fence will appear as text.
+
+For multiple files or languages, use [Code Groups](/docs/components/code-groups). For before/after changes, use [Code Diff](/docs/components/code-diff). A `mermaid` fence renders as a diagram; see [Mermaid](/docs/writting/mermaid).

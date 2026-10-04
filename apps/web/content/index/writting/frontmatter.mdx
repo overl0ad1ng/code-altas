@@ -23,12 +23,15 @@ The `description` provides a summary. It is rendered below the title in a smalle
 
 ## tags
 
-The `tags` field accepts an array of values. You must first define the tag data in `codealtas.config`:
+The `tags` field accepts an array of strings. Define colors in `codealtas.config.ts`; article tags without a configured, nonempty color are not displayed:
 
 ```ts title="codealtas.config.ts"
-import { defineConfig } from "@code-altas/ui";
+import { defineConfig } from "@code-altas/ui/config";
 
 export default defineConfig({
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.svg",
   docs: {
     tags: {
       "Beta": "#1447E6"
@@ -47,3 +50,5 @@ tags:
 ```
 
 The color `#1447E6` is applied to the text (`Beta`) at 100% opacity and to the border at 20% opacity. Tags are rendered below the description.
+
+Frontmatter does not change a document's URL. Set `draft` and `disabled` on navigation entries in `docs.categories`, not in frontmatter. See [Navigation](/docs/concepts/navigation) for their behavior and [Page Metadata](/docs/concepts/metadata) for using article titles and descriptions in browser metadata.

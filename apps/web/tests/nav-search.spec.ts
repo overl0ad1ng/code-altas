@@ -39,7 +39,13 @@ test("sidebar searches config titles in the current category without API request
     "Frontmatter",
     "Mermaid",
     "KaTeX",
+    "Site Configuration",
+    "Navigation",
     "Internationalization",
+    "Search",
+    "Styles and Themes",
+    "Page Metadata",
+    "Build and Deployment",
   ])
   await input.fill("quick start")
   await menu.getByRole("button", { name: "Quick Start", exact: true }).click()

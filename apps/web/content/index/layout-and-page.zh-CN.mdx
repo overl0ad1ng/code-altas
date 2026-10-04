@@ -10,8 +10,8 @@ title: 布局与页面
 
 <FileTree
   files={[
-    "src/app/(site)/[[...slug]]/page.tsx",
-    "src/app/(site)/layout.tsx",
+    "src/app/docs/[[...slug]]/page.tsx",
+    "src/app/docs/layout.tsx",
     "src/app/layout.tsx",
     "codealtas.config.ts",
   ]}
@@ -21,7 +21,7 @@ title: 布局与页面
 
 如果你只需要维护 Docs 页面，可以直接这样配置：
 
-```tsx title="src/app/(site)/layout.tsx"
+```tsx title="src/app/docs/layout.tsx"
 import { DocsLayout } from "@code-altas/ui"
 
 export default function Layout({
@@ -35,7 +35,7 @@ export default function Layout({
 
 接下来，在 `page.tsx` 中配置 `DocsPage`：
 
-```tsx title="src/app/(site)/[[...slug]]/page.tsx"
+```tsx title="src/app/docs/[[...slug]]/page.tsx"
 import { DocsPage, type DocsPageProps } from "@code-altas/ui"
 
 export const dynamic = "force-dynamic"
@@ -53,7 +53,9 @@ export default function Page({ params }: DocsPageProps) {
 import { defineConfig } from "@code-altas/ui/config"
 
 export default defineConfig({
-  // ... 其他配置
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.svg",
 
   docs: {
     categories: [
@@ -67,17 +69,17 @@ export default defineConfig({
             docs: [
               {
                 name: "Introduction",
-                slug: "index"
-              }
+                slug: "index",
+              },
               {
                 name: "Quick Start",
-                slug: "quickstart"
-              }
-            ]
-          }
-        ]
+                slug: "quickstart",
+              },
+            ],
+          },
+        ],
       },
-    ]
+    ],
   },
 })
 ```
@@ -98,6 +100,10 @@ lorem ipsum...
 ```
 
 ## 注意事项
+
+`docs` 目录会生成 `/docs` URL 前缀，`(site)` 这样的路由分组不会生成 URL 前缀。内置导航和文档链接指向 `/docs`，使用它们时请保留这个挂载路径。根布局 `app/layout.tsx` 应包含 `html` 和 `body`，完整示例见 [快速开始](/docs/quickstart)。
+
+`DocsLayout` 负责加载配置、提供主题，并渲染 header、文档导航和 footer；`DocsPage` 负责读取和渲染正文。首页或变更日志可以在各自的布局中使用 `DefaultLayout`。不要在 `DocsLayout` 外再包一层 `DefaultLayout`，否则会出现重复的 header 和 footer。
 
 1. 将 `content/` 目录放置在应用根目录下，与 `package.json` 和 `codealtas.config.ts` 保持同级。
 2. 父级分组的 `slug` 会参与文件路径和 URL 的生成。`index` 仍会保留在文件路径中，但不会出现在 URL 中。

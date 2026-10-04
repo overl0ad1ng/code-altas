@@ -1,0 +1,81 @@
+---
+title: Navigation
+description: Organize categories, groups, and articles, including reading order, icons, and publication flags.
+---
+
+`docs.categories` defines document navigation and reading order. Content files must be registered; they are not discovered automatically.
+
+## Categories, groups, and articles
+
+Place this example inside the existing `docs` configuration:
+
+```ts title="categories excerpt"
+categories: [
+  {
+    name: "Guides",
+    icon: "lucide:book-open",
+    slug: "index",
+    docs: [
+      {
+        name: "Getting Started",
+        docs: [
+          { name: "Introduction", slug: "index" },
+          { name: "Installation", slug: "installation" },
+        ],
+      },
+      {
+        name: "Advanced",
+        slug: "advanced",
+        docs: [
+          { name: "Overview", slug: "index" },
+          { name: "Configuration", slug: "configuration" },
+        ],
+      },
+    ],
+  },
+],
+```
+
+- **Categories** provide `name`, `icon`, `slug`, and `docs` and appear in the category switcher.
+- **Groups** have a nonempty `docs` array and can nest. A group without `slug` only organizes navigation; a slug also contributes to the content directory and URL.
+- **Articles** are leaves with a `slug` and no nonempty child array. Their names label navigation and supply page titles when frontmatter has no title.
+
+A group does not also render an article. For a group landing page, add a child article with `slug: "index"`.
+
+| Example entry | Content file | URL |
+| --- | --- | --- |
+| Introduction | `content/index/index.mdx` | `/docs` |
+| Installation | `content/index/installation.mdx` | `/docs/installation` |
+| Advanced → Overview | `content/index/advanced/index.mdx` | `/docs/advanced` |
+| Advanced → Configuration | `content/index/advanced/configuration.mdx` | `/docs/advanced/configuration` |
+
+See [File System](/docs/concepts/filesystem) for complete path rules.
+
+## Order and category destinations
+
+Categories, groups, and articles follow array order, not filename or title order. Previous/next links follow the same configuration order and can cross categories.
+
+A category opens its first document without a `draft` or `disabled` flag. Put an index article first to make it the category overview. Categories without visible documents do not appear in the switcher.
+
+## Draft and disabled entries
+
+```ts title="document entry excerpt"
+docs: [
+  { name: "Upcoming Guide", slug: "upcoming", draft: true },
+  { name: "Archived Guide", slug: "archived", disabled: true },
+],
+```
+
+Both flags exclude entries from navigation, previous/next links, and full-text search. On a group, they apply to the entire subtree.
+
+They **do not prevent direct URL access**. If the configured entry and file exist, the reader can still render the article. Remove its configuration entry to stop exposing it as a document, and implement access control in your application for private content. These flags belong in configuration, not frontmatter.
+
+## Icons and translations
+
+Category icons accept strings such as `lucide:book-open` and `simple:github`. Lucide also accepts names such as `BookOpen` or `book-open`; Simple Icons also accepts `SiGithub`. Unknown names fall back to a question-mark icon.
+
+Nested groups and articles support optional `icon` fields. The current top-level menu renderer does not display those fields; category icons appear in the category switcher.
+
+Translate category, group, and article names with `i18n: { "zh-CN": "中文名称" }` without registering duplicate documents. Article translations still need language-specific files; see [Internationalization](/docs/concepts/i18n).
+
+The sidebar search filters configuration titles in the current category, ignoring case. It does not search body text. Use the separate header entry for [full-text search](/docs/concepts/search).

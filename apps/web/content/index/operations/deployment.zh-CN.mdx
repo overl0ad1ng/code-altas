@@ -1,0 +1,77 @@
+---
+title: 构建与部署
+description: 构建生产站点，并将正文、配置和搜索索引包含在 Node.js 部署中。
+---
+
+内置正文读取器使用文件系统，搜索 API 使用服务端索引。本教程采用 Node.js 部署，保留入门示例的 `force-dynamic` 文档路由，不使用 Edge Runtime 或纯静态导出。
+
+## 构建命令
+
+没有启用全文搜索时，可以使用标准 Next.js 脚本：
+
+```json title="package.json（scripts 片段）"
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  }
+}
+```
+
+如果启用了 `docs.search`，先按 [搜索配置](/docs/concepts/search) 创建 API 路由和构建脚本，再将 build 改为：
+
+```json title="package.json（搜索构建片段）"
+{
+  "scripts": {
+    "build": "node scripts/build-search.mjs && next build"
+  }
+}
+```
+
+从应用根目录执行命令；本仓库为 `apps/web`。普通项目的 `@code-altas/ui` 已编译，无需设置 `transpilePackages`。本仓库直接使用 workspace 源码，因此自身的 Next.js 配置额外包含该选项。
+
+## 包含运行时文件
+
+内置布局和页面在运行时读取配置与正文，打包部署需要包含它们。将以下设置合并到现有配置：
+
+```ts title="next.config.ts"
+import type { NextConfig } from "next"
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ["c12", "jiti"],
+  outputFileTracingIncludes: {
+    "/*": ["./content/**/*", "./codealtas.config.ts"],
+    "/api/search": ["./.codealtas/search/**/*.json"],
+  },
+}
+
+export default nextConfig
+```
+
+`/*` 将正文和配置加入服务端路由的文件跟踪；搜索索引额外加入 `/api/search`。未启用搜索时可省略对应条目，自定义接口路径时同步修改它。配置导入的其他本地文件也需要包含。
+
+不要在构建结束后修改配置或正文再直接上传；修改后重新构建，确保页面、部署文件和索引一致。
+
+## 本地检查生产模式
+
+```bash
+pnpm build
+pnpm start
+```
+
+依次检查 `/docs`、一篇嵌套文章、翻译页面和变更日志。如果启用了搜索，打开弹窗搜索正文中的词，并检查 `/api/search?q=Code`。
+
+生产模式正常后，将同一份构建产物部署到支持 Node.js 的服务。保留应用目录结构，并从正确的应用根目录启动，默认读取路径基于 `process.cwd()`。
+
+## Standalone 与构建缓存
+
+需要精简 Node.js 部署时，可以在 Next.js 配置中额外设置 `output: "standalone"`。仍需保留上述文件包含设置，并将 `public` 和 `.next/static` 复制到生成的 standalone 应用目录中对应的位置，再从该目录运行 `node server.js`。monorepo 的 standalone 目录可能包含应用的嵌套路径，应检查实际产物。
+
+如果使用构建缓存，把 `.codealtas/search/**` 加入输出列表。本仓库的 `turbo.json` 已包含该路径；其他项目需要在自己的缓存配置中添加。生成文件可以加入 Git 忽略，但不能从部署产物中漏掉。
+
+## 上线后更新内容
+
+生产进程会缓存搜索索引。发布新文章或翻译时，重新生成索引、构建并部署，重启服务或使用新的部署实例。仅替换生产目录中的 JSON 文件不会让已经加载的索引自动刷新。
+
+部署后出现 404 或搜索 503 时，按 [常见问题](/docs/operations/troubleshooting) 检查目录、配置和服务端日志。

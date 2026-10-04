@@ -1,0 +1,77 @@
+---
+title: Build and Deployment
+description: Build a production site and include content, configuration, and search indexes in a Node.js deployment.
+---
+
+The built-in reader uses the filesystem and search uses server indexes. This guide uses Node.js deployment with the quick-start `force-dynamic` document route, rather than Edge Runtime or a static export.
+
+## Build commands
+
+Without full-text search, use standard Next.js scripts:
+
+```json title="package.json (scripts excerpt)"
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  }
+}
+```
+
+With `docs.search` enabled, create the API route and index script from [Search](/docs/concepts/search), then update the build command:
+
+```json title="package.json (search build excerpt)"
+{
+  "scripts": {
+    "build": "node scripts/build-search.mjs && next build"
+  }
+}
+```
+
+Run commands from the app root, `apps/web` in this repository. The published package is compiled and does not require `transpilePackages`. This repository consumes workspace source and adds that option to its own Next.js configuration.
+
+## Include runtime files
+
+Layouts and pages read configuration and content at runtime. Merge these fields into the existing configuration to package those files:
+
+```ts title="next.config.ts"
+import type { NextConfig } from "next"
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ["c12", "jiti"],
+  outputFileTracingIncludes: {
+    "/*": ["./content/**/*", "./codealtas.config.ts"],
+    "/api/search": ["./.codealtas/search/**/*.json"],
+  },
+}
+
+export default nextConfig
+```
+
+The global key includes content and configuration in server route traces; the API entry adds search indexes. Omit the API entry without search, or change it for a custom endpoint. Include other local files imported by your configuration.
+
+Rebuild after editing content or configuration rather than modifying files after the build, so pages, deployed files, and indexes agree.
+
+## Verify production locally
+
+```bash
+pnpm build
+pnpm start
+```
+
+Check `/docs`, a nested article, translated pages, and the changelog. With search enabled, search a body-text term in the dialog and check `/api/search?q=Code`.
+
+Deploy the same verified output to a Node.js service. Preserve application directory structure and start from the correct app root; default readers resolve files from `process.cwd()`.
+
+## Standalone and build caching
+
+For a smaller Node.js deployment, add `output: "standalone"` to the Next.js configuration. Keep the file includes above, copy `public` and `.next/static` into the corresponding locations in the generated standalone app directory, and run `node server.js` from there. Monorepo output can contain nested application paths, so inspect the actual output.
+
+Include `.codealtas/search/**` in cached build outputs. This repository already includes it in `turbo.json`; other projects need their own cache configuration. Generated files can be ignored by Git but must still reach deployment.
+
+## Update published content
+
+Production processes cache search indexes. For new articles or translations, regenerate indexes, rebuild, redeploy, and restart the service or use a new deployment instance. Replacing JSON files alone does not refresh an index already loaded in a running process.
+
+For document 404s or search 503s, use [Troubleshooting](/docs/operations/troubleshooting) to check paths, configuration, and server logs.

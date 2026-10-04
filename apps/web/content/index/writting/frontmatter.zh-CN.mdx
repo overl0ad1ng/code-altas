@@ -23,12 +23,15 @@ description: XXX
 
 ## tags
 
-`tags` 字段接受一个值数组。你必须先在 `codealtas.config` 中定义标签数据：
+`tags` 字段接受字符串数组。在 `codealtas.config.ts` 中定义标签颜色；文章标签没有配置非空颜色时不会显示：
 
 ```ts title="codealtas.config.ts"
-import { defineConfig } from "@code-altas/ui";
+import { defineConfig } from "@code-altas/ui/config";
 
 export default defineConfig({
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.svg",
   docs: {
     tags: {
       "Beta": "#1447E6"
@@ -47,3 +50,5 @@ tags:
 ```
 
 颜色 `#1447E6` 会以 100% 不透明度应用于文本（`Beta`），并以 20% 不透明度应用于边框。标签会渲染在描述下方。
+
+Frontmatter 不会改变文档的 URL。`draft` 和 `disabled` 应配置在 `docs.categories` 的导航条目中，而不是 frontmatter 中。行为说明见 [导航配置](/docs/concepts/navigation)，浏览器标题与描述的接入方式见 [页面元数据](/docs/concepts/metadata)。

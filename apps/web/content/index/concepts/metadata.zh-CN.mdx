@@ -1,0 +1,68 @@
+---
+title: 页面元数据
+description: 将站点配置和文章 frontmatter 接入浏览器标题、描述与图标。
+---
+
+文章中的主标题和浏览器标签页标题分别由正文渲染与 Next.js 元数据控制。Code Atlas 提供两个服务端辅助函数，将站点配置和文章 frontmatter 用于元数据。
+
+## 站点元数据
+
+在根布局中导出 `generateMetadata`，保留原来的布局函数：
+
+```tsx title="app/layout.tsx（元数据导出）"
+import { getSiteMetadata } from "@code-altas/ui/server"
+
+export async function generateMetadata() {
+  return getSiteMetadata()
+}
+```
+
+函数读取 `codealtas.config.ts`，返回默认标题、`%s | 站点名称` 的标题模板、默认描述，以及 `icon` 或回退的 `logo`。例如站点名为 `My Documentation`，文章标题为 `Quick Start`，浏览器标题会是 `Quick Start | My Documentation`。
+
+## 文章元数据
+
+在现有文档路由中添加 `generateMetadata`：
+
+```tsx title="app/docs/[[...slug]]/page.tsx"
+import { DocsPage, type DocsPageProps } from "@code-altas/ui"
+import { getDocMetadata } from "@code-altas/ui/server"
+
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
+export async function generateMetadata({ params }: DocsPageProps) {
+  const { slug } = await params
+  return getDocMetadata(`/${(slug ?? []).join("/")}`)
+}
+
+export default function Page({ params }: DocsPageProps) {
+  return <DocsPage params={params} />
+}
+```
+
+传入的是 `/docs` 后面的文档路径，不要再次添加 `/docs` 前缀。文章标题优先使用 frontmatter 的 `title`，否则使用配置名称；描述优先使用 frontmatter 的 `description`，否则使用站点描述。
+
+启用 i18n 后，辅助函数还会设置 canonical 路径。如果翻译缺失并显示默认语言正文，canonical 会指向实际正文语言的 URL。
+
+## 配置站点域名
+
+为相对元数据 URL 提供站点地址，可以在根布局的辅助函数结果上补充 `metadataBase`：
+
+```tsx title="app/layout.tsx（带域名的元数据导出）"
+import { getSiteMetadata } from "@code-altas/ui/server"
+
+export async function generateMetadata() {
+  return {
+    ...(await getSiteMetadata()),
+    metadataBase: new URL("https://docs.example.com"),
+  }
+}
+```
+
+用生产站点地址替换示例。站点地图、robots 和分享图片仍由你的 Next.js 应用提供，辅助函数不会自动生成它们。
+
+## 检查结果
+
+打开不同文章，检查浏览器标题以及页面源码中的 description、icon 和 canonical。同一文件不要同时导出 `metadata` 和 `generateMetadata`，这些导出只在 Server Components 中生效。
+
+`getDocMetadata` 使用默认组件注册表编译文章，不接受 `DocsPage.components`。如果文章依赖自定义组件，应在应用中为这些页面实现能处理相同组件的元数据逻辑，避免单独调用该辅助函数时编译失败。

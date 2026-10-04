@@ -1,0 +1,53 @@
+---
+title: 样式与主题
+description: 使用内置浅色与深色主题，并通过 CSS 变量调整站点外观。
+---
+
+Code Atlas 包含编译后的全局 CSS。导入 `@code-altas/ui` 会加载样式，也可以在根布局中显式导入 `@code-altas/ui/styles.css`。使用内置界面无需安装 Tailwind。
+
+## 内置主题
+
+`DocsLayout` 和 `DefaultLayout` 通过 `ConfigProvider` 提供主题。默认跟随系统，header 的主题按钮可以切换浅色与深色。深色主题通过根元素上的 `dark` class 生效。
+
+根布局给 `html` 添加 `suppressHydrationWarning`，以配合主题在客户端调整 class：
+
+```tsx title="app/layout.tsx（布局片段）"
+<html lang="zh-CN" suppressHydrationWarning>
+  <body>{children}</body>
+</html>
+```
+
+深色 Logo 通过 `dark.logo` 设置，详见 [站点配置](/docs/concepts/configuration)。不设置时继续使用普通 Logo。当前配置不提供 `defaultTheme` 字段；需要不同的主题策略时，应由应用实现自己的布局和 provider。
+
+## 覆盖颜色变量
+
+把自定义样式放在包样式之后导入：
+
+```tsx title="app/layout.tsx（样式导入）"
+import "@code-altas/ui/styles.css"
+import "./site.css"
+```
+
+在应用 CSS 中覆盖变量：
+
+```css title="app/site.css"
+:root {
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --ring: #2563eb;
+}
+
+.dark {
+  --primary: #93c5fd;
+  --primary-foreground: #172554;
+  --ring: #93c5fd;
+}
+```
+
+其他常用变量包括 `--background`、`--foreground`、`--muted`、`--muted-foreground`、`--border` 和 `--accent`。同时检查两个主题的对比度；部分内置元素使用独立的中性色，修改 `--primary` 不会改变所有颜色。
+
+正文代码高亮使用独立的 Shiki 主题，Mermaid 图表保持浅色画布，这些内容不会完全跟随普通 CSS 颜色变量。
+
+## 与应用现有样式共存
+
+包样式包含 CSS reset 和全局主题变量，会影响应用的其他页面。将全局覆盖限制在需要调整的范围，并检查首页、文档页和变更日志。不要为同一条路由重复嵌套两套内置布局，否则会出现重复 header 和滚动容器。

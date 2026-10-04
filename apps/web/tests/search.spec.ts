@@ -1,13 +1,19 @@
 import { test, expect } from "@playwright/test"
 
-test("entry is docs-only; shortcut, selection, highlights and navigation work", async ({
+test("entry is available across pages; shortcut, selection, highlights and navigation work", async ({
   page,
   request,
 }) => {
   await page.goto("/")
   await expect(
     page.getByRole("button", { name: "Search docs", exact: true })
-  ).toHaveCount(0)
+  ).toBeVisible()
+  await page.getByRole("button", { name: "Search docs", exact: true }).click()
+  await expect(page.getByRole("dialog")).toBeVisible()
+  await expect(
+    page.getByRole("combobox", { name: "Search docs", exact: true })
+  ).toBeFocused()
+  await page.keyboard.press("Escape")
   await page.goto("/docs")
   await expect(page.getByRole("button", { name: /^Switch to/ })).toBeEnabled()
   await page.getByRole("button", { name: "Search docs", exact: true }).waitFor()

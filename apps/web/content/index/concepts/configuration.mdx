@@ -1,0 +1,85 @@
+---
+title: Site Configuration
+description: Configure site branding, logos, header navigation, GitHub, and the footer.
+---
+
+Code Atlas reads `codealtas.config.ts` from the app root, beside its `package.json`. Keep it there even when routes live in `src/app`.
+
+## Complete example
+
+This configuration registers an introduction whose content belongs in `content/index/index.mdx`:
+
+```ts title="codealtas.config.ts"
+import { defineConfig } from "@code-altas/ui/config"
+
+export default defineConfig({
+  title: "My Documentation",
+  description: "Guides for my project",
+  logo: "/logo.svg",
+  icon: "/favicon.svg",
+  logoHref: "/",
+  dark: { logo: "/logo-dark.svg" },
+  header: {
+    nav: {
+      "/docs": { label: "Docs" },
+      "/changelog": { label: "Changelog" },
+    },
+    github: { url: "https://github.com/owner/repository", showStars: false },
+  },
+  footer: {
+    author: { name: "Your Team", homepage: "https://example.com" },
+    copyright: "© Your Team",
+    license: "https://example.com/license",
+  },
+  docs: {
+    tags: { Beta: "#1447E6" },
+    categories: [
+      {
+        name: "Guides",
+        slug: "index",
+        icon: "lucide:book-open",
+        docs: [{ name: "Introduction", slug: "index" }],
+      },
+    ],
+  },
+})
+```
+
+Replace sample assets and URLs with your own and create the Next.js pages targeted by navigation links. Configuring a link does not create its route.
+
+## Branding and site information
+
+| Field | Required | Purpose |
+| --- | --- | --- |
+| `title` | Yes | Site name in the header and default metadata title. |
+| `description` | Yes | Default site description. |
+| `logo` | Yes | Light theme logo, using a public URL or a path such as `/logo.svg`. |
+| `icon` | No | Browser icon URL; falls back to `logo`. |
+| `logoHref` | No | Logo link destination; defaults to `/`. |
+| `dark.logo` | No | Dark theme logo; falls back to `logo`. |
+
+Put local assets in `public`, omitting `public` from URLs. Connect the metadata helpers to apply the icon, title, and description to the browser; see [Page Metadata](/docs/concepts/metadata).
+
+## Header navigation and GitHub
+
+Keys in `header.nav` are destinations; `label` provides the visible text. Entries follow configuration order. `disabled: true` keeps an entry visible but unclickable, unlike disabled documentation entries.
+
+`header.github` accepts a repository URL string or `{ url, showStars }`. Strings fetch and display stars by default; `showStars: false` displays only the repository link. Omit the entire `header` configuration if you do not need GitHub or top links. The current type requires `github` when `header` is provided.
+
+The header highlights the most specific matching path, so `/docs/api` takes precedence over `/docs`. A `/docs` link follows the current document language; other links use their configured destinations.
+
+## Footer
+
+`footer.author` sets the author name and optional homepage. `copyright` sets copyright text, and `license` sets the license URL. The built-in footer shows the license link alongside configured copyright text.
+
+## Documentation and experimental options
+
+| Field | Purpose |
+| --- | --- |
+| `docs.categories` | Categories, groups, and pages; see [Navigation](/docs/concepts/navigation). |
+| `docs.tags` | Map frontmatter tag names to CSS colors. |
+| `docs.i18n` | Languages, navigation translations, and messages; see [Internationalization](/docs/concepts/i18n). |
+| `docs.search` | Full-text search and endpoint; see [Search](/docs/concepts/search). |
+| `experimental.experimentalComponentsInMDX` | Disabled by default; enables experimental Preview registration. |
+
+`DocsLayout` and `DefaultLayout` load configuration and provide it to the client interface. Do not put secrets in it. See [Styles and Themes](/docs/concepts/theme) for appearance changes and [Build and Deployment](/docs/operations/deployment) for production packaging.

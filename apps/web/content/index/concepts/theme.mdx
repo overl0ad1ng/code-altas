@@ -1,0 +1,53 @@
+---
+title: Styles and Themes
+description: Use built-in light and dark themes and customize appearance with CSS variables.
+---
+
+Code Atlas ships compiled global CSS. Importing `@code-altas/ui` loads it; alternatively, import `@code-altas/ui/styles.css` explicitly in the root layout. Built-in styling does not require Tailwind.
+
+## Built-in themes
+
+`DocsLayout` and `DefaultLayout` provide themes through `ConfigProvider`. The default follows the system; the header button switches between light and dark. Dark styling uses a `dark` class on the root element.
+
+Add `suppressHydrationWarning` to the root `html` element to accommodate client theme class changes:
+
+```tsx title="app/layout.tsx (excerpt)"
+<html lang="en" suppressHydrationWarning>
+  <body>{children}</body>
+</html>
+```
+
+Configure `dark.logo` for a separate dark logo; see [Site Configuration](/docs/concepts/configuration). Without it, both themes use the regular logo. There is no `defaultTheme` configuration field; implement your own layout and provider for a different theme policy.
+
+## Override color variables
+
+Import application overrides after the package styles:
+
+```tsx title="app/layout.tsx (style imports)"
+import "@code-altas/ui/styles.css"
+import "./site.css"
+```
+
+Override variables in your application CSS:
+
+```css title="app/site.css"
+:root {
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --ring: #2563eb;
+}
+
+.dark {
+  --primary: #93c5fd;
+  --primary-foreground: #172554;
+  --ring: #93c5fd;
+}
+```
+
+Other useful variables include `--background`, `--foreground`, `--muted`, `--muted-foreground`, `--border`, and `--accent`. Check contrast in both themes. Some built-in elements use independent neutral colors, so changing `--primary` does not recolor the entire interface.
+
+Code highlighting uses separate Shiki themes, and Mermaid diagrams retain a light canvas. These do not fully follow ordinary CSS color variables.
+
+## Coexist with application styles
+
+Package styles include a CSS reset and global theme variables that affect other application pages. Scope overrides where appropriate and check the home page, documents, and changelog. Avoid nesting two built-in layouts on the same route, which duplicates headers and scroll containers.
