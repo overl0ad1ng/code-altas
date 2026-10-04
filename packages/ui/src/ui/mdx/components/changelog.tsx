@@ -61,7 +61,7 @@ export function Changelog({
       )}
     >
       <div className="min-w-0">
-        <div data-slot="changelog-meta" className="sticky top-0 space-y-3">
+        <div data-slot="changelog-meta" className="sticky top-16 space-y-3">
           <time
             dateTime={parsed.iso}
             className="block text-sm leading-7 font-medium text-muted-foreground"
