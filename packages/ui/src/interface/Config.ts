@@ -39,6 +39,8 @@ export interface ConfigDocsI18N {
 }
 
 export interface DocsMessages {
+  navSearchPlaceholder?: string
+  navSearchClear?: string
   search?: string
   searchPlaceholder?: string
   searchEmpty?: string

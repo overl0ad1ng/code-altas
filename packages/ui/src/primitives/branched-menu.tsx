@@ -25,7 +25,7 @@ export interface BranchedMenuItem {
 
 export interface BranchedMenuProps {
   items?: BranchedMenuItem[]
-  defaultOpen?: number | number[]
+  defaultOpen?: number | (number | string)[]
   defaultActive?: string
   active?: string
   onSelect?: (value: string, item: BranchedMenuChild | BranchedMenuItem) => void
@@ -48,7 +48,7 @@ export interface BranchedMenuProps {
 const PAD = 6
 const MARK = 16
 
-const toSet = (open: number | number[]) =>
+const toSet = (open: number | (number | string)[]) =>
   new Set((Array.isArray(open) ? open : open >= 0 ? [open] : []).map(String))
 
 function containsActive(item: BranchedMenuItem, active: string): boolean {

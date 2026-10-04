@@ -1,4 +1,3 @@
-import { ScrollArea } from "../../primitives/scroll-area"
 import { ConfigIcon } from "../../components/config-icon"
 import { DocsCategoryNav } from "../../components/docs-category-nav"
 import { DocsCategoryMenu } from "../../components/docs-category-menu"
@@ -131,9 +130,7 @@ function DocsNav({
   return (
     <div className="grid h-full w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden rounded-xl border border-border p-2">
       <DocsCategoryNav items={items} />
-      <ScrollArea className="min-h-0">
-        <DocsCategoryMenu categories={menus} />
-      </ScrollArea>
+      <DocsCategoryMenu categories={menus} />
       <a
         href="https://github.com/overl0ad1ng/code-altas"
         target="_blank"

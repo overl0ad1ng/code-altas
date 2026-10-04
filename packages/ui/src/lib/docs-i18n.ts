@@ -1,6 +1,8 @@
 import type { ConfigDocsI18N, DocsMessages } from "../interface/Config"
 
 const english: DocsMessages = {
+  navSearchPlaceholder: "Search article titles…",
+  navSearchClear: "Clear title search",
   search: "Search docs",
   searchPlaceholder: "Search documentation…",
   searchEmpty: "Search titles, headings, text and code.",
@@ -20,6 +22,8 @@ const english: DocsMessages = {
 }
 
 const chinese: DocsMessages = {
+  navSearchPlaceholder: "搜索文章标题…",
+  navSearchClear: "清空标题搜索",
   search: "搜索文档",
   searchPlaceholder: "搜索文档…",
   searchEmpty: "搜索标题、小标题、正文和代码。",
