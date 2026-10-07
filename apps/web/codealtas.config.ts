@@ -1,7 +1,7 @@
 import { defineConfig } from "@code-altas/ui/config"
 
 export default defineConfig({
-  title: "Code Atlas",
+  title: "Code Altas",
   description: "A modern framework for documentation",
   logo: "/logo-indev.png",
 
