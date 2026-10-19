@@ -11,9 +11,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./config": "./src/lib/DefineConfig.ts",
+    "./next": "./src/next.ts",
     "./server": "./src/server.ts",
     "./search": "./src/search.ts",
-    "./styles.css": "./src/styles/globals.css"
+    "./styles.css": "./src/styles/globals.css",
+    "./package.json": "./package.json"
   },
   "peerDependencies": {
     "next": "^16.3.6",
@@ -22,6 +24,7 @@
   },
   "scripts": {
     "test:content": "node --test tests/docs-content.test.mjs",
+    "test:next": "node --test tests/next-config.test.mjs",
     "test:render": "node --test tests/docs-render.test.mjs tests/math-mermaid.test.mjs",
     "test:search": "node --test tests/docs-search.test.mjs",
     "bench:search": "node --expose-gc scripts/bench-search.mjs",
@@ -110,21 +113,31 @@
     "exports": {
       ".": {
         "types": "./dist/index.d.ts",
-        "import": "./dist/index.js"
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
       },
       "./config": {
         "types": "./dist/lib/DefineConfig.d.ts",
-        "import": "./dist/lib/DefineConfig.js"
+        "import": "./dist/lib/DefineConfig.js",
+        "default": "./dist/lib/DefineConfig.js"
+      },
+      "./next": {
+        "types": "./dist/next.d.ts",
+        "import": "./dist/next.js",
+        "default": "./dist/next.js"
       },
       "./server": {
         "types": "./dist/server.d.ts",
-        "import": "./dist/server.js"
+        "import": "./dist/server.js",
+        "default": "./dist/server.js"
       },
       "./search": {
         "types": "./dist/search.d.ts",
-        "import": "./dist/search.js"
+        "import": "./dist/search.js",
+        "default": "./dist/search.js"
       },
-      "./styles.css": "./dist/styles/globals.css"
+      "./styles.css": "./dist/styles/globals.css",
+      "./package.json": "./package.json"
     }
   },
   "license": "MIT"

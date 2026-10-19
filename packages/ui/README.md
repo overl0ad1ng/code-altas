@@ -26,9 +26,9 @@ For `src/app` projects, put route files under `src/app` while keeping configurat
 Create `codealtas.config.ts`:
 
 ```ts
-import { defineConfig } from "@code-altas/ui/config"
+import type { Config } from "@code-altas/ui/config"
 
-export default defineConfig({
+export default {
   title: "My docs",
   description: "Documentation for my project",
   logo: "/logo.svg",
@@ -42,8 +42,13 @@ export default defineConfig({
       },
     ],
   },
-})
+} satisfies Config
 ```
+
+Use a type-only import so the configuration file has no runtime dependency on
+`@code-altas/ui`. The loader validates and applies defaults itself. If you prefer
+`defineConfig()` for local validation, keep the import and use `withCodeAltas`
+below so the package's runtime files are traced.
 
 Put your logo in `public/logo.svg`. Optional site fields include `icon`,
 `logoHref`, `dark.logo`, `header.nav`, `header.github`, and `footer`. GitHub accepts
@@ -51,18 +56,25 @@ a repository URL or `{ url, showStars: false }`. A provided `header` requires
 `github` in the current configuration type; omit `header` if you need neither
 repository links nor top navigation.
 
-Use the configuration loader dependencies as server externals in `next.config.ts`:
+Use the Next.js plugin so the configuration loader's runtime files are included
+in server output tracing:
 
 ```ts
 import type { NextConfig } from "next"
+import { withCodeAltas } from "@code-altas/ui/next"
 
-export default {
-  serverExternalPackages: ["c12", "jiti"],
-} satisfies NextConfig
+const nextConfig: NextConfig = {
+  // Your existing options.
+}
+
+export default withCodeAltas(nextConfig)
 ```
 
-Merge these fields with existing options. `transpilePackages` is needed for this
-repository's workspace source package, not for the published compiled package.
+`withCodeAltas` adds `serverExternalPackages: ["c12", "jiti"]` and includes
+`content`, `codealtas.config.*`, the search indexes, and the package runtime
+required by `defineConfig`. Pass `{ contentDir, configFile, include }` to adapt
+custom paths. `transpilePackages` is needed for this repository's workspace
+source package, not for the published compiled package.
 
 ## Add layouts and the document route
 
@@ -298,21 +310,40 @@ colors come from `docs.tags`. A missing changelog file returns 404.
 ## Deploy
 
 Use a Node.js service. The filesystem reader is not supported on Edge, and the
-dynamic routes shown here do not work with a purely static export. Include
-content, configuration, and optional search indexes in server output tracing:
+dynamic routes shown here do not work with a purely static export. Use
+`withCodeAltas` in `next.config.ts` so content, configuration, the loader's
+package runtime, and optional search indexes are included in server output
+tracing:
+
+```ts
+import { withCodeAltas } from "@code-altas/ui/next"
+
+export default withCodeAltas({
+  // Your existing Next.js options.
+})
+```
+
+If you configure tracing manually, include the configuration entry as well as
+the files it imports at runtime:
 
 ```ts
 outputFileTracingIncludes: {
-  "/*": ["./content/**/*", "./codealtas.config.ts"],
+  "/*": [
+    "./content/**/*",
+    "./codealtas.config.ts",
+    "./node_modules/@code-altas/ui/package.json",
+    "./node_modules/@code-altas/ui/dist/lib/**/*",
+  ],
   "/api/search": ["./.codealtas/search/**/*.json"],
 },
 ```
 
-Include local files imported by configuration and adapt custom endpoint paths.
-Keep indexes outside `public`, ignore `.codealtas/` in Git, and include
-`.codealtas/search/**` in build-cache outputs. Start from the app root because
-default file loading uses `process.cwd()`. Verify with `pnpm build` and
-`pnpm start` before deploying.
+The `dist/lib` path is `src/lib/**/*.ts` when consuming the workspace package
+instead of the published one. Include every local file imported by configuration,
+and adapt custom endpoint paths. Keep indexes outside `public`, ignore
+`.codealtas/` in Git, and include `.codealtas/search/**` in build-cache outputs.
+Start from the app root because default file loading uses `process.cwd()`.
+Verify with `pnpm build` and `pnpm start` before deploying.
 
 For Next.js standalone output, also copy `public` and `.next/static` to the
 generated application directory and preserve included runtime files.
@@ -323,6 +354,7 @@ generated application directory and preserve included runtime files.
 | --- | --- |
 | `@code-altas/ui` | Layouts, pages, MDX components, providers, helpers, and types; loads CSS. |
 | `@code-altas/ui/config` | Configuration definition and route locale helpers without loading UI CSS. |
+| `@code-altas/ui/next` | Next.js config plugin that wires deployment tracing for the runtime loader. |
 | `@code-altas/ui/server` | Server-only config/content readers, metadata helpers, and search handler. |
 | `@code-altas/ui/search` | Index generation for build scripts. |
 | `@code-altas/ui/styles.css` | Compiled global styles. |
