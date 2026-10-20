@@ -189,6 +189,10 @@ export default defineConfig({
                 slug: "steps",
               },
               {
+                name: "Cards",
+                slug: "cards",
+              },
+              {
                 name: "Code Groups",
                 slug: "code-groups",
               },

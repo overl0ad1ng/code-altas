@@ -1,0 +1,96 @@
+---
+title: Cards
+description: Arrange content in a responsive grid of cards with icons and titles.
+---
+
+<Status since="0.3.4" />
+
+## Usage
+
+Use `Cards` to arrange `Card` components in a grid. Each card accepts a title, an optional icon, and Markdown or JSX content.
+
+<Preview>
+  <Cards cols="2">
+    <Card icon="lucide:book" title="Hello, World!">
+      你好世界
+    </Card>
+    <Card icon="lucide:book" title="Hello, CodeAltas!">
+      你好世界
+    </Card>
+    <Card icon="lucide:code" title="Write with MDX">
+      Mix Markdown and components in your documentation.
+    </Card>
+    <Card icon="simple:typescript" title="Built with TypeScript">
+      Use typed components in your Next.js project.
+    </Card>
+  </Cards>
+</Preview>
+
+```mdx title="Usage"
+<Cards cols="2">
+  <Card icon="lucide:book" title="Hello, World!">
+    你好世界
+  </Card>
+  <Card icon="lucide:book" title="Hello, CodeAltas!">
+    你好世界
+  </Card>
+</Cards>
+```
+
+## Columns
+
+Set `cols` to a number or string from `1` to `4`. The default is `2`.
+Cards stack in a single column on small screens. Three- and four-column grids use two columns on medium screens.
+
+<Preview>
+  <Cards cols="1">
+    <Card icon="lucide:book" title="Hello, World!">
+      你好世界
+    </Card>
+    <Card icon="lucide:book" title="Hello, CodeAltas!">
+      你好世界
+    </Card>
+  </Cards>
+</Preview>
+
+```mdx title="Single Column"
+<Cards cols="1">
+  <Card icon="lucide:book" title="Hello, World!">
+    你好世界
+  </Card>
+  <Card icon="lucide:book" title="Hello, CodeAltas!">
+    你好世界
+  </Card>
+</Cards>
+```
+
+## Standalone Card
+
+`Card` can also be used without `Cards`. Icons use the same names as `Hint` and `Step`.
+
+<Preview>
+  <Card title="Keep it simple" className="w-full">
+
+    Cards support **Markdown**, links, and custom components.
+
+  </Card>
+</Preview>
+
+## Props
+
+<Props name="Cards">
+  <Prop property="cols" type="1 | 2 | 3 | 4 | '1' | '2' | '3' | '4'" defaultValue="2" description="Number of columns on large screens. Cards stack on small screens." />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="Card components to display in the grid." />
+  <Prop property="className" type="string" defaultValue="-" description="Additional classes for the grid." />
+</Props>
+
+<br />
+
+<Props name="Card">
+  <Prop property="title" type="React.ReactNode" defaultValue="-" description="Required card title." />
+  <Prop property="icon" type="string" defaultValue="-" description="A Lucide or Simple Icons name, such as lucide:book or simple:typescript." />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="Card content, including Markdown and custom components." />
+  <Prop property="className" type="string" defaultValue="-" description="Additional classes for the card." />
+</Props>
+
+Both components accept `className` and standard `<div>` attributes.

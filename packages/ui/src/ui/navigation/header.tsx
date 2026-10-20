@@ -178,7 +178,11 @@ function HeaderContent({ onSearchRequest }: HeaderProps) {
           triggerClassName="size-11 justify-center border-0 bg-transparent px-0 md:h-8 md:w-auto md:justify-start md:border md:bg-background md:px-2.5"
         />
         <div className="hidden items-center gap-4 md:flex">
-          <div className="h-4 w-px bg-border/55" />
+          {
+            docs?.search && (
+              <div className="h-4 w-px bg-border/55" />
+            )
+          }
           <LanguageSelect />
           <ThemeToggle />
           {header?.github && <HeaderGithub github={header.github} />}

@@ -7,6 +7,12 @@ import "./styles/globals.css"
 export { Button } from "./ui/button"
 export type { ButtonProps } from "./ui/button"
 export {
+  Cards,
+  Card,
+  type CardsProps,
+  type CardProps,
+} from "./ui/mdx/components/cards"
+export {
   Steps,
   Step,
   type StepsProps,

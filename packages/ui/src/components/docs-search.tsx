@@ -302,7 +302,9 @@ export function DocsSearch(props: DocsSearchProps = {}) {
   const { docs } = useConfig()
   const pathname = usePathname()
   const { locale, messages } = useDocsLocale()
+
   if (!docs?.search) return null
+
   return (
     <SearchDialog
       key={`${pathname}:${locale}`}
