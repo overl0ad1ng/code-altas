@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       "./node_modules/@code-altas/ui/src/lib/**/*.ts",
     ],
     "/api/search": ["./.codealtas/search/**/*.json"],
+    "/roadmap": ["./content/_roadmap_/**/*"],
   },
 }
 

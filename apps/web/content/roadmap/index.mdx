@@ -1,0 +1,59 @@
+---
+title: Introduction
+description: Turn a folder of MDX files into a versioned planning board with grouped columns, status badges, and rich item details.
+---
+
+Roadmap turns a folder of MDX files into a planning board. Each release version gets its own columns, statuses, cards, and a detail dialog that renders the complete plan as MDX. There is no database, no CMS, and nothing to register in `codealtas.config.ts`: the board is discovered from `content/_roadmap_` when the page renders.
+
+Plans live next to the code they describe, so a change to the plan is reviewable like any other change and ships with the release it documents.
+
+## Board anatomy
+
+<FileTree
+  files={[
+    "content/_roadmap_/1_0_0/roadmap.toml",
+    "content/_roadmap_/1_0_0/local-first-planning.mdx",
+    "content/_roadmap_/1_0_0/keyboard-navigation.mdx",
+    "content/_roadmap_/1_1_0/roadmap.toml",
+  ]}
+/>
+
+| Path | Purpose |
+| --- | --- |
+| `content/_roadmap_` | Fixed content root, read from the app root. |
+| `1_0_0/` | One version directory, displayed as `v1.0.0`. Versions sort newest first. |
+| `roadmap.toml` | Board title, goal, columns, and statuses. Required for a version to be discovered. |
+| `name.mdx` | One card. The filename without `.mdx` is the item ID. |
+
+## What the board shows
+
+- Columns follow the `groups` order declared in `roadmap.toml` and show how many items each contains.
+- Cards show a status badge and a plain-text preview of the item body, plus optional priority, due date, and participant avatars.
+- Selecting a card opens the full MDX body next to a details panel with status, group, priority, due date, participants, and custom properties.
+- The version selector switches boards in the browser. The newest version is selected first and no navigation request is made.
+- With `DefaultLayout contentMode="fill"`, the board occupies the remaining space below the header and scrolls its own columns.
+
+## What it is not
+
+- **Not documentation navigation.** The board is independent of `docs.categories`. It adds no navigation entries, previous/next links, or full-text search results.
+- **Not localized.** One board serves every language. Use `i18n` for the documentation entries that describe the feature, not for the board.
+- **Not a content database.** Files are read when the route renders; there is no watcher and no editor.
+- **Not automatic routing.** Creating files does not create a Next.js route. Render `RoadmapPage` from a route you own.
+
+## Next steps
+
+- [Create a Board](/docs/roadmap/create-a-board) — add a version, a `roadmap.toml`, and the first items.
+- [Render the Board](/docs/roadmap/render-the-board) — mount `RoadmapPage` and deploy it.
+- [Board Configuration](/docs/roadmap/configuration) — reference for `roadmap.toml` and versions.
+- [Items](/docs/roadmap/items) — frontmatter, previews, and rich MDX bodies.
+- [Conventions](/docs/roadmap/conventions) — naming, ordering, validation, and common mistakes.
+
+## Common Questions
+
+<FAQ>
+    <Question title="Why is there no i18n?">
+        To be honest, we did consider adding internationalization (i18n) to the Roadmap/Changelog pages; however, from the very beginning, i18n support was intended exclusively for the documentation.
+        
+        This led us down a somewhat misguided path, and we may reconsider how to optimize this in a future version.
+    </Question>
+</FAQ>

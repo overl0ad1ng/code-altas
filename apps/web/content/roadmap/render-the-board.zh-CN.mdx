@@ -1,0 +1,96 @@
+---
+title: 渲染看板
+description: 在 Next.js 路由中挂载 RoadmapPage，选择布局，注册自定义 MDX 组件，并将 Roadmap 内容纳入部署追踪。
+---
+
+`RoadmapPage` 是 `@code-altas/ui` 导出的异步 Server Component。它使用 `fs` 读取 `content/_roadmap_`，在服务端渲染每个版本，再把结果交给客户端看板。
+
+## 路由
+
+在自有路由中渲染页面：
+
+```tsx title="app/roadmap/page.tsx"
+import { RoadmapPage } from "@code-altas/ui"
+
+export const metadata = { title: "Roadmap" }
+
+export default function Page() {
+  return <RoadmapPage />
+}
+```
+
+- 路由路径由你决定，`/roadmap` 只是一种约定。
+- 页面必须保持为 Server Component。`RoadmapPage` 依赖仅在服务端可用的内容读取器，不能放在 Client Component 中运行。
+- 像往常一样在路由上设置 `metadata` 或 `generateMetadata`。看板不会替你生成页面元数据。
+- 路由不需要 `params`。版本切换完全在浏览器内完成。
+
+## 布局
+
+为路由使用 `DefaultLayout`，让 header、主题和 footer 与站点其他页面保持一致：
+
+```tsx title="app/roadmap/layout.tsx"
+import { DefaultLayout } from "@code-altas/ui"
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <DefaultLayout contentMode="fill">{children}</DefaultLayout>
+}
+```
+
+`contentMode="fill"` 会在 header 下方给看板一个确定的高度，使各列在看板内部滚动。默认的 `"scroll"` 模式会把页面放进滚动容器，更适合普通文档。不要在 `DocsLayout` 或另一个 `DefaultLayout` 中再嵌套 `DefaultLayout`；每个路由只使用一种布局。
+
+该路由同样依赖应用的根布局。如果还没有创建 `app/layout.tsx`，请先阅读 [布局与页面](/docs/layout-and-page)。
+
+## 自定义 MDX 组件
+
+条目正文使用与文档相同的 MDX 渲染流程，包括内置组件。传入组件映射即可添加自己的组件：
+
+```tsx title="app/roadmap/page.tsx"
+import { RoadmapPage } from "@code-altas/ui"
+import { mdxComponents } from "@/components/mdx-components"
+
+export default function Page() {
+  return <RoadmapPage components={mdxComponents} />
+}
+```
+
+组件映射会合并到内置组件之上，因此同名条目会替换内置实现。页面还会提供一个 `input` 组件，用于给任务列表复选框添加无障碍标签；自定义 `input` 会覆盖它。交互组件模块请标记 `"use client"` 并放入映射，路由本身仍保持在服务端。
+
+## 版本行为
+
+所有被发现的版本都会在服务端渲染，并包含在首次响应中。版本选择器只修改本地 React 状态，因此切换版本不会发起导航请求。刷新页面后会重新选中最新版本。
+
+## 请求时读取与静态输出
+
+页面在渲染时从磁盘读取文件。Next.js 可能在构建时预渲染该路由，这意味着内容修改要等到下一次构建后才会生效。如果希望每次请求都重新读取文件，可以强制该路由动态渲染。启用 Cache Components 时，这个选项不可用：
+
+```tsx title="app/roadmap/page.tsx"
+export const dynamic = "force-dynamic"
+```
+
+## 部署
+
+将 Roadmap 内容纳入路由的服务器追踪。使用包提供的插件时，`withCodeAltas()` 已经为所有路由包含 `./content/**/*`：
+
+```ts title="next.config.ts"
+import { withCodeAltas } from "@code-altas/ui/next"
+
+export default withCodeAltas({
+  // Your existing Next.js options.
+})
+```
+
+如果手动配置追踪，请以路由路径作为键：
+
+```ts title="next.config.ts"
+const nextConfig = {
+  outputFileTracingIncludes: {
+    "/roadmap": ["./content/_roadmap_/**/*"],
+  },
+}
+```
+
+如果看板位于其他路径，请改用对应的路由路径。应用必须从根目录启动，因为读取器会基于 `process.cwd()` 解析 `content`。在文件系统不可变的部署环境中修改内容后，需要重新构建并重新部署。
+
+## 空状态与错误
+
+没有任何已发现的版本时，页面会显示 `No roadmap versions have been configured yet.`。没有条目的版本仍会渲染各列，并在列中显示空占位。配置或元数据无效时，渲染过程会直接抛出错误；各项检查与错误格式见 [相关约定](/docs/roadmap/conventions#校验)。

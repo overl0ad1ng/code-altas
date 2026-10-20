@@ -1,0 +1,96 @@
+---
+title: Render the Board
+description: Mount RoadmapPage in a Next.js route, choose a layout, register custom MDX components, and include roadmap content in deployment traces.
+---
+
+`RoadmapPage` is an async Server Component exported from `@code-altas/ui`. It reads `content/_roadmap_` with `fs`, renders every version on the server, and hands the result to the client board.
+
+## Route
+
+Render the page from a route you own:
+
+```tsx title="app/roadmap/page.tsx"
+import { RoadmapPage } from "@code-altas/ui"
+
+export const metadata = { title: "Roadmap" }
+
+export default function Page() {
+  return <RoadmapPage />
+}
+```
+
+- The route path is up to you; `/roadmap` is only a convention.
+- Keep the file a Server Component. `RoadmapPage` depends on a server-only content reader, so it cannot run inside a Client Component.
+- Set `metadata` or `generateMetadata` on the route as usual. The board does not generate page metadata for you.
+- The route needs no `params`. Version switching happens in the browser.
+
+## Layout
+
+Use `DefaultLayout` for the route so the header, theme, and footer are shared with the rest of the site:
+
+```tsx title="app/roadmap/layout.tsx"
+import { DefaultLayout } from "@code-altas/ui"
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <DefaultLayout contentMode="fill">{children}</DefaultLayout>
+}
+```
+
+`contentMode="fill"` gives the board a bounded height below the header so its columns scroll inside the board. The default `"scroll"` mode wraps the page in a scrolling container, which is better suited to regular documents. Do not nest `DefaultLayout` inside `DocsLayout` or another `DefaultLayout`; pick one layout per route.
+
+The route also depends on the app root layout. See [Layouts and Pages](/docs/layout-and-page) if you have not created `app/layout.tsx` yet.
+
+## Custom MDX components
+
+Item bodies use the documentation MDX pipeline, including the built-in components. Pass a component map to add your own:
+
+```tsx title="app/roadmap/page.tsx"
+import { RoadmapPage } from "@code-altas/ui"
+import { mdxComponents } from "@/components/mdx-components"
+
+export default function Page() {
+  return <RoadmapPage components={mdxComponents} />
+}
+```
+
+The map is merged over the built-in components, so an entry with the same name replaces the built-in one. The page also supplies an `input` component that adds accessible labels to task-list checkboxes; a custom `input` entry takes its place. Mark interactive component modules with `"use client"` and keep them in the map; the route itself stays on the server.
+
+## Version behavior
+
+All discovered versions are rendered on the server and included in the first response. The version selector changes local React state only, so switching versions does not make a navigation request. Refreshing the page selects the newest version again.
+
+## Request-time reads and static output
+
+The page reads files from disk when it renders. Next.js can prerender the route at build time, which means content edits appear after the next build. To read files on every request instead, force dynamic rendering on the route. This option is not available when Cache Components is enabled:
+
+```tsx title="app/roadmap/page.tsx"
+export const dynamic = "force-dynamic"
+```
+
+## Deployment
+
+Include roadmap content in the route's server trace. With the package plugin, `withCodeAltas()` already includes `./content/**/*` for every route:
+
+```ts title="next.config.ts"
+import { withCodeAltas } from "@code-altas/ui/next"
+
+export default withCodeAltas({
+  // Your existing Next.js options.
+})
+```
+
+To configure tracing manually, use the route path as the key:
+
+```ts title="next.config.ts"
+const nextConfig = {
+  outputFileTracingIncludes: {
+    "/roadmap": ["./content/_roadmap_/**/*"],
+  },
+}
+```
+
+If the route lives at another path, use that path as the key. Start the application from the app root; the reader resolves `content` from `process.cwd()`. After changing content on a deployment with an immutable filesystem, rebuild and redeploy.
+
+## Empty and error states
+
+Without any discovered version, the page renders `No roadmap versions have been configured yet.` A version without items still renders its columns and shows an empty placeholder in each one. Invalid configuration or metadata throws while rendering; see [Conventions](/docs/roadmap/conventions#validation) for the checks and error format.

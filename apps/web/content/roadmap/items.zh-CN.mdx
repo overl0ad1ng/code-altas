@@ -1,0 +1,125 @@
+---
+title: 条目
+description: 编写带 frontmatter 元数据、排序、参与者、自定义属性和 MDX 正文的 Roadmap 卡片。
+---
+
+版本目录中直接放置的每个 `.mdx` 文件都是一个条目。去掉扩展名的文件名就是条目 ID，用于稳定标识和排序并列时的比较；它不会显示在看板上。
+
+## 文件规则
+
+```text
+content/_roadmap_/1_0_0/
+  roadmap.toml
+  local-first-planning.mdx   → ID: local-first-planning
+  keyboard-navigation.mdx    → ID: keyboard-navigation
+```
+
+- 只读取直接位于版本目录中的 `.mdx` 文件。嵌套目录和 `.md` 文件会被忽略。
+- 空文件或只包含空白字符的文件会被跳过。
+- 文件按 UTF-8 读取。frontmatter 应放在文件顶部。
+- 仅当符号链接的真实目标仍位于 `content` 内时，才会跟随该链接。
+
+## Frontmatter
+
+```mdx title="content/_roadmap_/1_0_0/local-first-planning.mdx"
+---
+title: Local-first planning
+description: Keep release plans next to the code they describe.
+group: planning
+status: planned
+order: 0
+priority: High
+due: "2026-11-15"
+assignees: [octocat, 583231]
+properties:
+  Area: Documentation
+  Estimate: 3 days
+---
+
+The plan lives in the repository, so every change is reviewable.
+```
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `title` | 是 | 卡片和弹窗标题。 |
+| `description` | 否 | 显示在详情弹窗中的摘要。 |
+| `group` | 是 | 必须匹配同一版本中的某个 `[[groups]]` ID。 |
+| `status` | 是 | 必须匹配同一版本中的某个 `[[statuses]]` ID。 |
+| `order` | 否 | 安全整数，默认 `0`。数值越小越靠前；相同时按文件名排序。 |
+| `priority` | 否 | 自由文本，显示在卡片和详情面板中。 |
+| `due` | 否 | `YYYY-MM-DD` 格式的真实日历日期。 |
+| `assignees` | 否 | GitHub 用户名或正整数用户 ID。 |
+| `properties` | 否 | 由字符串、有限数字或布尔值组成的扁平映射。 |
+
+可选文本字段一旦出现就必须非空。省略字段即可，不要把它设为 `null` 或空字符串。
+
+## 排序
+
+条目先按 `order` 排序，再按文件名排序。建议使用间隔值，方便在不重新编号的情况下插入新条目：
+
+| 文件 | `order` | 位置 |
+| --- | --- | --- |
+| `audit.mdx` | `0` | 1 |
+| `keyboard-navigation.mdx` | 省略，按 `0` 处理 | 2 |
+| `local-first-planning.mdx` | `0` | 3 |
+| `version-selector.mdx` | `10` | 4 |
+
+## 优先级与截止日期
+
+`priority` 是自由文本，例如 `High`、`P1` 或 `Q1`，会按原样显示。`due` 只接受真实日历日期；时间戳和不存在的日期（如 `2026-02-30`）都会被拒绝。在 YAML 中请为它加引号：
+
+```yaml
+due: "2026-11-15"
+```
+
+看板会把日期格式化为日历日期，不做时区转换。卡片上显示月和日，详情面板中会补充年份。
+
+## 参与者
+
+`assignees` 列出 GitHub 用户名、正整数用户 ID，或两者混合：
+
+```yaml
+assignees: [octocat, 583231]
+```
+
+- 用户名由字母、数字和单个连字符组成，最长 39 个字符。
+- 数字 ID 必须是正整数。
+- 重复项会被去除。
+- 卡片最多显示三个头像，其余以数量提示。弹窗会列出所有参与者，并为用户名添加 GitHub 链接。
+- 头像分别从 `github.com/<username>.png` 或 `avatars.githubusercontent.com/u/<id>` 加载，无需令牌。图片加载失败时会保留带名称的占位。
+
+## 自定义属性
+
+`properties` 会在详情面板中添加命名行。它是一个扁平映射，值必须是字符串、有限数字或布尔值；嵌套对象和数组会被拒绝。
+
+```yaml
+properties:
+  Area: Documentation
+  Estimate: 3
+  Blocked: false
+```
+
+键会按原样显示。看起来像数字的字符串仍然是字符串。
+
+## 正文与预览
+
+正文使用文档的 MDX 渲染流程。Markdown、带高亮的代码块、表格、任务列表、数学公式、Mermaid 图表，以及 `Hint`、`Tabs`、`Cards`、`Steps`、`FileTree`、`CodeGroup`、`CodeDiff`、`PackageInstall`、`Status`、`Props` 等内置组件都可以使用。导入和导出语句被禁用；自定义组件应通过页面注册。启用 `experimental.experimentalComponentsInMDX` 后，还可以使用 `Preview`。
+
+任务列表会渲染为只读复选框，并带有无障碍标签：
+
+```mdx
+## Acceptance criteria
+
+- [x] Plans are stored as files.
+- [ ] The board renders without a database.
+```
+
+卡片预览是从 `description`、小节标题、正文、表格单元格和组件内文本中提取的纯文本，代码块和 Markdown 格式会被去除。预览最多显示约四行，超出时带有渐隐效果。如果提取不到文本，卡片会显示 `No description yet.`。建议用一个简短、易读的段落开头。
+
+## 详情弹窗
+
+打开卡片后，会在详情面板旁显示渲染后的正文，面板包含状态、分组、优先级、截止日期、参与者和自定义属性。缺失的可选字段显示 `Not set` 或 `Unassigned`。弹窗支持键盘操作：聚焦卡片后按 `Enter` 或 `Space` 打开，按 `Escape` 关闭，焦点会回到卡片。
+
+## 校验
+
+frontmatter 无效时会在页面渲染期间抛出错误，并指出文件和字段。完整检查项见 [相关约定](/docs/roadmap/conventions#校验)。

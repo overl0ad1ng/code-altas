@@ -1,0 +1,125 @@
+---
+title: Items
+description: Write roadmap cards with frontmatter metadata, ordering, assignees, custom properties, and rich MDX bodies.
+---
+
+Every `.mdx` file directly inside a version directory is one item. The filename without the extension is the item ID, used for stable keys and for sorting ties; it is not displayed on the board.
+
+## File rules
+
+```text
+content/_roadmap_/1_0_0/
+  roadmap.toml
+  local-first-planning.mdx   → ID: local-first-planning
+  keyboard-navigation.mdx    → ID: keyboard-navigation
+```
+
+- Only direct `.mdx` files are read. Nested directories and `.md` files are ignored.
+- Empty files, or files containing only whitespace, are skipped.
+- Files are read as UTF-8. Frontmatter belongs at the top of the file.
+- Symlinks are followed only while their real target stays inside `content`.
+
+## Frontmatter
+
+```mdx title="content/_roadmap_/1_0_0/local-first-planning.mdx"
+---
+title: Local-first planning
+description: Keep release plans next to the code they describe.
+group: planning
+status: planned
+order: 0
+priority: High
+due: "2026-11-15"
+assignees: [octocat, 583231]
+properties:
+  Area: Documentation
+  Estimate: 3 days
+---
+
+The plan lives in the repository, so every change is reviewable.
+```
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `title` | Yes | Card and dialog title. |
+| `description` | No | Summary shown in the details dialog. |
+| `group` | Yes | Must match a `[[groups]]` ID in the same version. |
+| `status` | Yes | Must match a `[[statuses]]` ID in the same version. |
+| `order` | No | Safe integer, default `0`. Lower values appear first; ties sort by filename. |
+| `priority` | No | Free-form text shown on the card and in the details panel. |
+| `due` | No | Real calendar date in `YYYY-MM-DD` form. |
+| `assignees` | No | GitHub usernames or positive numeric user IDs. |
+| `properties` | No | Flat map of string, finite number, or boolean values. |
+
+Optional text fields must be non-empty when present. Omit a field instead of setting it to `null` or an empty string.
+
+## Ordering
+
+Items sort by `order`, then by filename. Use gaps so new items can be inserted without renumbering:
+
+| File | `order` | Position |
+| --- | --- | --- |
+| `audit.mdx` | `0` | 1 |
+| `keyboard-navigation.mdx` | omitted, treated as `0` | 2 |
+| `local-first-planning.mdx` | `0` | 3 |
+| `version-selector.mdx` | `10` | 4 |
+
+## Priority and due date
+
+`priority` is free text, such as `High`, `P1`, or `Q1`, and is displayed as written. `due` accepts a real calendar date; timestamps and impossible days such as `2026-02-30` are rejected. Quote the value in YAML:
+
+```yaml
+due: "2026-11-15"
+```
+
+The board formats the date as a calendar date without timezone conversion. On a card it shows the month and day; the details panel adds the year.
+
+## Assignees
+
+`assignees` lists GitHub usernames, positive numeric user IDs, or both:
+
+```yaml
+assignees: [octocat, 583231]
+```
+
+- Usernames use letters, digits, and single hyphens, up to 39 characters.
+- Numeric IDs are positive integers.
+- Duplicates are removed.
+- Cards show up to three avatars and a count for the rest. The dialog lists every participant and links usernames to GitHub.
+- Avatars load from `github.com/<username>.png` or `avatars.githubusercontent.com/u/<id>`; no token is required. If an image fails, a named placeholder stays.
+
+## Custom properties
+
+`properties` adds named rows to the details panel. It is a flat map whose values must be strings, finite numbers, or booleans; nested objects and arrays are rejected.
+
+```yaml
+properties:
+  Area: Documentation
+  Estimate: 3
+  Blocked: false
+```
+
+Keys are displayed as written. Numeric-looking strings stay strings.
+
+## Body and preview
+
+The body is rendered with the documentation MDX pipeline. Markdown, highlighted code blocks, tables, task lists, math, Mermaid diagrams, and the built-in components such as `Hint`, `Tabs`, `Cards`, `Steps`, `FileTree`, `CodeGroup`, `CodeDiff`, `PackageInstall`, `Status`, and `Props` all work. Imports and exports are disabled; register custom components on the page instead. With `experimental.experimentalComponentsInMDX` enabled, `Preview` is available too.
+
+Task lists render as read-only checkboxes with accessible labels:
+
+```mdx
+## Acceptance criteria
+
+- [x] Plans are stored as files.
+- [ ] The board renders without a database.
+```
+
+The card preview is plain text extracted from `description`, headings, prose, table cells, and text inside components. Code blocks and Markdown formatting are stripped. The preview is capped at about four lines and fades when it overflows. If no text is extracted, the card shows `No description yet.` Lead with one short, readable paragraph.
+
+## Details dialog
+
+Opening a card shows the rendered body next to a panel with status, group, priority, due date, participants, and custom properties. Missing optional fields show `Not set` or `Unassigned`. The dialog is keyboard accessible: `Enter` or `Space` opens a focused card, `Escape` closes it, and focus returns to the card.
+
+## Validation
+
+Invalid frontmatter throws while the page renders, naming the file and field. See [Conventions](/docs/roadmap/conventions#validation) for every check.

@@ -1,0 +1,50 @@
+title = "The road to v1"
+goal = "Code Altas helps developers build and maintain customizable documentation sites with Markdown and MDX."
+
+[[groups]]
+id = "planning"
+title = "Planning"
+color = "#6366F1"
+icon = "lucide:square-dashed-kanban"
+
+[[groups]]
+id = "progress"
+title = "In Progress"
+color = "#00A63E"
+icon = "lucide:circle-dot-dashed"
+
+[[groups]]
+id = "review"
+title = "In Review"
+color = "#7F22FE"
+icon = "lucide:scan-search"
+
+[[groups]]
+id = "beta"
+title = "Beta"
+color = "#155DFC"
+icon = "lucide:badge-check"
+
+[[groups]]
+id = "release"
+title = "Released"
+color = "#FF6900"
+icon = "lucide:rocket"
+
+[[statuses]]
+id = "planned"
+title = "Planned"
+color = "#64748B"
+icon = "lucide:circle-dashed"
+
+[[statuses]]
+id = "in-progress"
+title = "In progress"
+color = "#F59E0B"
+icon = "lucide:clock"
+
+[[statuses]]
+id = "done"
+title = "Done"
+color = "#22C55E"
+icon = "lucide:circle-check"

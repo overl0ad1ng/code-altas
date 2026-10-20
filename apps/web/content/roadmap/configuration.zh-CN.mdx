@@ -1,0 +1,87 @@
+---
+title: 看板配置
+description: roadmap.toml 参考，包括版本目录、列、状态、颜色和图标。
+---
+
+每个版本目录都有自己的 `roadmap.toml`。这个文件是必需的：没有它的目录会被忽略。分组、状态和条目都只属于定义它们的那个版本，因此两个版本可以使用完全不同的列和状态。
+
+## 文件位置
+
+```text
+content/_roadmap_/1_0_0/roadmap.toml
+```
+
+```toml title="content/_roadmap_/1_0_0/roadmap.toml"
+title = "The road to v1"
+goal = "What we are building, why it matters, and how to contribute."
+
+[[groups]]
+id = "planning"
+title = "Planning"
+color = "#6366F1"
+icon = "lucide:square-dashed-kanban"
+
+[[statuses]]
+id = "planned"
+title = "Planned"
+color = "#64748B"
+icon = "lucide:circle-dashed"
+```
+
+## 顶层字段
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `title` | 否 | 看板标题。默认使用版本标签，例如 `v1.0.0`。 |
+| `goal` | 否 | 显示在标题下方的简短说明。纯文本，不渲染 Markdown。 |
+| `groups` | 是 | 至少一个。按数组顺序渲染为列。 |
+| `statuses` | 是 | 至少一个。渲染为卡片和详情面板中的状态徽标。 |
+
+## 分组与状态
+
+两个数组使用相同的定义结构。
+
+| 字段 | 必填 | 说明 |
+| --- | --- | --- |
+| `id` | 是 | 小写字母、数字和单个连字符。在所属数组内必须唯一。 |
+| `title` | 是 | 显示名称。 |
+| `color` | 否 | `#RGB` 或 `#RRGGBB`。用于给图标或回退圆点上色。 |
+| `icon` | 否 | Lucide 或 Simple Icons 名称，例如 `lucide:rocket` 或 `simple:github`。 |
+
+- **顺序有意义。** 列按照 `groups` 的书写顺序排列，不会按标题重新排序。
+- **状态是徽标，不是列。** 任何分组的条目都可以使用任意状态。看板不会为每个状态创建一列。
+- **ID 是引用。** 条目 frontmatter 中保存的是 ID，因此修改 `title` 不需要改动条目；修改 `id` 则必须同步更新所有引用它的条目。
+- **数量** 显示在每个列标题旁，统计该分组中的全部条目。
+- **空分组** 仍会渲染，并在列中显示 `Nothing` 占位。
+
+## 颜色与图标
+
+- 省略 `color` 时使用主题前景色。
+- 配置了 `icon` 时，`color` 会给图标着色；没有图标时，看板会绘制一个彩色圆点。
+- 两者都省略时，仍会显示中性圆点和标题。
+- 图标使用与导航相同的解析器：`lucide:name`、`simple:name` 或直接写名称。无法识别的名称会回退为问号图标。可接受的写法见 [导航配置](/docs/concepts/navigation#图标与翻译)。
+
+## 版本
+
+目录名就是版本号：
+
+```text
+content/_roadmap_/0_1_0   → v0.1.0
+content/_roadmap_/1_10_0  → v1.10.0
+content/_roadmap_/1_2_0   → v1.2.0
+```
+
+- 必须恰好是三个非负整数，以下划线分隔。不允许前导零，`0` 是合法值。
+- 版本按数值比较而不是字符串比较，并按从新到旧排序。`1_10_0` 排在 `1_2_0` 之后。
+- 不符合规则的名称会被忽略，包括 `v1_0_0`、`1.0.0` 和 `1_0`。
+- 只有包含 `roadmap.toml` 的匹配目录才会被发现。
+- 看板默认选中最新版本。版本选择器按从新到旧列出所有已发现的版本。
+- `title` 默认使用版本标签，因此没有配置标题的看板仍有标题。
+
+每个看板相互独立。之后添加 `1_1_0` 不会影响 `1_0_0` 看板。旧版本目录可以保留作为历史，也可以删除以隐藏对应看板。
+
+## 站点配置
+
+`roadmap.toml` 是看板读取的唯一配置。`codealtas.config.ts` 不注册版本、分组或状态。唯一会影响看板的站点级配置，是渲染 `RoadmapPage` 的路由，以及可选的 `header.nav`。
+
+`docs.categories` 与看板无关：它管理文档导航，也就是你正在阅读的这些页面。

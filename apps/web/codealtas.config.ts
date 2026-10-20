@@ -205,12 +205,66 @@ export default defineConfig({
                 slug: "hint",
               },
               {
+                name: "FAQ",
+                slug: "faq",
+              },
+              {
                 name: "Status",
                 slug: "status",
               },
               {
                 name: "Package Install",
                 slug: "package-install",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        name: "Roadmap",
+        i18n: { "zh-CN": "路线图" },
+        icon: "lucide:map",
+        slug: "roadmap",
+        docs: [
+          {
+            name: "Getting Started",
+            i18n: { "zh-CN": "开始使用" },
+            docs: [
+              {
+                name: "Introduction",
+                i18n: { "zh-CN": "介绍" },
+                slug: "index",
+              },
+              {
+                name: "Create a Board",
+                i18n: { "zh-CN": "创建看板" },
+                slug: "create-a-board",
+              },
+              {
+                name: "Render the Board",
+                i18n: { "zh-CN": "渲染看板" },
+                slug: "render-the-board",
+              },
+            ],
+          },
+          {
+            name: "Configuration and Conventions",
+            i18n: { "zh-CN": "配置与约定" },
+            docs: [
+              {
+                name: "Board Configuration",
+                i18n: { "zh-CN": "看板配置" },
+                slug: "configuration",
+              },
+              {
+                name: "Items",
+                i18n: { "zh-CN": "条目" },
+                slug: "items",
+              },
+              {
+                name: "Conventions",
+                i18n: { "zh-CN": "相关约定" },
+                slug: "conventions",
               },
             ],
           },
@@ -226,6 +280,9 @@ export default defineConfig({
       },
       "/changelog": {
         label: "Changelog",
+      },
+      "/roadmap": {
+        label: "Roadmap",
       },
     },
 
