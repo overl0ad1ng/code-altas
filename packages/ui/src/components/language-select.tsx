@@ -1,11 +1,10 @@
 "use client"
 
-import { Select } from "@base-ui/react/select"
-import { Languages, ChevronDown, Check } from "lucide-react"
+import { Languages } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { useDocsLocale } from "../lib/use-docs-locale"
 import { localizedDocHref } from "../lib/docs-i18n"
-import { cn } from "cn"
+import { SelectControl } from "./select-control"
 
 export function LanguageSelect({ className }: { className?: string } = {}) {
   const { locale, slug, i18n, messages } = useDocsLocale()
@@ -15,15 +14,21 @@ export function LanguageSelect({ className }: { className?: string } = {}) {
   const items = Object.entries(i18n.locales).map(([value, language]) => ({
     value,
     label: language.label,
+    lang: value,
   }))
-
   return (
-    <Select.Root
+    <SelectControl
       items={items}
-      value={locale}
-      modal={false}
+      value={locale ?? i18n.defaultLocale}
+      label={messages.language}
+      className={className}
+      icon={
+        <Languages
+          aria-hidden="true"
+          className="size-4 text-muted-foreground"
+        />
+      }
       onValueChange={(value) => {
-        if (!value || value === locale) return
         const inDocs = pathname === "/docs" || pathname?.startsWith("/docs/")
         router.push(
           localizedDocHref(inDocs ? slug : "/", value, i18n) +
@@ -31,57 +36,6 @@ export function LanguageSelect({ className }: { className?: string } = {}) {
             window.location.hash
         )
       }}
-    >
-      <Select.Trigger
-        aria-label={messages.language}
-        className={cn(
-          "group flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-sm text-foreground transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[popup-open]:bg-accent",
-          className
-        )}
-      >
-        <Languages
-          aria-hidden="true"
-          className="size-4 text-muted-foreground"
-        />
-        <Select.Value />
-        <Select.Icon>
-          <ChevronDown
-            aria-hidden="true"
-            className="size-3.5 text-muted-foreground transition-transform group-data-[popup-open]:rotate-180 motion-reduce:transition-none"
-          />
-        </Select.Icon>
-      </Select.Trigger>
-      <Select.Portal>
-        <Select.Positioner
-          side="bottom"
-          align="end"
-          sideOffset={8}
-          alignItemWithTrigger={false}
-          className="z-50"
-        >
-          <Select.Popup className="min-w-44 origin-[var(--transform-origin)] rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg transition-all duration-150 data-[ending-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:scale-95 data-[starting-style]:opacity-0 motion-reduce:transition-none">
-            <Select.List className="max-h-[min(20rem,var(--available-height))] overflow-y-auto">
-              {items.map((item) => (
-                <Select.Item
-                  key={item.value}
-                  value={item.value}
-                  label={item.label}
-                  lang={item.value}
-                  className="flex cursor-pointer items-center justify-between gap-6 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
-                >
-                  <Select.ItemText>{item.label}</Select.ItemText>
-                  <Select.ItemIndicator>
-                    <Check
-                      aria-hidden="true"
-                      className="size-4 text-muted-foreground"
-                    />
-                  </Select.ItemIndicator>
-                </Select.Item>
-              ))}
-            </Select.List>
-          </Select.Popup>
-        </Select.Positioner>
-      </Select.Portal>
-    </Select.Root>
+    />
   )
 }

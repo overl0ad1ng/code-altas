@@ -1,0 +1,84 @@
+---
+title: Conventions
+description: Rules for discovery, identity, ordering, localization, trusted content, validation, and common mistakes.
+---
+
+Roadmap is convention-based: the folder layout and frontmatter fields documented here are the entire contract. The loader applies the same rules on every render, so a board that works locally behaves the same after deployment.
+
+## Discovery
+
+| What | Rule |
+| --- | --- |
+| Content root | `content/_roadmap_` beside `codealtas.config.ts`, resolved from `process.cwd()`. |
+| Version directory | Exactly three non-negative integers joined by `_`, without leading zeros. |
+| Discovery | Only directories containing `roadmap.toml` are loaded. Others are ignored quietly. |
+| Item files | Direct `.mdx` files only. Nested directories, `.md`, and other extensions are ignored. |
+| Empty items | Files that are empty or whitespace-only are skipped. |
+| Encoding | UTF-8. |
+| Symlinks | Followed only when the real path stays inside `content`. |
+
+## Identity and ordering
+
+- A version is identified by its directory name and displayed as `v<major>.<minor>.<patch>`.
+- An item is identified by its filename. Renaming the file changes its ID, which can change its position among equal `order` values.
+- Items sort by ascending `order` (default `0`), then by filename.
+- Groups and statuses keep the order written in `roadmap.toml`.
+- Leave gaps in `order` (`0`, `10`, `20`) so new items can be inserted without renumbering.
+
+## References
+
+- An item's `group` and `status` must match IDs declared in the same version's `roadmap.toml`.
+- Definitions are version-scoped. Two versions can declare different IDs, and an item cannot reference another version.
+- IDs use lowercase letters, digits, and single hyphens, and must be unique within their array.
+- Renaming a `title` is safe. Renaming an `id` requires updating every item that references it.
+
+## Localization
+
+The board is not part of `docs.i18n`. There is one board for all locales, the interface labels are English, and `roadmap.toml` and item text are not translated. Author item text in the language every reader should see, and use `i18n` for the documentation entries that describe the feature.
+
+## Trusted content
+
+Item bodies are compiled and rendered on the server. MDX imports and exports are disabled, but expressions and registered components still execute during rendering. Treat roadmap files as project-owned, trusted source, and review them like application code.
+
+## Validation
+
+Invalid files fail during rendering instead of being skipped. The error starts with `Invalid Roadmap <path>: ...` and names the field, for example:
+
+```text
+Invalid Roadmap content/_roadmap_/1_0_0/roadmap.toml: groups[1].id duplicates "planning"
+Invalid Roadmap content/_roadmap_/1_0_0/local-first-planning.mdx: group references unknown ID "planning"
+Invalid Roadmap content/_roadmap_/1_0_0/keyboard-navigation.mdx: due must be a real calendar date in YYYY-MM-DD format
+```
+
+The loader checks:
+
+| Area | Checks |
+| --- | --- |
+| Files | `roadmap.toml` parses as TOML; item frontmatter parses as YAML. |
+| Config | `groups` and `statuses` each contain at least one definition. |
+| Definitions | `id` and `title` are non-empty; `id` is unique and matches the lowercase pattern; `color` is `#RGB` or `#RRGGBB`. |
+| Items | `title`, `group`, and `status` are non-empty strings; `group` and `status` reference definitions in the same version. |
+| Ordering | `order` is a safe integer. |
+| Dates | `due` is a real `YYYY-MM-DD` calendar date. |
+| Participants | Usernames follow GitHub rules and are at most 39 characters; numeric IDs are positive integers. |
+| Properties | Values are strings, finite numbers, or booleans. |
+
+A parse failure reports `TOML syntax` or `frontmatter syntax`. Symlinks that resolve outside `content` fail with `Roadmap path is outside the content directory: <path>`. Rendering failures are wrapped as `Failed to render Roadmap item <path>`.
+
+## Common mistakes
+
+- **The board is empty.** The version directory must contain `roadmap.toml`; a version without it is ignored.
+- **A new version does not appear.** Check the directory name: `v1_0_0`, `1.0.0`, and `1_0` are ignored.
+- **An item is missing.** Items must be `.mdx` files directly inside the version directory.
+- **A card shows the wrong preview.** The preview uses the description and body text, not the title; lead the body with a summary.
+- **`order` fails validation.** YAML `order: "10"` is a string; use an integer.
+- **A date is rejected.** Use a real calendar date such as `2026-11-15`, not a timestamp or an impossible day.
+- **A version disappeared.** Deleting `roadmap.toml` hides the whole version without an error.
+- **The board is stale.** Content is read when the route renders; rebuild, or force dynamic rendering.
+- **Content works locally but not after deploy.** Include `./content/_roadmap_/**/*` in the route trace.
+
+## Where to go next
+
+- [Board Configuration](/docs/roadmap/configuration) — every `roadmap.toml` field.
+- [Items](/docs/roadmap/items) — frontmatter and body conventions.
+- [Render the Board](/docs/roadmap/render-the-board) — route setup, custom components, and deployment.

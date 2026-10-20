@@ -47,6 +47,12 @@ export {
 } from "./ui/mdx/components/hint"
 export { Tags, type TagsProps } from "./ui/mdx/components/tags"
 export {
+  FAQ,
+  Question,
+  type FAQProps,
+  type QuestionProps,
+} from "./ui/mdx/components/faq"
+export {
   Status,
   type StatusProps,
   type StatusType,
@@ -78,6 +84,7 @@ export {
   ChangelogPage,
   type ChangelogPageProps,
 } from "./ui/pages/ChangelogPage"
+export { RoadmapPage, type RoadmapPageProps } from "./ui/pages/RoadmapPage"
 export { DocsPagination } from "./ui/navigation/docs-pagination"
 export {
   getDocPagination,

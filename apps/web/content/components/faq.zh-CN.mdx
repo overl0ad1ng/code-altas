@@ -1,0 +1,81 @@
+---
+title: FAQ
+description: 使用手风琴布局组织常见问题，同一组内最多展开一个答案。
+---
+
+<Status since="0.4.0" />
+
+<Preview>
+
+<FAQ>
+  <Question icon="lucide:rocket" title="如何开始使用？" defaultOpen>
+
+    按照[快速开始指南](/docs/quickstart)创建你的第一个文档站点，使用 **Markdown 或 MDX** 编写页面。
+
+  </Question>
+  <Question icon="simple:github" title="可以使用现有的仓库吗？">
+
+    可以。将 Code Altas 添加到你的 Next.js 项目，并配置文档所在的目录即可。
+
+  </Question>
+  <Question title="可以同时展开多个答案吗？">
+
+    每个 FAQ **最多展开一个答案**。展开其他问题时，之前的答案会自动收起；再次点击已展开的问题，可以将它收起。
+
+  </Question>
+</FAQ>
+
+</Preview>
+
+---
+
+```mdx title="Usage"
+<FAQ>
+  <Question icon="lucide:rocket" title="如何开始使用？" defaultOpen>
+    按照快速开始指南创建你的第一个文档站点。
+  </Question>
+  <Question icon="simple:github" title="可以使用现有的仓库吗？">
+    可以。将 Code Altas 添加到你的 Next.js 项目即可。
+  </Question>
+  <Question title="可以同时展开多个答案吗？">
+    展开其他问题时，之前的答案会自动收起。
+  </Question>
+</FAQ>
+```
+
+`FAQ` 和 `Question` 已在 MDX 中自动注册。在 React 服务端组件中使用时，从 `@code-altas/ui` 导入：
+
+```tsx title="React import"
+import { FAQ, Question } from "@code-altas/ui"
+```
+
+## 交互规则
+
+- 将 `Question` 直接放在 `FAQ` 内。支持 React Fragment，不支持用任意元素包裹问题；独立渲染 `Question` 会抛出错误。
+- 每个 FAQ 最多只能有一个问题设置 `defaultOpen`。设置多个时会抛出错误，不会静默选择其中一个。
+- 没有设置 `defaultOpen` 时，所有答案初始均为收起状态。该属性只设置初始状态。
+- 展开一个问题时，会自动收起之前的答案。再次点击已展开的问题会将它收起，因此允许所有答案都处于收起状态。
+- 不同 FAQ 的展开状态相互独立。
+- 使用 **Tab** 和 **Shift + Tab** 在问题按钮之间切换焦点，按 **Enter** 或**空格键**展开或收起答案。
+
+## 答案内容与图标
+
+答案支持 Markdown 和 MDX，可以放入列表、链接、代码块或其他组件。在 `Question` 内编写 Markdown 时，请在内容前后保留空行，确保正确解析。
+
+`icon` 为可选属性，沿用其他组件的图标命名方式，例如 `lucide:rocket` 或 `simple:github`。不设置图标时，问题仍使用相同的布局和交互方式。
+
+## 属性
+
+<Props name="FAQ">
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="Question 组件。支持 Fragment 和条件子元素；空 FAQ 不渲染任何内容。" />
+  <Prop property="className" type="string" defaultValue="-" description="附加到 FAQ 容器的 CSS 类名。" />
+</Props>
+
+<br />
+
+<Props name="Question">
+  <Prop property="title" type="string" defaultValue="-" description="必填。显示在展开与收起按钮中的问题标题。" />
+  <Prop property="icon" type="string" defaultValue="-" description="可选图标名称，例如 lucide:rocket 或 simple:github。" />
+  <Prop property="defaultOpen" type="boolean" defaultValue={false} description="是否默认展开该答案。每个 FAQ 最多只能有一个 Question 启用此属性。" />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="答案内容，支持 Markdown 和 MDX 组件。" />
+</Props>

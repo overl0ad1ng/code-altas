@@ -1,0 +1,137 @@
+---
+title: Create a Board
+description: Add a version directory, configure its columns and statuses, write the first items, and render a working board.
+---
+
+A board is a version directory, a `roadmap.toml` file, and one `.mdx` file per item. This page builds a small board end to end. [Render the Board](/docs/roadmap/render-the-board) covers layout, custom components, and deployment in more detail.
+
+## 1. Create the version directory
+
+Create `content/_roadmap_` beside `codealtas.config.ts` at the app root, then add a directory for the release:
+
+```text
+content/
+  _roadmap_/
+    1_0_0/
+```
+
+The directory name must be exactly three non-negative integers joined by underscores, without leading zeros. `1_0_0` is displayed as `v1.0.0`. Names such as `v1_0_0`, `1.0.0`, `1_0`, or `01_0_0` are ignored. Only directories that contain a `roadmap.toml` are discovered, so the next step makes the version visible.
+
+## 2. Configure the board
+
+Create `content/_roadmap_/1_0_0/roadmap.toml`:
+
+```toml title="content/_roadmap_/1_0_0/roadmap.toml"
+title = "The road to v1"
+goal = "Code Altas helps developers build and maintain documentation sites."
+
+[[groups]]
+id = "planning"
+title = "Planning"
+color = "#6366F1"
+icon = "lucide:square-dashed-kanban"
+
+[[groups]]
+id = "progress"
+title = "In Progress"
+color = "#00A63E"
+icon = "lucide:circle-dot-dashed"
+
+[[statuses]]
+id = "planned"
+title = "Planned"
+color = "#64748B"
+icon = "lucide:circle-dashed"
+
+[[statuses]]
+id = "done"
+title = "Done"
+color = "#22C55E"
+icon = "lucide:circle-check"
+```
+
+- `groups` become columns, in the order written. Each group needs a non-empty `id` and `title`.
+- `statuses` become badges. An item can use any status in any group.
+- Item frontmatter references these `id` values, so choose stable IDs and change the `title` when you rename a label.
+- Both arrays need at least one definition.
+
+[Board Configuration](/docs/roadmap/configuration) documents every field, icons, colors, and version selection.
+
+## 3. Write the first item
+
+Each `.mdx` file directly inside the version directory is one card. The filename without the extension is the item ID:
+
+```mdx title="content/_roadmap_/1_0_0/local-first-planning.mdx"
+---
+title: Local-first planning
+description: Keep release plans next to the code they describe.
+group: planning
+status: planned
+order: 0
+priority: High
+due: "2026-11-15"
+assignees: [octocat]
+properties:
+  Area: Documentation
+  Estimate: 3 days
+---
+
+The plan lives in the repository, so every change is reviewable.
+
+## Acceptance criteria
+
+- [x] Plans are stored as files.
+- [ ] The board renders without a database.
+```
+
+`title`, `group`, and `status` are required; the other fields are optional. Lead with a short paragraph: the body becomes the card preview and the full MDX is rendered in the detail dialog. See [Items](/docs/roadmap/items) for the complete frontmatter reference.
+
+## 4. Render the route
+
+Create a page and a layout:
+
+```tsx title="app/roadmap/page.tsx"
+import { RoadmapPage } from "@code-altas/ui"
+
+export const metadata = { title: "Roadmap" }
+
+export default function Page() {
+  return <RoadmapPage />
+}
+```
+
+```tsx title="app/roadmap/layout.tsx"
+import { DefaultLayout } from "@code-altas/ui"
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <DefaultLayout contentMode="fill">{children}</DefaultLayout>
+}
+```
+
+`RoadmapPage` is an async Server Component that reads the content directory with `fs`. Keep the route on the server and start the application from its root, so `process.cwd()` points at the directory that contains `content`.
+
+## 5. Add a navigation entry
+
+The board is not added to the header automatically. Add an entry to `header.nav` in `codealtas.config.ts`:
+
+```ts title="codealtas.config.ts excerpt"
+header: {
+  nav: {
+    "/roadmap": { label: "Roadmap" },
+  },
+},
+```
+
+This is optional. The route needs no version registration, and nothing is added to `docs.categories` unless you also publish documentation pages about the feature.
+
+## Check the result
+
+Open `/roadmap`. The newest version is selected, and its columns contain the items you wrote.
+
+If the page shows `No roadmap versions have been configured yet.`, check that:
+
+- the app is started from the directory that contains `content`;
+- the version directory matches the three-integer pattern;
+- `roadmap.toml` exists inside the version directory and is valid TOML.
+
+Next, refine the board with [Board Configuration](/docs/roadmap/configuration), or customize the page with [Render the Board](/docs/roadmap/render-the-board).

@@ -1,0 +1,59 @@
+---
+title: 介绍
+description: 将一组 MDX 文件转换为带分组列、状态徽标和丰富条目详情的版本化计划看板。
+---
+
+Roadmap 会把仓库中的一组 MDX 文件变成一块计划看板。每个发布版本都有独立的列、状态、卡片，以及一个用 MDX 渲染完整计划的详情弹窗。它没有数据库、没有 CMS，也无需在 `codealtas.config.ts` 中注册任何内容：页面渲染时会从 `content/_roadmap_` 自动发现看板。
+
+计划与它所描述的代码放在一起，因此每次计划变更都能像其他改动一样被评审，并随对应的发布一起交付。
+
+## 看板结构
+
+<FileTree
+  files={[
+    "content/_roadmap_/1_0_0/roadmap.toml",
+    "content/_roadmap_/1_0_0/local-first-planning.mdx",
+    "content/_roadmap_/1_0_0/keyboard-navigation.mdx",
+    "content/_roadmap_/1_1_0/roadmap.toml",
+  ]}
+/>
+
+| 路径 | 用途 |
+| --- | --- |
+| `content/_roadmap_` | 固定的内容根目录，从应用根目录读取。 |
+| `1_0_0/` | 一个版本目录，显示为 `v1.0.0`。版本按从新到旧排序。 |
+| `roadmap.toml` | 看板标题、目标、列和状态。版本目录必须包含它才会被发现。 |
+| `name.mdx` | 一个条目。去掉 `.mdx` 的文件名就是条目 ID。 |
+
+## 看板会展示什么
+
+- 列按照 `roadmap.toml` 中 `groups` 的书写顺序排列，并显示每列包含的条目数量。
+- 卡片显示状态徽标和条目正文的纯文本预览，以及可选的优先级、截止日期和参与者头像。
+- 打开卡片后，会在详情面板旁显示完整的 MDX 正文，面板中包含状态、分组、优先级、截止日期、参与者和自定义属性。
+- 版本选择器在浏览器内切换看板。默认选中最新版本，且不会发起导航请求。
+- 配合 `DefaultLayout contentMode="fill"` 时，看板会占据 header 下方的剩余空间，并在看板内部滚动。
+
+## 它不是什么
+
+- **不是文档导航。** 看板独立于 `docs.categories`，不会添加导航条目、上一篇/下一篇链接或全文搜索结果。
+- **不做本地化。** 所有语言共用一个看板。`i18n` 用于翻译介绍该功能的文档条目，而不是用于看板本身。
+- **不是内容数据库。** 文件在路由渲染时读取，没有文件监听，也没有编辑器。
+- **不会自动生成路由。** 创建文件不会创建 Next.js 路由。你需要在自有路由中渲染 `RoadmapPage`。
+
+## 下一步
+
+- [创建看板](/docs/roadmap/create-a-board) — 添加版本目录、`roadmap.toml` 和首批条目。
+- [渲染看板](/docs/roadmap/render-the-board) — 挂载 `RoadmapPage` 并完成部署。
+- [看板配置](/docs/roadmap/configuration) — `roadmap.toml` 与版本规则参考。
+- [条目](/docs/roadmap/items) — frontmatter、预览和 MDX 正文。
+- [相关约定](/docs/roadmap/conventions) — 命名、排序、校验和常见错误。
+
+## 常见问题
+
+<FAQ>
+    <Question title="为什么没有 i18n？">
+        老实说，我们考虑过是否要在 Roadmap / Changelog 页面当中加入国际化，但是从一开始国际化就仅仅面向了 Docs。
+
+        这就导致我们走了一条不太正确的道路，或许在未来的版本我们会重新考虑如何优化它。
+    </Question>
+</FAQ>

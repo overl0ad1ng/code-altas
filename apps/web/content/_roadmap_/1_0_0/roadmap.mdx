@@ -1,0 +1,204 @@
+---
+title: Roadmap
+description: Turn a local content directory into a versioned planning board with grouped columns, status badges, and rich item details.
+group: release
+status: done
+order: 0
+assignees: [overl0ad1ng]
+---
+
+The Roadmap feature turns files in your repository into a planning board. Each release version gets its own columns, statuses, cards, and a detail dialog that renders the full plan as MDX. There is no database, no CMS, and nothing to register in `codealtas.config.ts`: the board is discovered from `content/_roadmap_` at request time.
+
+Plans live next to the code they describe, so they can be reviewed, versioned, and merged like any other change.
+
+## File layout
+
+A roadmap version is a directory named after the version. Each item is one `.mdx` file, and `roadmap.toml` configures the board itself:
+
+```text
+content/
+  _roadmap_/
+    1_0_0/
+      roadmap.toml
+      local-first-planning.mdx
+      keyboard-navigation.mdx
+```
+
+- The directory name must contain exactly three numbers joined by underscores, for example `1_0_0`. It is displayed as `v1.0.0`. Leading zeros are not allowed, and directories that do not match this pattern are ignored.
+- `roadmap.toml` is required. It defines the board title, goal, groups, and statuses.
+- Every `.mdx` file is one card. The filename without the extension becomes the item ID, which is used for stable keys and for breaking `order` ties. It is not shown in the UI.
+- Files that are empty or contain only whitespace are skipped.
+- Versions are sorted newest first. The version selector switches boards in the browser, so changing versions does not trigger a navigation request.
+
+## Configure the board
+
+Define the columns and statuses in `roadmap.toml`:
+
+```toml title="content/_roadmap_/1_0_0/roadmap.toml"
+title = "The road to v1"
+goal = "What we are building, why it matters, and how to help."
+
+[[groups]]
+id = "planning"
+title = "Planning"
+color = "#6366F1"
+icon = "lucide:square-dashed-kanban"
+
+[[groups]]
+id = "progress"
+title = "In Progress"
+color = "#00A63E"
+icon = "lucide:circle-dot-dashed"
+
+[[statuses]]
+id = "planned"
+title = "Planned"
+color = "#64748B"
+icon = "lucide:circle-dashed"
+
+[[statuses]]
+id = "done"
+title = "Done"
+color = "#22C55E"
+icon = "lucide:circle-check"
+```
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `title` | No | Board heading. Defaults to the version label, such as `v1.0.0`. |
+| `goal` | No | Short description shown under the heading. |
+| `groups` | Yes | At least one. Rendered as columns in the order written. |
+| `statuses` | Yes | At least one. Rendered as badges on cards and in details. |
+
+Each entry in `groups` and `statuses` accepts the following fields:
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `id` | Yes | Lowercase letters, digits, and hyphens. Must be unique within its array. |
+| `title` | Yes | Display label. |
+| `color` | No | `#RGB` or `#RRGGBB`. Tints the group or status icon. |
+| `icon` | No | Lucide or Simple Icons name, such as `lucide:rocket` or `simple:github`. Without an icon, a colored dot is used. |
+
+## Write an item
+
+Each item is an MDX file with frontmatter:
+
+```mdx title="content/_roadmap_/1_0_0/local-first-planning.mdx"
+---
+title: Local-first planning
+description: Keep release plans next to the code they describe.
+group: planning
+status: planned
+order: 0
+priority: High
+due: "2026-11-15"
+assignees: [octocat, 583231]
+properties:
+  Area: Documentation
+  Estimate: 3 days
+---
+
+The plan lives in the repository, so every change is reviewable.
+
+## Acceptance criteria
+
+- [x] Plans are stored as files.
+- [ ] The board renders without a database.
+```
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `title` | Yes | Card and dialog title. |
+| `description` | No | Summary shown in the detail dialog. |
+| `group` | Yes | Must match a `[[groups]]` ID. |
+| `status` | Yes | Must match a `[[statuses]]` ID. |
+| `order` | No | Safe integer, default `0`. Lower values appear first; ties are sorted by filename. |
+| `priority` | No | Free-form text shown on the card and in the details panel. |
+| `due` | No | Real calendar date in `YYYY-MM-DD` format. |
+| `assignees` | No | GitHub usernames or numeric user IDs. The card shows up to three avatars. |
+| `properties` | No | Map of string, finite number, or boolean values shown in the details panel. |
+
+The card preview is generated from the rendered body text, so lead with a short, readable paragraph. The full MDX body is preserved in the dialog.
+
+## Add the route
+
+Render `RoadmapPage` from a Next.js route:
+
+```tsx title="app/roadmap/page.tsx"
+import { RoadmapPage } from "@code-altas/ui"
+
+export const metadata = { title: "Roadmap" }
+
+export default function Page() {
+  return <RoadmapPage />
+}
+```
+
+Use `DefaultLayout` with `contentMode="fill"` so the board occupies the remaining viewport height and scrolls itself instead of the page:
+
+```tsx title="app/roadmap/layout.tsx"
+import { DefaultLayout } from "@code-altas/ui"
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <DefaultLayout contentMode="fill">{children}</DefaultLayout>
+}
+```
+
+The Roadmap is independent of `docs.categories` and of documentation locales. To expose it in the header, add an entry such as `/roadmap` to `header.nav` in `codealtas.config.ts`.
+
+## Rich item content
+
+Item bodies use the same MDX pipeline as documentation pages. Headings, tables, task lists, math, Mermaid diagrams, highlighted code blocks, and built-in components all work. Task lists render as read-only checkboxes with accessible labels.
+
+```mdx
+## Notes
+
+- [x] Ship the first version.
+- [ ] Add contributor guidance.
+
+<Hint type="tip">
+  <HintContent>Keep each item focused on one outcome.</HintContent>
+</Hint>
+```
+
+Pass your own components to the page to use them inside roadmap items:
+
+```tsx title="app/roadmap/page.tsx"
+import { RoadmapPage } from "@code-altas/ui"
+import { mdxComponents } from "@/components/mdx-components"
+
+export default function Page() {
+  return <RoadmapPage components={mdxComponents} />
+}
+```
+
+## Interaction and layout
+
+- Columns follow the `groups` order and show their item count. The board scrolls horizontally on narrow screens.
+- Cards show the status badge, an automatic preview, optional priority and due date, and assignee avatars.
+- Opening a card shows the full MDX in a dialog with a details panel for status, group, priority, due date, participants, and custom properties.
+- The dialog is keyboard accessible: press `Enter` to open a focused card, `Escape` to close, and focus returns to the card.
+- Empty groups show a placeholder message.
+
+## Validation
+
+Invalid configuration fails loudly while the page renders, with an `Invalid Roadmap <path>: ...` error that names the offending file and field. The checks include:
+
+- TOML syntax, frontmatter syntax, and required non-empty strings.
+- Definition IDs that are unique and use only lowercase letters, digits, and hyphens.
+- Colors in `#RGB` or `#RRGGBB` form.
+- Group and status references that match a definition in `roadmap.toml`.
+- `order` values that are safe integers and `due` values that are real `YYYY-MM-DD` dates.
+- Assignees that are valid GitHub usernames or positive numeric user IDs.
+
+## Deployment
+
+The board reads files from disk when the route is rendered. For standalone or serverless deployments, include the content in the traced files:
+
+```ts title="next.config.ts"
+const nextConfig = {
+  outputFileTracingIncludes: {
+    "/roadmap": ["./content/_roadmap_/**/*"],
+  },
+}
+```

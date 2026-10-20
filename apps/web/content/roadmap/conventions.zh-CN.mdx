@@ -1,0 +1,84 @@
+---
+title: 相关约定
+description: 发现规则、标识与排序、本地化、可信内容、校验和常见错误。
+---
+
+Roadmap 是基于约定的功能：这里记录的目录结构和 frontmatter 字段就是全部契约。加载器在每次渲染时应用相同规则，因此本地可用的看板在部署后表现一致。
+
+## 发现规则
+
+| 项目 | 规则 |
+| --- | --- |
+| 内容根目录 | 与 `codealtas.config.ts` 同级的 `content/_roadmap_`，基于 `process.cwd()` 解析。 |
+| 版本目录 | 恰好三个非负整数，用 `_` 连接，不能有前导零。 |
+| 发现条件 | 只加载包含 `roadmap.toml` 的目录。其他目录会被静默忽略。 |
+| 条目文件 | 只读取直接位于版本目录中的 `.mdx` 文件。嵌套目录、`.md` 和其他扩展名会被忽略。 |
+| 空条目 | 内容为空或只有空白字符的文件会被跳过。 |
+| 编码 | UTF-8。 |
+| 符号链接 | 仅当真实路径仍位于 `content` 内时才会跟随。 |
+
+## 标识与排序
+
+- 版本由目录名标识，并显示为 `v<major>.<minor>.<patch>`。
+- 条目由文件名标识。重命名文件会改变它的 ID，也可能改变它在 `order` 相同的条目中的位置。
+- 条目先按 `order` 升序排序（默认 `0`），再按文件名排序。
+- 分组和状态保持 `roadmap.toml` 中的书写顺序。
+- 在 `order` 中留出间隔（`0`、`10`、`20`），插入新条目时无需重新编号。
+
+## 引用关系
+
+- 条目的 `group` 和 `status` 必须匹配同一版本 `roadmap.toml` 中声明的 ID。
+- 定义只在版本内有效。两个版本可以声明不同的 ID，条目不能引用其他版本。
+- ID 只能使用小写字母、数字和单个连字符，并且在所属数组内必须唯一。
+- 修改 `title` 是安全的；修改 `id` 需要同步更新所有引用它的条目。
+
+## 本地化
+
+看板不属于 `docs.i18n`。所有语言共用一个看板，界面标签为英文，`roadmap.toml` 与条目文本不会被翻译。请用所有读者都应看到的语言编写条目，并把 `i18n` 用于描述该功能的文档条目。
+
+## 可信内容
+
+条目正文会在服务端编译和渲染。MDX 的导入和导出语句被禁用，但表达式和已注册的组件仍会在渲染期间执行。请把 Roadmap 文件视为项目自有的可信源码，像评审应用代码一样评审它们。
+
+## 校验
+
+无效文件会在渲染期间直接失败，而不是被跳过。错误信息以 `Invalid Roadmap <path>: ...` 开头，并指出具体字段，例如：
+
+```text
+Invalid Roadmap content/_roadmap_/1_0_0/roadmap.toml: groups[1].id duplicates "planning"
+Invalid Roadmap content/_roadmap_/1_0_0/local-first-planning.mdx: group references unknown ID "planning"
+Invalid Roadmap content/_roadmap_/1_0_0/keyboard-navigation.mdx: due must be a real calendar date in YYYY-MM-DD format
+```
+
+加载器会检查：
+
+| 范围 | 检查内容 |
+| --- | --- |
+| 文件 | `roadmap.toml` 是合法 TOML；条目 frontmatter 是合法 YAML。 |
+| 配置 | `groups` 和 `statuses` 各至少包含一个定义。 |
+| 定义 | `id` 与 `title` 非空；`id` 唯一且符合小写规则；`color` 为 `#RGB` 或 `#RRGGBB`。 |
+| 条目 | `title`、`group`、`status` 是非空字符串；`group` 和 `status` 引用同一版本中的定义。 |
+| 排序 | `order` 是安全整数。 |
+| 日期 | `due` 是真实的 `YYYY-MM-DD` 日历日期。 |
+| 参与者 | 用户名符合 GitHub 规则且不超过 39 个字符；数字 ID 是正整数。 |
+| 属性 | 值是字符串、有限数字或布尔值。 |
+
+解析失败会报告 `TOML syntax` 或 `frontmatter syntax`。指向 `content` 之外的符号链接会失败并提示 `Roadmap path is outside the content directory: <path>`。渲染失败会包装为 `Failed to render Roadmap item <path>`。
+
+## 常见错误
+
+- **看板为空。** 版本目录必须包含 `roadmap.toml`；缺少该文件的版本会被忽略。
+- **新版本没有出现。** 检查目录名：`v1_0_0`、`1.0.0` 和 `1_0` 都会被忽略。
+- **某个条目消失了。** 条目必须是直接位于版本目录中的 `.mdx` 文件。
+- **卡片预览不对。** 预览使用 `description` 和正文文本，而不是条目标题；请用一段摘要开头。
+- **`order` 校验失败。** YAML 中的 `order: "10"` 是字符串；请使用整数。
+- **日期被拒绝。** 使用真实日历日期，例如 `2026-11-15`，不要使用时间戳或不存在的日期。
+- **整个版本消失了。** 删除 `roadmap.toml` 会在不报错的情况下隐藏整个版本。
+- **看板内容陈旧。** 内容在路由渲染时读取；请重新构建，或强制动态渲染。
+- **本地正常，部署后内容缺失。** 请在路由追踪中包含 `./content/_roadmap_/**/*`。
+
+## 接下来
+
+- [看板配置](/docs/roadmap/configuration) — 所有 `roadmap.toml` 字段。
+- [条目](/docs/roadmap/items) — frontmatter 与正文约定。
+- [渲染看板](/docs/roadmap/render-the-board) — 路由设置、自定义组件与部署。

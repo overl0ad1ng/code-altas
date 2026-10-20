@@ -1,0 +1,81 @@
+---
+title: FAQ
+description: Group frequently asked questions in an accordion that keeps one answer open at a time.
+---
+
+<Status since="0.4.0" />
+
+<Preview>
+
+<FAQ>
+  <Question icon="lucide:rocket" title="How do I get started?" defaultOpen>
+
+    Follow the [quickstart guide](/docs/quickstart) to create your first documentation site. Write your pages in **Markdown or MDX**.
+
+  </Question>
+  <Question icon="simple:github" title="Can I use my existing repository?">
+
+    Yes. Add Code Altas to your Next.js project and point it at your documentation directory.
+
+  </Question>
+  <Question title="Can I open several answers at once?">
+
+    Each FAQ keeps **at most one answer open**. Opening another question closes the previous answer. Click the open question again to collapse it.
+
+  </Question>
+</FAQ>
+
+</Preview>
+
+---
+
+```mdx title="Usage"
+<FAQ>
+  <Question icon="lucide:rocket" title="How do I get started?" defaultOpen>
+    Follow the quickstart guide to create your first documentation site.
+  </Question>
+  <Question icon="simple:github" title="Can I use my existing repository?">
+    Yes. Add Code Altas to your Next.js project.
+  </Question>
+  <Question title="Can I open several answers at once?">
+    Opening another question automatically closes the previous answer.
+  </Question>
+</FAQ>
+```
+
+`FAQ` and `Question` are available automatically in MDX. In a React Server Component, import them from `@code-altas/ui`:
+
+```tsx title="React import"
+import { FAQ, Question } from "@code-altas/ui"
+```
+
+## Behavior
+
+- Place `Question` components directly inside `FAQ`. React fragments are supported; arbitrary wrappers are not. Rendering `Question` independently throws an error.
+- Set `defaultOpen` on at most one question per FAQ. Multiple defaults throw an error instead of silently choosing an answer.
+- Without `defaultOpen`, all answers start collapsed. This prop only sets the initial state.
+- Opening a question closes the previously open answer. Clicking an open question closes it, so all answers can be collapsed.
+- Separate FAQ groups manage their state independently.
+- Use **Tab** and **Shift + Tab** to focus question buttons, then **Enter** or **Space** to expand or collapse an answer.
+
+## Answer content and icons
+
+Answers accept Markdown and MDX, including lists, links, code blocks, and other components. Leave blank lines around Markdown inside `Question` to ensure it is parsed correctly.
+
+`icon` is optional and uses the same icon names as other components, such as `lucide:rocket` or `simple:github`. Questions without an icon retain the same layout and interaction.
+
+## Props
+
+<Props name="FAQ">
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="Question components. Fragments and conditional children are supported. An empty FAQ renders nothing." />
+  <Prop property="className" type="string" defaultValue="-" description="Additional CSS classes for the FAQ container." />
+</Props>
+
+<br />
+
+<Props name="Question">
+  <Prop property="title" type="string" defaultValue="-" description="Required question title, displayed in the expand/collapse button." />
+  <Prop property="icon" type="string" defaultValue="-" description="Optional icon name, such as lucide:rocket or simple:github." />
+  <Prop property="defaultOpen" type="boolean" defaultValue={false} description="Whether this answer starts open. At most one Question per FAQ may enable it." />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="Answer content. Supports Markdown and MDX components." />
+</Props>

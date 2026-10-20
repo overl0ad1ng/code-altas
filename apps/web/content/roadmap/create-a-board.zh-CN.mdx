@@ -1,0 +1,137 @@
+---
+title: 创建看板
+description: 添加版本目录，配置列与状态，写入首批条目，并渲染出可用的看板。
+---
+
+一块看板由版本目录、`roadmap.toml` 文件和每个条目一个 `.mdx` 文件组成。本页从零构建一块小看板；布局、自定义组件和部署的更多内容见 [渲染看板](/docs/roadmap/render-the-board)。
+
+## 1. 创建版本目录
+
+在应用根目录中、与 `codealtas.config.ts` 同级的位置创建 `content/_roadmap_`，然后为这次发布添加目录：
+
+```text
+content/
+  _roadmap_/
+    1_0_0/
+```
+
+目录名必须恰好是三个非负整数，用下划线连接，且不能有前导零。`1_0_0` 会显示为 `v1.0.0`。`v1_0_0`、`1.0.0`、`1_0`、`01_0_0` 等名称会被忽略。只有包含 `roadmap.toml` 的目录才会被发现，所以下一步会让这个版本可见。
+
+## 2. 配置看板
+
+创建 `content/_roadmap_/1_0_0/roadmap.toml`：
+
+```toml title="content/_roadmap_/1_0_0/roadmap.toml"
+title = "The road to v1"
+goal = "Code Altas helps developers build and maintain documentation sites."
+
+[[groups]]
+id = "planning"
+title = "Planning"
+color = "#6366F1"
+icon = "lucide:square-dashed-kanban"
+
+[[groups]]
+id = "progress"
+title = "In Progress"
+color = "#00A63E"
+icon = "lucide:circle-dot-dashed"
+
+[[statuses]]
+id = "planned"
+title = "Planned"
+color = "#64748B"
+icon = "lucide:circle-dashed"
+
+[[statuses]]
+id = "done"
+title = "Done"
+color = "#22C55E"
+icon = "lucide:circle-check"
+```
+
+- `groups` 会按书写顺序变成列。每个分组都需要非空的 `id` 和 `title`。
+- `statuses` 会变成徽标。条目可以位于任意分组，并使用任意状态。
+- 条目 frontmatter 引用这些 `id`，因此请保持 ID 稳定；重命名标签时修改 `title` 即可。
+- 两个数组都至少需要一个定义。
+
+[看板配置](/docs/roadmap/configuration) 说明了所有字段、图标、颜色和版本选择行为。
+
+## 3. 写入第一个条目
+
+版本目录中直接放置的每个 `.mdx` 文件就是一个条目，去掉扩展名的文件名就是条目 ID：
+
+```mdx title="content/_roadmap_/1_0_0/local-first-planning.mdx"
+---
+title: Local-first planning
+description: Keep release plans next to the code they describe.
+group: planning
+status: planned
+order: 0
+priority: High
+due: "2026-11-15"
+assignees: [octocat]
+properties:
+  Area: Documentation
+  Estimate: 3 days
+---
+
+The plan lives in the repository, so every change is reviewable.
+
+## Acceptance criteria
+
+- [x] Plans are stored as files.
+- [ ] The board renders without a database.
+```
+
+`title`、`group` 和 `status` 是必填项，其他字段可选。正文会被提取为卡片预览，完整的 MDX 则渲染在详情弹窗中，因此建议用一个简短的段落开头。完整字段参考见 [条目](/docs/roadmap/items)。
+
+## 4. 渲染路由
+
+创建页面和布局：
+
+```tsx title="app/roadmap/page.tsx"
+import { RoadmapPage } from "@code-altas/ui"
+
+export const metadata = { title: "Roadmap" }
+
+export default function Page() {
+  return <RoadmapPage />
+}
+```
+
+```tsx title="app/roadmap/layout.tsx"
+import { DefaultLayout } from "@code-altas/ui"
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <DefaultLayout contentMode="fill">{children}</DefaultLayout>
+}
+```
+
+`RoadmapPage` 是使用 `fs` 读取内容目录的异步 Server Component。请让路由保持在服务端渲染，并从应用根目录启动应用，使 `process.cwd()` 指向包含 `content` 的目录。
+
+## 5. 添加导航入口
+
+看板不会自动加入 header。在 `codealtas.config.ts` 的 `header.nav` 中添加条目：
+
+```ts title="codealtas.config.ts excerpt"
+header: {
+  nav: {
+    "/roadmap": { label: "Roadmap" },
+  },
+},
+```
+
+这一步是可选的。路由不需要注册版本，也不需要向 `docs.categories` 添加内容，除非你还想发布介绍该功能的文档页面。
+
+## 检查结果
+
+打开 `/roadmap`。页面会默认选中最新版本，并在各列中显示你写入的条目。
+
+如果页面显示 `No roadmap versions have been configured yet.`，请依次确认：
+
+- 应用从包含 `content` 的目录启动；
+- 版本目录符合“三个整数”的命名规则；
+- 版本目录中存在 `roadmap.toml`，且内容是合法 TOML。
+
+接下来可以继续阅读 [看板配置](/docs/roadmap/configuration) 完善看板，或通过 [渲染看板](/docs/roadmap/render-the-board) 自定义页面。

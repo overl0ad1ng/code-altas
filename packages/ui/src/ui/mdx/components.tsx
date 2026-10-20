@@ -12,6 +12,7 @@ import { CodeGroup } from "./components/code-group"
 import { CodeDiff } from "./components/code-diff"
 import { PackageInstall } from "./components/package-install"
 import { Hint, HintTitle, HintContent } from "./components/hint"
+import { FAQ, Question } from "./components/faq"
 import { FileTree } from "./components/file-tree"
 import { Surface } from "./components/surface"
 import { Props, Prop } from "./components/props"
@@ -86,6 +87,8 @@ export const defaultDocsComponents: MDXComponents = {
   Hint,
   HintTitle,
   HintContent,
+  FAQ,
+  Question,
   FileTree,
   h1: ({ className, ...props }) => (
     <h1

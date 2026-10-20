@@ -348,6 +348,133 @@ Verify with `pnpm build` and `pnpm start` before deploying.
 For Next.js standalone output, also copy `public` and `.next/static` to the
 generated application directory and preserve included runtime files.
 
+## Roadmap
+
+Add an App Router page that returns `<RoadmapPage />`, imported from
+`@code-altas/ui`. Use `<DefaultLayout contentMode="fill">` in the route's layout
+to fill the viewport below the shared header. This mode leaves scrolling to the
+board and omits the footer; the default `"scroll"` mode keeps existing document
+page scrolling and the footer. No version registration in `codealtas.config.ts`
+is needed; a header navigation link is optional.
+
+```text
+content/_roadmap_/
+  0_1_0/
+    roadmap.toml
+    version-selector.mdx
+    content-loader.mdx
+```
+
+Version directories use three non-negative integers separated by underscores,
+without leading zeroes: `0_1_0` becomes `v0.1.0`. Only directories containing
+`roadmap.toml` are discovered. Versions sort numerically, newest first; the page
+initially selects the newest configured version. Empty placeholder directories
+without configuration are ignored.
+
+Each version defines its own **independent groups and statuses**:
+
+```toml
+title = "First release"
+goal = "Make project planning visible"
+
+[[groups]]
+id = "experience"
+title = "Experience"
+color = "#14B8A6"
+icon = "lucide:layout-dashboard"
+
+[[statuses]]
+id = "building"
+title = "In progress"
+color = "#F59E0B"
+icon = "lucide:clock"
+```
+
+`title` defaults to the generated version label; `goal` is optional plain text.
+Both `groups` and `statuses` must have at least one definition, in display order.
+Each definition requires `id` and `title`. IDs must be unique within their list
+and use lowercase letters, digits and single separating hyphens. Optional
+`color` accepts `#RGB` or `#RRGGBB`; omit it to use the theme's foreground color.
+Optional `icon` uses the same icon resolver as navigation (`lucide:clock`,
+`simple:github`, etc.); an unknown icon falls back to a question-mark icon.
+
+Each direct `.mdx` file is one item; its filename without `.mdx` is its ID:
+
+```mdx
+---
+title: Version selector
+description: Switch between project releases.
+group: experience
+status: building
+order: 10
+priority: High
+due: "2026-11-15"
+assignees: [octocat, 583231]
+properties:
+  Area: Navigation
+  Estimate: 3 days
+---
+
+Write the detailed plan here, using Markdown or registered MDX components.
+
+- [x] Discover configured versions
+- [ ] Add historical plans
+```
+
+`title`, `group` and `status` are required. References use IDs, so renaming a
+group or status title does not require editing its items. `description` is
+optional; `order` is an optional safe integer, defaulting to `0`. Items sort
+by ascending order, then filename. Nested directories and other extensions
+are ignored, as are completely blank MDX files. Non-empty optional text fields
+must be strings; remove an optional field instead of setting it to `null`.
+
+Optional card metadata is defined in the same frontmatter:
+
+| Field | Format | Behavior |
+| --- | --- | --- |
+| `priority` | Non-empty string | Displayed as authored, such as `High` or `P1`. |
+| `due` | Real calendar date, `YYYY-MM-DD` | Date only; shown without timezone shifts. |
+| `assignees` | Array of GitHub usernames or positive numeric user IDs | Avatars on cards; all participants in the dialog. |
+| `properties` | Object of string, finite number, or boolean values | Additional named fields in the detail sidebar. |
+
+GitHub usernames load avatars from `github.com/<username>.png`; numeric IDs use
+`avatars.githubusercontent.com/u/<id>`. No GitHub API token is required. Card
+footers show up to three avatars and a remaining count. Failed images keep a
+named placeholder. Username participants also have profile links in the dialog.
+
+The board fills available space, with nonshrinking columns about 350px wide.
+Columns are centered when they fit and scroll horizontally when they do not.
+Each column scrolls vertically within the available height. Cards show their
+title, status, a plain-text preview capped at four 24px lines, and optional
+priority, due date, and participant avatars. Overflowing previews fade into the
+card background. Preview text uses the existing MDX text extractor and does not
+evaluate or mount interactive MDX inside card buttons.
+
+Clicking a card opens a modal dialog with the full MDX body on the left and
+properties on the right. On narrow screens these sections stack inside the
+scrolling dialog. Escape and the close button dismiss it and restore focus to
+the card. The version selector shares the language selector's Base UI control,
+including its popup styling, selection indicator, and keyboard behavior.
+
+Existing MDX components are available in the dialog.
+Register additional components with `<RoadmapPage components={{ MyComponent }} />`.
+MDX and icons render on the server. Switching versions uses local React state
+and makes no navigation request; refreshing selects the newest version again.
+All versions' rendered content is included in the initial response; full MDX
+bodies mount in the dialog when opened.
+
+Missing Roadmap content and versions without items show empty states. Invalid
+configuration or item metadata fails with the source path and field, including
+unknown group/status references. Content symlinks cannot escape their directory.
+
+For deployment, include `./content/_roadmap_/**/*` in the `/roadmap` entry of
+`outputFileTracingIncludes` (or include all content as shown above), and start
+the app from its root directory. Content edits require rebuilding/redeploying
+on deployments with immutable filesystems. The repository includes editable
+demos in `apps/web/content/_roadmap_/0_1_0`.
+
+Run `pnpm --filter @code-altas/ui test:roadmap` for loader and rendering tests.
+
 ## Package entries
 
 | Entry | Purpose |

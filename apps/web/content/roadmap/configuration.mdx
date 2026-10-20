@@ -1,0 +1,87 @@
+---
+title: Board Configuration
+description: Reference for roadmap.toml, including version directories, columns, statuses, colors, and icons.
+---
+
+Each version directory contains its own `roadmap.toml`. The file is required: a directory without it is ignored. Groups, statuses, and items are scoped to the version that defines them, so two versions can use entirely different columns and statuses.
+
+## File
+
+```text
+content/_roadmap_/1_0_0/roadmap.toml
+```
+
+```toml title="content/_roadmap_/1_0_0/roadmap.toml"
+title = "The road to v1"
+goal = "What we are building, why it matters, and how to contribute."
+
+[[groups]]
+id = "planning"
+title = "Planning"
+color = "#6366F1"
+icon = "lucide:square-dashed-kanban"
+
+[[statuses]]
+id = "planned"
+title = "Planned"
+color = "#64748B"
+icon = "lucide:circle-dashed"
+```
+
+## Top-level fields
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `title` | No | Board heading. Defaults to the version label, such as `v1.0.0`. |
+| `goal` | No | Short description shown under the heading. Plain text; Markdown is not rendered. |
+| `groups` | Yes | At least one. Rendered as columns, in array order. |
+| `statuses` | Yes | At least one. Rendered as badges on cards and in the details panel. |
+
+## Groups and statuses
+
+Both arrays use the same definition shape.
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `id` | Yes | Lowercase letters, digits, and single hyphens. Must be unique within its array. |
+| `title` | Yes | Display label. |
+| `color` | No | `#RGB` or `#RRGGBB`. Tints the icon or the fallback dot. |
+| `icon` | No | Lucide or Simple Icons name, such as `lucide:rocket` or `simple:github`. |
+
+- **Order matters.** Columns appear in `groups` order; definitions are never sorted by title.
+- **Statuses are badges, not columns.** An item with any status can live in any group. The board does not create a column per status.
+- **IDs are references.** Item frontmatter stores the ID, so changing a `title` never requires editing items. Changing an `id` requires updating every item that references it.
+- **Counts** appear next to each column title and include every item in the group.
+- **Empty groups** still render, with a `Nothing` placeholder.
+
+## Colors and icons
+
+- Omit `color` to use the theme foreground color.
+- With an `icon`, `color` tints the icon. Without an icon, the board draws a colored dot instead.
+- Without either field, the definition still renders a neutral dot and its title.
+- Icons use the same resolver as navigation: `lucide:name`, `simple:name`, or a bare name. Unknown names fall back to a question-mark icon. See [Navigation](/docs/concepts/navigation#icons-and-translations) for accepted name forms.
+
+## Versions
+
+The directory name is the version:
+
+```text
+content/_roadmap_/0_1_0   → v0.1.0
+content/_roadmap_/1_10_0  → v1.10.0
+content/_roadmap_/1_2_0   → v1.2.0
+```
+
+- Exactly three non-negative integers separated by underscores. Leading zeros are not allowed; `0` is valid.
+- Versions are compared numerically, not as strings, and sorted newest first. `1_10_0` comes after `1_2_0`.
+- Names that do not match the pattern are ignored, including `v1_0_0`, `1.0.0`, and `1_0`.
+- A matching directory is discovered only when it contains `roadmap.toml`.
+- The board opens with the newest version selected. The version selector lists every discovered version, newest first.
+- `title` defaults to the version label, so a board without a title still has a heading.
+
+Each board is independent. Adding `1_1_0` later does not change the `1_0_0` board. Keep older version directories as history, or remove them to hide the board.
+
+## Site configuration
+
+`roadmap.toml` is the only configuration the board reads. `codealtas.config.ts` does not register versions, groups, or statuses. The only site-level entries that affect the board are the route that renders `RoadmapPage` and, optionally, `header.nav`.
+
+`docs.categories` is unrelated to the board: it controls documentation navigation, including the pages you are reading now.
