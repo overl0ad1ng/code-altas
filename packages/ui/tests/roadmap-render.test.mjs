@@ -17,6 +17,97 @@ const jiti = createJiti(import.meta.url, {
   },
 })
 const { RoadmapPage } = await jiti.import("../src/ui/pages/RoadmapPage.tsx")
+const { ReleaseLink } = await jiti.import("../src/components/roadmap-card.tsx")
+
+test("ReleaseLink renders release URLs and shorthand with domain labels and brand icons", () => {
+  const cases = [
+    [
+      "github:overl0ad1ng/code-altas",
+      "https://github.com/overl0ad1ng/code-altas",
+      "github.com",
+      "GitHub",
+    ],
+    [
+      "npm:@code-altas/ui",
+      "https://www.npmjs.com/package/@code-altas/ui",
+      "npmjs.com",
+      "npm",
+    ],
+    ["npm:react", "https://www.npmjs.com/package/react", "npmjs.com", "npm"],
+    [
+      "https://github.com/overl0ad1ng/code-altas/releases/tag/v1.0.0",
+      "https://github.com/overl0ad1ng/code-altas/releases/tag/v1.0.0",
+      "github.com",
+      "GitHub",
+    ],
+    [
+      "https://www.npmjs.com/package/@code-altas/ui",
+      "https://www.npmjs.com/package/@code-altas/ui",
+      "npmjs.com",
+      "npm",
+    ],
+    [
+      "http://npmjs.com/package/react",
+      "http://npmjs.com/package/react",
+      "npmjs.com",
+      "npm",
+    ],
+    [
+      "https://example.com/releases/v1?tab=notes#changes",
+      "https://example.com/releases/v1?tab=notes#changes",
+      "example.com",
+      null,
+    ],
+    [
+      "http://docs.example.com:8080/releases",
+      "http://docs.example.com:8080/releases",
+      "docs.example.com",
+      null,
+    ],
+    [
+      "https://github.com.example.com/releases",
+      "https://github.com.example.com/releases",
+      "github.com.example.com",
+      null,
+    ],
+    [
+      "https://example.com/github.com",
+      "https://example.com/github.com",
+      "example.com",
+      null,
+    ],
+  ]
+
+  for (const [text, href, domain, brand] of cases) {
+    const html = renderToStaticMarkup(createElement(ReleaseLink, { text }))
+    assert.ok(html.includes(`href="${href}"`), text)
+    assert.match(html, /target="_blank"/)
+    assert.match(html, /rel="noreferrer"/)
+    assert.equal(
+      html.replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/g, "").replace(/<[^>]*>/g, ""),
+      domain,
+      text
+    )
+    assert.equal(html.includes("<svg"), brand !== null, text)
+    if (brand) {
+      assert.ok(html.includes(`<title>${brand}</title>`), text)
+      assert.match(html, /aria-hidden="true"/)
+    }
+  }
+})
+
+test("ReleaseLink keeps plain text and malformed URLs readable", () => {
+  for (const text of [
+    "v1.0.0",
+    "Coming soon",
+    "https://",
+    "http-invalid",
+    "javascript:alert(1)",
+  ]) {
+    const html = renderToStaticMarkup(createElement(ReleaseLink, { text }))
+    assert.equal(html, text)
+  }
+})
 
 async function fixture(t) {
   const previous = process.cwd()

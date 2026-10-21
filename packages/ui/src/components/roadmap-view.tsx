@@ -78,7 +78,7 @@ export function RoadmapView({ versions }: { versions: RoadmapViewVersion[] }) {
               {selected.groups.map((group) => {
                 const items = selected.items.filter(
                   (item) => item.group === group.id
-                )
+                ).reverse()
 
                 return (
                   <section
