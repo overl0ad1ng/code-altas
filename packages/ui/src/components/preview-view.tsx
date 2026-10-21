@@ -30,6 +30,7 @@ export function PreviewView({
   const [focused, setFocused] = useState<number | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const tabs = useRef<(HTMLButtonElement | null)[]>([])
+
   return (
     <div
       data-slot="preview"
@@ -47,7 +48,7 @@ export function PreviewView({
           inert={view !== 0}
           tabIndex={0}
           className={cn(
-            "col-start-1 row-start-1 flex min-w-0 items-center justify-center overflow-auto p-6 focus-visible:outline-2 focus-visible:outline-ring",
+            "col-start-1 row-start-1 flow-root min-w-0 content-center overflow-auto p-6 focus-visible:outline-2 focus-visible:outline-ring",
             view !== 0 && "invisible"
           )}
         >

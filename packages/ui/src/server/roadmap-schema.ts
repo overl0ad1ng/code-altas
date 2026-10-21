@@ -157,26 +157,33 @@ export function parseRoadmapItem(
   } catch (cause) {
     throw new Error(`Invalid Roadmap ${path}: frontmatter syntax`, { cause })
   }
+
   const data = record(parsed, path, "frontmatter")
   const title = text(data.title, path, "title")
   const group = text(data.group, path, "group")
   const status = text(data.status, path, "status")
+
   if (!config.groups.some((definition) => definition.id === group)) {
     invalid(path, "group", `references unknown ID "${group}"`)
   }
+
   if (!config.statuses.some((definition) => definition.id === status)) {
     invalid(path, "status", `references unknown ID "${status}"`)
   }
+
   const order = data.order === undefined ? 0 : data.order
+
   if (typeof order !== "number" || !Number.isSafeInteger(order)) {
     invalid(path, "order", "must be a safe integer")
   }
+
   return {
     title,
     description: optionalText(data.description, path, "description"),
     group,
     status,
     order,
+    release: optionalText(data.release, path, "release"),
     priority: optionalText(data.priority, path, "priority"),
     due: dueDate(data.due, path),
     assignees: assignees(data.assignees, path),

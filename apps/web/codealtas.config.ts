@@ -1,6 +1,6 @@
-import { defineConfig } from "@code-altas/ui/config"
+import type { Config } from "@code-altas/ui/config"
 
-export default defineConfig({
+export default {
   title: "Code Altas",
   description: "A modern framework for documentation",
   logo: "/logo-indev.png",
@@ -297,4 +297,4 @@ export default defineConfig({
     copyright: "© 2026 Code Altas",
     license: "https://github.com/overl0ad1ng/code-altas?tab=MIT-1-ov-file",
   },
-})
+} satisfies Config

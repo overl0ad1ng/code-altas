@@ -1,6 +1,7 @@
 "use client"
 
 import { Dialog } from "@base-ui/react/dialog"
+import { SiGithub, SiNpm } from "@icons-pack/react-simple-icons"
 import { CalendarDays, Flag, UserRound, X } from "lucide-react"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { ScrollArea } from "../primitives/scroll-area"
@@ -117,6 +118,40 @@ function formatDate(date: string, includeYear = false) {
   }).format(new Date(`${date}T00:00:00Z`))
 }
 
+export function ReleaseLink({ text }: { text: string }) {
+  let href = text
+  if (text.startsWith("github:")) {
+    href = `https://github.com/${text.slice("github:".length)}`
+  } else if (text.startsWith("npm:")) {
+    href = `https://www.npmjs.com/package/${text.slice("npm:".length)}`
+  }
+
+  if (!/^https?:\/\//i.test(href)) return text
+
+  let url: URL
+  try {
+    url = new URL(href)
+  } catch {
+    return text
+  }
+
+  const domain = url.hostname.replace(/^www\.(github\.com|npmjs\.com)$/, "$1")
+  const Icon =
+    domain === "github.com" ? SiGithub : domain === "npmjs.com" ? SiNpm : null
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center gap-1.5 text-sm wrap-anywhere underline-offset-4 hover:underline"
+    >
+      {Icon && <Icon aria-hidden="true" className="size-3.5 shrink-0" />}
+      {domain}
+    </a>
+  )
+}
+
 interface RoadmapCardProps {
   item: RoadmapCardItem
   group: RoadmapDisplayDefinition
@@ -187,6 +222,16 @@ function ItemDetails({ item, group, status }: RoadmapCardProps) {
             )}
           </dd>
         </div>
+        {
+          item.release ? (
+            <div>
+              <dt className="mb-1.5 text-xs text-muted-foreground">Release</dt>
+              <dd className="flex items-center gap-2 wrap-anywhere">
+                <ReleaseLink text={item.release} />
+              </dd>
+            </div>
+          ) : null
+        }
         {Object.entries(item.properties).map(([name, value]) => (
           <div key={name}>
             <dt className="mb-1.5 text-xs wrap-anywhere text-muted-foreground">
@@ -210,7 +255,7 @@ export function RoadmapCard({ item, group, status }: RoadmapCardProps) {
         data-slot="roadmap-card"
         className="flex w-full cursor-pointer flex-col gap-4 rounded-xl border border-transparent transition-colors bg-background p-3 text-left hover:border-muted-foreground/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
-        <span className="flex w-full min-w-0 items-center justify-between gap-2">
+        <span className="flex w-full min-w-0 items-start justify-between gap-2">
           <span className="text-sm leading-6 font-medium wrap-anywhere">
             {item.title}
           </span>
