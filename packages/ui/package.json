@@ -1,6 +1,6 @@
 {
   "name": "@code-altas/ui",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "author": {
     "name": "IzayoiKyomu",
@@ -23,13 +23,6 @@
     "react-dom": "^19.2.8"
   },
   "scripts": {
-    "test:content": "node --test tests/docs-content.test.mjs",
-    "test:faq": "node --test tests/faq.test.mjs",
-    "test:roadmap": "node --test tests/roadmap-content.test.mjs tests/roadmap-render.test.mjs",
-    "test:next": "node --test tests/next-config.test.mjs",
-    "test:render": "node --test tests/docs-render.test.mjs tests/math-mermaid.test.mjs",
-    "test:search": "node --test tests/docs-search.test.mjs",
-    "bench:search": "node --expose-gc scripts/bench-search.mjs",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",

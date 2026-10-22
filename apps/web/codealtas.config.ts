@@ -181,6 +181,10 @@ export default {
                 slug: "preview",
               },
               {
+                name: "Image",
+                slug: "image",
+              },
+              {
                 name: "FileTree",
                 slug: "file-tree",
               },
@@ -216,7 +220,11 @@ export default {
                 name: "Package Install",
                 slug: "package-install",
               },
-            ],
+              {
+                name: "Video",
+                slug: "video",
+              },
+            ].sort((a, b) => a.name.localeCompare(b.name, "en")),
           },
         ],
       },

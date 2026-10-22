@@ -1,0 +1,113 @@
+---
+title: Image
+description: Display captioned images with a click-to-expand preview, Ctrl + scroll zoom, and dragging to inspect details.
+---
+
+Use `Image` for screenshots, illustrations, and architecture diagrams. Click an image to open its preview, then click the enlarged image again to return to the article.
+
+<Preview>
+  <Image
+    src="/home-page-1.png"
+    alt="Code Atlas documentation"
+    caption="Click to expand, then use Ctrl + scroll to inspect the interface."
+    width={1024}
+    height={768}
+  />
+</Preview>
+
+## Use in MDX
+
+`Image` is a built-in component. Use it directly in documentation without imports or experimental options.
+
+```mdx
+<Image
+  src="/home-page-1.png"
+  alt="Code Atlas documentation"
+  caption="The Quick Start page and sidebar navigation."
+  width={1024}
+  height={768}
+/>
+```
+
+Put local images in your application's `public` directory and reference them with a path starting with `/`. For example, `public/home-page-1.png` becomes `/home-page-1.png`.
+
+You can also pass a remote HTTPS image URL. The component loads images through the browser's native `img` element, without the Next.js image optimization service, so `images.remotePatterns` is unnecessary. The image host must still allow browser access.
+
+## Markdown images
+
+Standard Markdown images automatically receive the same preview in both `.md` and `.mdx` files:
+
+```md
+![Code Atlas documentation screenshot](/home-page-1.png)
+```
+
+![Code Atlas documentation screenshot](/home-page-1.png)
+
+A Markdown image's `title` remains a native tooltip; it does not become a caption. Use `<Image caption="…" />` for a visible caption below the image.
+
+Linked Markdown images, such as `[![Description](/image.png)](/target)`, keep their link navigation and do not open a preview. When nesting `Image` inside a link in JSX, set `zoomable={false}` to avoid nested interactive buttons.
+
+## Preview controls
+
+| Action | Behavior |
+| --- | --- |
+| Click an article image, or focus it and press Enter / Space | Open the image preview |
+| Hold Ctrl and scroll inside the preview | Zoom around the pointer while preventing that wheel event from zooming the browser page |
+| Click `Zoom in` / `Zoom out` | Adjust zoom by 25 percentage points, including on touch devices |
+| Click `Reset zoom` | Return to the initial size that fits the preview and reset the pan position |
+| Drag an enlarged image | Inspect the parts that extend beyond the preview; releasing a drag does not close it |
+| Press an arrow key while zoomed in | Inspect the clipped area in that direction without dragging |
+| Click the enlarged image or the empty preview area | Close the preview and return to the article |
+| Click `Close image preview` or press Esc | Close the preview and return focus to the original image button |
+
+Zoom ranges from **25% to 500%** of the initial preview size. `100%` means the size that fits the preview when it opens, rather than the image's original pixel dimensions. Panning is unnecessary while the entire image fits inside the preview.
+
+The preview locks background scrolling and keeps Tab focus within its controls. Ctrl + scroll interception applies only inside the open preview. Closing it restores normal browser zoom behavior. The component does not intercept ordinary wheel events, and browser keyboard zoom shortcuts remain available.
+
+## Size and styling
+
+Provide the image's real `width` and `height` so the browser can reserve its aspect ratio before loading. Article images shrink to fit their container while preserving their aspect ratio.
+
+```mdx
+<Image
+  src="/home-page-1.png"
+  alt="Code Atlas documentation"
+  width={1024}
+  height={768}
+  className="border border-border"
+  loading="eager"
+/>
+```
+
+`className` and `style` apply to the article image. The enlarged image uses its own layout, so fixed sizes and styles from the article do not limit its preview. Images load lazily by default; use `loading="eager"` for an important image near the top of a page.
+
+## Use in React
+
+Outside documentation, import the component and its prop type from the package entry point:
+
+```tsx
+import { Image, type ImageProps } from "@code-altas/ui"
+
+export function Screenshot(props: ImageProps) {
+  return <Image {...props} />
+}
+```
+
+The component does not require `ConfigProvider`. `Image` is a Client Component that can be rendered directly by a Server Component; props crossing the server/client boundary must be serializable.
+
+Projects with their own image handling can still override Markdown images through `DocsPage`'s `components.img`, or explicit `Image` components through `components.Image`. See [Customization](/docs/components/customization).
+
+## Props
+
+<Props name="Image">
+  <Prop property="src" type="string" defaultValue="-" description="An image path in public or an accessible remote URL." />
+  <Prop property="alt" type="string" defaultValue='""' description="Alternative text, also used as the preview title. Describe the content of informative images." />
+  <Prop property="caption" type="React.ReactNode" defaultValue="-" description="A caption below the article image and inside the preview. Use text or inline content." />
+  <Prop property="zoomable" type="boolean" defaultValue="true" description="Enable the enlarged preview. Set to false to display a plain image, including when nesting it inside a link." />
+  <Prop property="width / height" type="number" defaultValue="-" description="The original image dimensions, used to reserve its aspect ratio and reduce layout shift." />
+  <Prop property="loading" type='"lazy" | "eager"' defaultValue='"lazy"' description="Loading strategy for the article image. The enlarged image loads when its preview opens." />
+  <Prop property="className" type="string" defaultValue="-" description="Additional CSS classes for the article img element." />
+  <Prop property="srcSet / sizes" type="string" defaultValue="-" description="Native responsive image attributes. The preview reuses srcSet with sizes set to 100vw." />
+</Props>
+
+Other props follow the native `img` element, including `title`, `style`, `decoding`, `crossOrigin`, and `referrerPolicy`. This component does not accept `next/image` options such as `fill`, `quality`, `placeholder`, or `blurDataURL`.

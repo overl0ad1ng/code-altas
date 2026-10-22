@@ -1,0 +1,113 @@
+---
+title: Image
+description: 展示带说明的图片，点击放大后使用 Ctrl + 滚轮缩放，拖动查看细节。
+---
+
+`Image` 用于展示截图、插图和架构图。点击图片打开大图预览，再次点击大图即可回到正文。
+
+<Preview>
+  <Image
+    src="/home-page-1.png"
+    alt="Code Atlas 文档界面"
+    caption="点击查看大图，使用 Ctrl + 滚轮查看界面细节。"
+    width={1024}
+    height={768}
+  />
+</Preview>
+
+## 在 MDX 中使用
+
+`Image` 是内置组件，在文档中可以直接使用，无需导入，也不需要启用实验选项。
+
+```mdx
+<Image
+  src="/home-page-1.png"
+  alt="Code Atlas 文档界面"
+  caption="快速开始页面及侧边栏导航。"
+  width={1024}
+  height={768}
+/>
+```
+
+将本地图片放在应用的 `public` 目录中，使用从 `/` 开始的路径引用。例如，`public/home-page-1.png` 对应 `/home-page-1.png`。
+
+也可以直接传入远程图片的 HTTPS 地址。组件使用浏览器原生 `img` 加载图片，不经过 Next.js 图片优化服务，因此无需配置 `images.remotePatterns`；图片源本身仍需允许浏览器访问。
+
+## Markdown 图片
+
+普通 Markdown 图片会自动使用同一套放大预览，在 `.md` 和 `.mdx` 文件中均可使用：
+
+```md
+![Code Atlas 文档截图](/home-page-1.png)
+```
+
+![Code Atlas 文档截图](/home-page-1.png)
+
+Markdown 图片的 `title` 保留为原生提示文字，不会自动变成图注。需要在图片下方显示说明时，请使用 `<Image caption="…" />`。
+
+带链接的 Markdown 图片（如 `[![描述](/image.png)](/target)`）保留链接跳转，不会打开预览。如果在 JSX 中将 `Image` 放进链接，请设置 `zoomable={false}`，避免嵌套交互按钮。
+
+## 大图操作
+
+| 操作 | 行为 |
+| --- | --- |
+| 点击正文中的图片，或聚焦后按 Enter / Space | 打开大图预览 |
+| 在预览区域按住 Ctrl 并滚动滚轮 | 以指针位置为中心缩放图片，阻止这次滚轮操作触发浏览器页面缩放 |
+| 点击 `Zoom in` / `Zoom out` | 按 25 个百分点放大或缩小，无需滚轮，触屏设备也可使用 |
+| 点击 `Reset zoom` | 回到适合当前预览区域的初始大小，并重置拖动位置 |
+| 图片放大后拖动 | 查看超出预览区域的部分；拖动结束不会关闭预览 |
+| 图片放大后按方向键 | 向对应方向查看超出预览区域的部分，无需拖动 |
+| 点击大图或预览空白区域 | 关闭预览，回到正文中的图片 |
+| 点击 `Close image preview` 或按 Esc | 关闭预览，并将焦点移回原图片按钮 |
+
+缩放范围为初始大小的 **25%–500%**。工具栏中的 `100%` 表示打开预览时的适配大小，并非图片的原始像素大小。图片能完整显示在预览区域时，无需拖动。
+
+预览打开时锁定背景滚动，Tab 焦点保留在预览控件中。Ctrl + 滚轮的拦截仅作用于打开的预览区域，关闭后页面恢复正常的浏览器缩放行为。普通滚轮不会被组件拦截；浏览器键盘缩放快捷键保持可用。
+
+## 图片尺寸与样式
+
+建议填写真实的 `width` 和 `height`，让浏览器在图片加载前预留正确比例的空间。正文图片默认按容器宽度收缩，并保持宽高比。
+
+```mdx
+<Image
+  src="/home-page-1.png"
+  alt="Code Atlas 文档界面"
+  width={1024}
+  height={768}
+  className="border border-border"
+  loading="eager"
+/>
+```
+
+`className` 和 `style` 应用于正文中的图片。大图使用独立的适配布局，正文中的固定尺寸和样式不会限制预览大小。图片默认懒加载；对首屏关键图片可设置 `loading="eager"`。
+
+## 在 React 中使用
+
+在文档之外，可从包入口导入组件和属性类型：
+
+```tsx
+import { Image, type ImageProps } from "@code-altas/ui"
+
+export function Screenshot(props: ImageProps) {
+  return <Image {...props} />
+}
+```
+
+组件不依赖 `ConfigProvider`。`Image` 是客户端组件，可以直接由 Server Component 渲染；跨服务端／客户端边界时，属性必须可序列化。
+
+如果项目已有自定义图片处理逻辑，仍可通过 `DocsPage` 的 `components.img` 覆盖 Markdown 图片，或通过 `components.Image` 覆盖显式的 `Image` 组件。参见[自定义组件](/docs/components/customization)。
+
+## 属性
+
+<Props name="Image">
+  <Prop property="src" type="string" defaultValue="-" description="图片地址。使用 public 目录路径或可访问的远程 URL。" />
+  <Prop property="alt" type="string" defaultValue='""' description="图片替代文字，同时用作预览标题。为有信息含义的图片填写清楚的描述。" />
+  <Prop property="caption" type="React.ReactNode" defaultValue="-" description="显示在正文图片下方和大图预览底部的图注。使用文字或行内内容。" />
+  <Prop property="zoomable" type="boolean" defaultValue="true" description="是否启用放大预览。设为 false 时显示普通图片，适用于放在链接内的图片。" />
+  <Prop property="width / height" type="number" defaultValue="-" description="图片的原始宽高，用于预留比例和减少布局偏移。" />
+  <Prop property="loading" type='"lazy" | "eager"' defaultValue='"lazy"' description="正文图片的加载策略。大图在打开预览后加载。" />
+  <Prop property="className" type="string" defaultValue="-" description="附加到正文 img 元素的样式类。" />
+  <Prop property="srcSet / sizes" type="string" defaultValue="-" description="浏览器原生响应式图片属性。大图沿用 srcSet，并使用 100vw 选择适合预览的资源。" />
+</Props>
+
+其余属性沿用原生 `img`，例如 `title`、`style`、`decoding`、`crossOrigin` 和 `referrerPolicy`。这不是 `next/image`：不接收 `fill`、`quality`、`placeholder` 或 `blurDataURL` 等专属属性。

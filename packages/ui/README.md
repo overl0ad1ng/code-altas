@@ -177,6 +177,21 @@ and source-copy control; `$...$` and `$$...$$` render KaTeX formulas. Neither
 requires an experimental flag. Preview registration requires
 `experimental.experimentalComponentsInMDX: true`.
 
+Markdown images automatically open an enlarged preview on click. In MDX, use
+the built-in `Image` component for captions and native image attributes:
+
+```mdx
+<Image src="/screenshot.png" alt="Application settings" caption="Settings overview" width={1200} height={800} />
+```
+
+Inside the preview, Ctrl + scroll zooms the image without zooming the browser
+page. Buttons offer 25%–500% zoom and reset; drag or use arrow keys to pan.
+Click the image or background, use the close button, or press Esc to return to
+the article. Closing restores focus and normal browser wheel behavior.
+Linked Markdown images keep their original navigation. Set `zoomable={false}`
+when nesting `<Image>` inside a link in JSX. You can also import `Image` and
+`ImageProps` from `@code-altas/ui` in React without a `ConfigProvider`.
+
 ## Languages
 
 Configure `docs.i18n` with `defaultLocale` and `locales`:

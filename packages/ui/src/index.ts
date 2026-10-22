@@ -6,6 +6,7 @@ import "./styles/globals.css"
 
 export { Button } from "./ui/button"
 export type { ButtonProps } from "./ui/button"
+export { Image, type ImageProps } from "./ui/mdx/components/image"
 export {
   Cards,
   Card,

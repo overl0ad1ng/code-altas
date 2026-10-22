@@ -1,7 +1,12 @@
 import { cn } from "cn"
 import Link from "next/link"
 import type { MDXComponents } from "next-mdx-remote-client/rsc"
-import type { ComponentPropsWithoutRef } from "react"
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  type ComponentPropsWithoutRef,
+} from "react"
 
 import { Tabs, Tab } from "./components/tabs"
 import { Steps, Step } from "./components/steps"
@@ -22,6 +27,7 @@ import { Status } from "./components/status"
 import type { ConfigExperimental, ConfigDocsI18N } from "../../interface/Config"
 import { localizedDocHref, parseDocsRoute } from "../../lib/docs-i18n"
 import { Preview, PreviewCode } from "./components/preview"
+import { Image, type ImageProps } from "./components/image"
 
 export function getDocsComponents(
   experimental?: ConfigExperimental,
@@ -57,17 +63,29 @@ export function getDocsComponents(
 function DocsLink({
   href,
   className,
+  children,
   ...props
 }: ComponentPropsWithoutRef<"a">) {
   const styles = cn("text-primary underline underline-offset-4", className)
+  // Linked images retain their authored navigation instead of nesting a preview button.
+  const content = Children.map(children, (child) =>
+    isValidElement<ImageProps>(child) && child.type === Image
+      ? cloneElement(child, { zoomable: false })
+      : child
+  )
   return href?.startsWith("/") && !href.startsWith("//") ? (
-    <Link href={href} className={styles} {...props} />
+    <Link href={href} className={styles} {...props}>
+      {content}
+    </Link>
   ) : (
-    <a href={href} className={styles} {...props} />
+    <a href={href} className={styles} {...props}>
+      {content}
+    </a>
   )
 }
 
 export const defaultDocsComponents: MDXComponents = {
+  Image,
   MermaidView,
   Changelogs,
   Changelog,
@@ -160,13 +178,7 @@ export const defaultDocsComponents: MDXComponents = {
       {...props}
     />
   ),
-  img: ({ className, alt, ...props }) => (
-    <img
-      alt={alt ?? ""}
-      className={cn("my-6 h-auto max-w-full rounded-lg", className)}
-      {...props}
-    />
-  ),
+  img: Image,
   hr: ({ className, ...props }) => (
     <hr className={cn("my-8 border-border", className)} {...props} />
   ),
