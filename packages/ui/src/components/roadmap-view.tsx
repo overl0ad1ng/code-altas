@@ -99,7 +99,7 @@ export function RoadmapView({ versions }: { versions: RoadmapViewVersion[] }) {
                         {items.length}
                       </span>
                     </h2>
-                    <ScrollArea className="min-h-0 flex-1">
+                    <ScrollArea className="min-h-0 flex-1 rounded-lg">
                       <div className="space-y-1.5 pr-1 pb-1">
                         {items.length === 0 && (
                           <p className="rounded-lg pt-10 text-sm text-center text-muted-foreground">

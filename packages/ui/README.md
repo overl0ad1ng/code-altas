@@ -192,6 +192,21 @@ Linked Markdown images keep their original navigation. Set `zoomable={false}`
 when nesting `<Image>` inside a link in JSX. You can also import `Image` and
 `ImageProps` from `@code-altas/ui` in React without a `ConfigProvider`.
 
+Use the built-in `Video` component for local recordings and direct remote MP4
+URLs. The toolbar provides custom playback, seeking, 10-second jumps, volume,
+0.5×–2× speed selection, and fullscreen without enabling native video controls:
+
+```mdx
+<Video src="/recording.mp4" title="Interface walkthrough" caption="A short demo" />
+<Video src="https://media.example.com/recording.mp4" title="Remote recording" />
+```
+
+Place local recordings in `public`. Tooltips and the speed menu have entry and
+exit transitions that respect reduced motion. Fullscreen preserves the same
+media element and custom toolbar. Focus the player frame for Space/K, arrow,
+M, and F shortcuts; sliders retain their own keyboard controls. `Video` and
+`VideoProps` can also be imported directly without a `ConfigProvider`.
+
 ## Languages
 
 Configure `docs.i18n` with `defaultLocale` and `locales`:

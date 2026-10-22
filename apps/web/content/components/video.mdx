@@ -1,0 +1,109 @@
+---
+title: Video
+description: Play local videos and remote MP4 URLs with custom playback, seek, volume, speed, and fullscreen controls.
+---
+
+<Status status="beta" since="0.4.1" />
+
+`Video` plays local files and remote MP4 media with a custom toolbar. It uses the browser to decode video, while Code Atlas provides every visible playback control.
+
+<Preview>
+  <Video
+    src="/example.mp4"
+    title="Example video"
+    caption="Try playback, seeking, volume, speed, and fullscreen."
+  />
+</Preview>
+
+## Local video
+
+Put the video in your application's `public` directory. For example, `public/example.mp4` is available as `/example.mp4`:
+
+```mdx
+<Video
+  src="/example.mp4"
+  title="Example video"
+  poster="/video-cover.jpg"
+  caption="A short walkthrough of the interface."
+/>
+```
+
+`poster` is optional. Without one, the player shows the first available frame or a black background before playback.
+
+`Video` is registered in MDX by default and requires no imports or experimental flag. Use it in `.mdx` documents; plain Markdown does not have a built-in video syntax.
+
+## Remote MP4
+
+Pass a direct HTTPS MP4 URL through the same `src` prop:
+
+```mdx
+<Video
+  src="https://media.example.com/walkthrough.mp4"
+  title="Remote walkthrough"
+  preload="metadata"
+/>
+```
+
+Use a media URL, rather than a page containing a video. The media server must allow playback from your site. Byte-range support enables efficient seeking; the browser must also support the file's video and audio codecs. This version supports native browser media playback and does not resolve YouTube, bilibili, HLS, or DASH sources.
+
+## Custom controls
+
+| Control | Behavior |
+| --- | --- |
+| Play / Pause, or click the video | Start or pause playback |
+| Progress slider | Seek to a position; disabled until a finite duration is available |
+| Back / Forward | Move backward or forward by 10 seconds, clamped to the recording |
+| Mute / Unmute and volume slider | Control sound without opening native video controls |
+| Playback speed | Choose 0.5×, 0.75×, 1×, 1.25×, 1.5×, 1.75×, or 2× |
+| Enter / Exit fullscreen | Keep the same video, position, toolbar, and open menus in fullscreen |
+
+The player does not enable native `controls`, even if the prop is passed at runtime. Its buttons have accessible labels, and sliders support keyboard operation. Tooltip and speed-menu popups animate when opening and closing; transitions are disabled when the system requests reduced motion.
+
+Fullscreen uses the browser's Fullscreen API. Its button is disabled if that API is unavailable; inline playback and the custom toolbar remain usable. Mobile browsers can restrict programmatic volume changes, in which case device volume controls determine the output level.
+
+## Keyboard shortcuts
+
+Focus the player frame to use these shortcuts. While a button, slider, or speed selector is focused, that control keeps its own keyboard behavior.
+
+| Key | Action |
+| --- | --- |
+| Space / K | Play or pause |
+| Left / Right arrow | Seek backward or forward by 5 seconds |
+| Up / Down arrow | Increase or decrease volume by 5% |
+| M | Mute or unmute |
+| F | Toggle fullscreen when supported |
+| Esc | Close a popup, or exit browser fullscreen |
+
+## Loading and failures
+
+The default `preload="metadata"` loads video information without requesting eager playback. Playback starts after interaction unless you explicitly set `autoPlay`; browsers can block autoplay, especially with sound.
+
+While playback waits for data, the player shows a buffering indicator. An unavailable or unsupported source produces a message and a `Retry video` button. The toolbar follows native playback events, including when playback ends or the source changes.
+
+## Use in React
+
+```tsx
+import { Video, type VideoProps } from "@code-altas/ui"
+
+export function Recording(props: VideoProps) {
+  return <Video {...props} />
+}
+```
+
+`Video` is a Client Component and does not require `ConfigProvider`. Props passed from a Server Component must be serializable. In client code, native video callbacks such as `onPlay`, `onPause`, and `onTimeUpdate` remain available. Native `<track>` children can provide subtitles.
+
+## Props
+
+<Props name="Video">
+  <Prop property="src" type="string" defaultValue="-" description="Required local media path or direct remote MP4 URL." />
+  <Prop property="title" type="string" defaultValue='"Video player"' description="Accessible name of the player and video." />
+  <Prop property="caption" type="React.ReactNode" defaultValue="-" description="Caption displayed below the player." />
+  <Prop property="poster" type="string" defaultValue="-" description="Cover image displayed before playback." />
+  <Prop property="preload" type='"none" | "metadata" | "auto"' defaultValue='"metadata"' description="Native media loading hint." />
+  <Prop property="playsInline" type="boolean" defaultValue="true" description="Prefer inline playback on mobile browsers." />
+  <Prop property="autoPlay / muted / loop" type="boolean" defaultValue="false" description="Native playback options. Autoplay remains subject to browser policy." />
+  <Prop property="className" type="string" defaultValue="-" description="Additional classes on the outer figure." />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="Native video children, such as subtitle tracks." />
+</Props>
+
+Other native video attributes are forwarded to the media element. `controls` is excluded from `VideoProps` because the toolbar is always custom.

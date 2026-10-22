@@ -28,6 +28,7 @@ import type { ConfigExperimental, ConfigDocsI18N } from "../../interface/Config"
 import { localizedDocHref, parseDocsRoute } from "../../lib/docs-i18n"
 import { Preview, PreviewCode } from "./components/preview"
 import { Image, type ImageProps } from "./components/image"
+import { Video } from "./components/video"
 
 export function getDocsComponents(
   experimental?: ConfigExperimental,
@@ -86,6 +87,7 @@ function DocsLink({
 
 export const defaultDocsComponents: MDXComponents = {
   Image,
+  Video,
   MermaidView,
   Changelogs,
   Changelog,

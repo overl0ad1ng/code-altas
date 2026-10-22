@@ -1,0 +1,107 @@
+---
+title: Video
+description: 播放本地视频与远程 MP4，使用自定义的播放、进度、音量、倍速和全屏控件。
+---
+
+`Video` 用于播放本地文件和远程 MP4 地址。浏览器负责解码视频，Code Atlas 提供完整的自定义操作界面。
+
+<Preview>
+  <Video
+    src="/example.mp4"
+    title="示例视频"
+    caption="试试播放、拖动进度、调整音量与倍速，或进入全屏。"
+  />
+</Preview>
+
+## 本地视频
+
+将文件放在应用的 `public` 目录。例如，`public/example.mp4` 对应 `/example.mp4`：
+
+```mdx
+<Video
+  src="/example.mp4"
+  title="示例视频"
+  poster="/video-cover.jpg"
+  caption="一段简短的界面操作演示。"
+/>
+```
+
+`poster` 可选。不提供封面时，播放器会在播放前显示可用的首帧或黑色背景。
+
+`Video` 是默认注册的 MDX 组件，无需导入或启用实验选项。请在 `.mdx` 文件中使用；普通 Markdown 没有内置视频语法。
+
+## 远程 MP4
+
+使用同一个 `src` 属性传入远程 MP4 的 HTTPS 直链：
+
+```mdx
+<Video
+  src="https://media.example.com/walkthrough.mp4"
+  title="远程演示视频"
+  preload="metadata"
+/>
+```
+
+地址应直接返回媒体文件，而不是包含视频的网页。远程服务需要允许从本站播放，支持字节范围请求可提高拖动进度的效率；浏览器还需要支持文件使用的视频和音频编码。本轮仅接入浏览器原生媒体播放，不解析 YouTube、bilibili、HLS 或 DASH 来源。
+
+## 自定义控件
+
+| 控件 | 行为 |
+| --- | --- |
+| Play / Pause，或点击视频画面 | 开始或暂停播放 |
+| 进度条 | 拖动定位；获得有效的总时长后启用 |
+| Back / Forward | 后退或前进 10 秒，自动限制在视频范围内 |
+| Mute / Unmute 与音量滑块 | 使用自定义界面调整声音 |
+| Playback speed | 选择 0.5×、0.75×、1×、1.25×、1.5×、1.75× 或 2× |
+| Enter / Exit fullscreen | 全屏时沿用同一个视频、播放位置、自定义工具栏和菜单 |
+
+组件始终关闭原生 `controls`，即使在运行时传入该属性也不会替换工具栏。按钮均有无障碍名称，滑块支持键盘操作。Tooltip 与倍速菜单的进入、退出都有过渡；系统开启“减少动态效果”时会停用这些过渡。
+
+全屏使用浏览器 Fullscreen API。如果浏览器不支持，对应按钮会禁用，行内播放和自定义工具栏仍可使用。部分移动浏览器限制通过脚本调整音量，此时输出音量由设备音量键决定。
+
+## 键盘操作
+
+聚焦播放器边框后，可以使用以下快捷键。按钮、滑块或倍速选择器获得焦点时，会保留各自的键盘操作，避免冲突。
+
+| 按键 | 行为 |
+| --- | --- |
+| Space / K | 播放或暂停 |
+| 左 / 右方向键 | 后退或前进 5 秒 |
+| 上 / 下方向键 | 增大或减小 5% 音量 |
+| M | 静音或取消静音 |
+| F | 支持时切换全屏 |
+| Esc | 关闭弹出菜单，或退出浏览器全屏 |
+
+## 加载与失败
+
+默认使用 `preload="metadata"` 读取视频信息，不主动开始播放。只有显式设置 `autoPlay` 时才尝试自动播放；浏览器可能阻止自动播放，尤其是有声视频。
+
+播放等待数据时会显示缓冲提示。来源不可用或格式不受支持时，播放器会显示说明和 `Retry video` 重试按钮。工具栏以原生媒体事件为准，同步播放结束、音量、进度和来源切换后的状态。
+
+## 在 React 中使用
+
+```tsx
+import { Video, type VideoProps } from "@code-altas/ui"
+
+export function Recording(props: VideoProps) {
+  return <Video {...props} />
+}
+```
+
+`Video` 是客户端组件，不依赖 `ConfigProvider`。从 Server Component 传入的属性必须可序列化。在客户端代码中，仍可使用 `onPlay`、`onPause`、`onTimeUpdate` 等原生回调；原生 `<track>` 子元素可用于提供字幕。
+
+## 属性
+
+<Props name="Video">
+  <Prop property="src" type="string" defaultValue="-" description="必填。本地媒体路径或远程 MP4 直链。" />
+  <Prop property="title" type="string" defaultValue='"Video player"' description="播放器和视频的无障碍名称。" />
+  <Prop property="caption" type="React.ReactNode" defaultValue="-" description="显示在播放器下方的说明。" />
+  <Prop property="poster" type="string" defaultValue="-" description="开始播放前显示的封面。" />
+  <Prop property="preload" type='"none" | "metadata" | "auto"' defaultValue='"metadata"' description="浏览器原生媒体加载策略提示。" />
+  <Prop property="playsInline" type="boolean" defaultValue="true" description="在移动浏览器中优先使用行内播放。" />
+  <Prop property="autoPlay / muted / loop" type="boolean" defaultValue="false" description="原生播放选项。自动播放仍受浏览器策略约束。" />
+  <Prop property="className" type="string" defaultValue="-" description="附加到外层 figure 的样式类。" />
+  <Prop property="children" type="React.ReactNode" defaultValue="-" description="原生视频子元素，例如字幕 track。" />
+</Props>
+
+其余原生视频属性会传给媒体元素。`VideoProps` 不包含 `controls`，因为工具栏始终使用自定义实现。

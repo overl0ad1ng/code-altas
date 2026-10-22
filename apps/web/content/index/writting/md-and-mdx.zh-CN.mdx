@@ -83,6 +83,8 @@ Install CodeAltas with npm.
 
 普通 Markdown 图片会自动获得[Image 的放大预览](/docs/components/image)，支持 Ctrl + 滚轮缩放。需要图注或更多图片属性时，可在 MDX 中使用 `<Image />`。带链接的图片仍按原链接跳转。
 
+在 MDX 中使用 [Video](/docs/components/video)，可以播放本地视频和远程 MP4，并通过自定义工具栏操作。
+
 ## Code Atlas 的渲染规则
 
 上表描述的是 Code Atlas 实际渲染的内容。服务端渲染器禁用了 MDX 中的 `import` 和 `export`。需要使用自定义 React 组件时，应在 Next.js 页面中导入，再通过 `DocsPage` 的 `components` 属性注册：

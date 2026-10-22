@@ -7,6 +7,7 @@ import "./styles/globals.css"
 export { Button } from "./ui/button"
 export type { ButtonProps } from "./ui/button"
 export { Image, type ImageProps } from "./ui/mdx/components/image"
+export { Video, type VideoProps } from "./ui/mdx/components/video"
 export {
   Cards,
   Card,
