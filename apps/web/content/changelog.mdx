@@ -6,6 +6,26 @@ title: Changelog
 
 <Changelogs sortBy="date">
     <Changelog
+        date="2026/10/20"
+        title="Code Altas v0.4.0 — Roadmap Boards"
+        tags={["Feature Milestone"]}
+    >
+        Turn a folder of MDX files into versioned planning boards with grouped columns, status badges, and rich item details.
+
+        - Added `content/_roadmap_` discovery. Each version directory such as `1_0_0/` becomes a `v1.0.0` board, versions sort newest first, and boards are read when the route renders instead of being registered in `codealtas.config.ts`.
+        - Added `roadmap.toml` for the board title, goal, columns (`groups`), and statuses, each with an ID, title, optional color and icon. IDs, colors, and item references are validated while loading.
+        - Added MDX items: one file per card with YAML frontmatter for `title`, `description`, `group`, `status`, `order`, `release`, `priority`, `due`, `assignees`, and free-form `properties`. The document body is regular MDX.
+        - Added `RoadmapPage` with a version selector, grouped columns and item counts, status badges, body previews, and participant avatars. Selecting a card opens the full MDX body beside a details panel.
+        - Added `DefaultLayout` `contentMode="fill"` support so the board fills the viewport and its columns scroll independently.
+        - Added output tracing for `/roadmap` in `next.config.ts` so local board content ships with the deployment.
+
+        The board adds nothing to `docs.categories`, navigation, or search results, and it is intentionally not localized: one board serves every language. Render `RoadmapPage` from a route you own.
+
+        Follow the [Roadmap guide](/docs/roadmap) to create a board, configure columns and statuses, and write items.
+
+        [View the implementation commit](https://github.com/overl0ad1ng/code-altas/commit/de28342b39b5fab061b446c53b77a7ac0716e48b).
+    </Changelog>
+    <Changelog
         date="2026/10/4"
         title="Code Altas v0.3.3 — Mobile Navigation"
         tags={["Version Released"]}
